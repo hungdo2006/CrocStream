@@ -90,6 +90,10 @@ Local adapter tests do not satisfy G1 media framing or remote acceptance.
 - Measure 1280×720/24 FPS target on named Windows hardware with p50/p95; document deviations and lower-resolution/FPS results. Record queue sizes, goroutine counts and memory growth over >=10 minutes; no zero-allocation guarantee. Report LAN recovery and relay performance separately; no public-relay 24 FPS guarantee.
 
 ## Typical verification commands (only after repository/toolchain exists)
+Run the application checks from `app/` after that module has been implemented.
+Upstream regression checks run separately from `croc/`. Both directories belong
+to the same root Git repository; no second repository is needed.
+
 ```sh
 go version
 go test ./...

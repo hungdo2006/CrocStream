@@ -2,15 +2,17 @@
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
-Current workspace (2026-11-15): clean upstream croc plus separate planning
-documents only. Previous custom code and experiment records are not retained.
-The table is a future development plan, not a completion report. Agree on a
-separate implementation workspace before starting.
+Current workspace (2026-11-15): one CrocStream repository containing pristine
+upstream source in `croc/` and planning documents in `docs/`. Future implementation
+belongs in `app/` in this same repository; it has not been created. Previous custom
+code and experiment records are not retained. The table is a future development
+plan, not a completion report. Source and workspace paths are relative to the
+repository root.
 
 ## Codex handoff
 Use this starting task **only when the owner requests continued development**. Scope: **G0 architecture and transport feasibility**, not the whole application.
 
-1. Read `../AGENTS.md`, then [PRD](PRD.md), [ARCHITECTURE](ARCHITECTURE.md) (decisions, blockers, protocol), [TEST_PLAN](TEST_PLAN.md) and this roadmap. Inspect Git status, source, dependencies and available tools; old experimental toolchains are no longer assumed installed. Agree on a separate implementation repository/module and keep the upstream reference pristine.
+1. Read [AGENTS.md](../AGENTS.md), then [PRD](PRD.md), [ARCHITECTURE](ARCHITECTURE.md) (decisions, blockers, protocol), [TEST_PLAN](TEST_PLAN.md) and this roadmap. Inspect Git status, source, dependencies and available tools; old experimental toolchains are no longer assumed installed. Use `app/` for the CrocStream module within this same repository and keep `croc/` pristine; do not create another Git repository.
 2. Verify `github.com/schollz/croc/v11` at **552f40fd2d7593316118370bec0a93478d48e715**, which reports 11.6.5 but is not the tag itself. Check proposed Wails v3 APIs/toolchain; identify actual codephrase, PAKE, mutual confirmation, E2E encryption, relay/P2P and file-lifecycle code paths. Do not assume v9/v10 APIs.
 3. Build the smallest GUI-independent, two-process PoC in the approved implementation workspace, using actual supported authenticated mechanisms. Follow [transport proof](TEST_PLAN.md#d-transport-g0-proof-two-processes-no-gui): repeated deterministic duplex data, hashes/order, reverse control, clean cancellation and >=10-minute session. Plain TCP is not a substitute for croc security.
 4. Report exactly what ran: localhost/LAN, public/self-hosted remote relay, security assumptions, limits, duration, commands and redacted logs. Missing public-relay permission, network access or suitable OS means NOT RUN/BLOCKED, not PASS.
@@ -48,4 +50,4 @@ Next action: one focused next gate or explicit owner question
 - Resolve affected [B-01–B-05 blockers](ARCHITECTURE.md#decisions-and-blockers) and [C-01–C-05 clarifications](ARCHITECTURE.md#pending-clarifications) before the corresponding implementation.
 - [Architectural risks](ARCHITECTURE.md#change-control-and-risks) guide feasibility and profiling.
 - [Verification coverage](TEST_PLAN.md#coverage-by-requirement-and-gate) maps product requirements to tests and gates. Gate summaries do not replace those procedures.
-- Future reports, commands, logs and benchmark artifacts belong in the approved implementation workspace; this planning folder is not a claim of completed gates.
+- Future reports, commands, logs and benchmark artifacts belong in `app/` within this repository; the planning documents are not a claim of completed gates.

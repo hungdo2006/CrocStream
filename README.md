@@ -1,12 +1,16 @@
-# CrocStream — Tài liệu nội dung và hướng phát triển
+# CrocStream
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
 
-Repository chứa tài liệu thiết kế CrocStream và bản mã nguồn upstream croc trong
-[`croc/`](croc/README.md). Chưa có mã ứng dụng chia sẻ màn hình CrocStream.
-Thư mục `crocstream-docs/` trong bố trí cục bộ bên dưới là gốc repository này.
-Bản upstream được đưa vào dưới dạng snapshot mã nguồn đầy đủ, không phải submodule;
-xem [nguồn gốc và giấy phép](UPSTREAM.md).
+Một repository duy nhất chứa mã nguồn croc gốc, tài liệu thiết kế và phần ứng dụng
+CrocStream sẽ phát triển. Local `D:\CrocStream` nối với repository GitHub ở trên;
+nhánh hiện dùng là `main`.
+
+[`croc/`](croc/README.md) chứa snapshot mã nguồn upstream đầy đủ, giữ nguyên nội
+dung và giấy phép. Đây là thư mục mã nguồn bình thường trong repo CrocStream,
+không có repo Git lồng bên trong; xem [nguồn gốc và giấy phép](UPSTREAM.md).
+Phần ứng dụng mới dự kiến nằm trong `app/`; thư mục này chưa được tạo và chưa có
+mã ứng dụng chia sẻ màn hình CrocStream.
 
 ## Bố trí hiện tại
 
@@ -14,14 +18,16 @@ Theo lựa chọn của chủ dự án ngày 2026-11-15:
 
 ```text
 D:\CrocStream\
-├── croc\                 # Mã nguồn upstream nguyên gốc và metadata Git
-└── crocstream-docs\       # Repository hungdo2006/CrocStream
-    ├── README.md
-    ├── AGENTS.md
-    ├── UPSTREAM.md
-    ├── croc\             # Snapshot upstream giữ nguyên nội dung
-    └── docs\
+├── .git\                 # Git của duy nhất repo CrocStream
+├── croc\                 # Mã nguồn croc gốc, không có .git riêng
+├── docs\                 # PRD, kiến trúc, kế hoạch kiểm thử, roadmap
+├── README.md
+├── AGENTS.md
+└── UPSTREAM.md
 ```
+
+Khi bắt đầu triển khai, `app/` sẽ nằm cùng cấp với `croc/` và `docs/`, trong
+cùng repository. Bố trí này thay thế hai repo local tách rời trước đây.
 
 Nguồn croc: https://github.com/schollz/croc
 Commit giữ lại: `552f40fd2d7593316118370bec0a93478d48e715`.
@@ -59,7 +65,8 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 ## Cách tiếp tục
 
 Đọc `AGENTS.md`, rồi `PRD → ARCHITECTURE → TEST_PLAN → ROADMAP`.
-Giữ `croc/` và checkout riêng `../croc/` nguyên gốc để tham chiếu. Khi được giao triển khai, thống nhất vị trí
-repository/module CrocStream riêng trước khi tạo code hoặc cài toolchain. Mọi đường
-dẫn `docs/` trong bộ này tính từ `crocstream-docs/`; cấu trúc ứng dụng trong tài liệu
-kiến trúc là đề xuất, chưa tồn tại.
+Giữ `croc/` nguyên gốc để tham chiếu; phát triển phần mới trong `app/` của cùng
+repo khi được giao triển khai, bắt đầu bằng kiểm chứng transport G0. Việc sắp xếp
+repo chưa phải triển khai ứng dụng hoặc cài toolchain. Mọi đường dẫn `docs/`,
+`croc/` và `app/` tính từ gốc repository; cấu trúc ứng dụng trong tài liệu kiến
+trúc là đề xuất, chưa tồn tại.

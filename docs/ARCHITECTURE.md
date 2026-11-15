@@ -11,7 +11,7 @@
 - [Sources and licensing](#sources-and-licensing)
 
 ## Reference source
-The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md); the separate local checkout remains unchanged. No CrocStream implementation or historical experiment evidence is retained.
+The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md). The owner chose one repository containing upstream source, documents and future application code; the former standalone checkout was backed up outside the workspace. No CrocStream implementation or historical experiment evidence is retained.
 
 Source inspection, not runtime feasibility evidence:
 - `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
@@ -37,7 +37,7 @@ Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisiona
 | D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
 | D-10 | Optional measured RTT and viewer-local decode→render; no one-way E2E claim without tested clock synchronization. | Unsynchronized host timestamps cannot establish E2E latency. |
 | D-11 | Full-frame LZ4 baseline on each emitted sample versus actual video packet bytes in the same window; transport overhead separate. | Fair and honestly labeled comparison. |
-| D-12 (owner-confirmed) | Preserve pristine upstream reference and separate planning documents; remove former custom code and experiments. Publish the upstream snapshot in `croc/` alongside documents as subsequently requested. Agree on a separate implementation workspace before creating code. | Owner decisions 2026-11-15; source publication does not authorize modifying the reference checkout or snapshot. |
+| D-12 (owner-confirmed) | Use one CrocStream repository: pristine upstream source in `croc/`, planning documents in `docs/`, future application code in `app/`. Keep one root `.git`; no nested repository or second active checkout. Former custom code and experiments remain removed. | Owner decisions 2026-11-15; supersedes the separate-repository layout. Consolidation does not authorize application implementation or modifying the upstream snapshot. |
 
 ### G0 blockers
 | ID | Status | Required evidence / decision |
@@ -75,28 +75,31 @@ These are pre-existing ambiguities, **not new approved behavior**. Resolve the a
 
 ## Proposed future application layout
 
-Current layout is `croc/` (pristine upstream reference snapshot) plus this documentation
-folder. The application tree below does not exist. Agree on a separate
-implementation repository/module before creating it; do not scaffold it inside
-the upstream reference checkout.
+The current single repository contains `croc/` (pristine upstream reference snapshot)
+and `docs/` (planning documents). New application code will live in `app/` within
+this same repository. The application tree below does not exist; create it only
+when implementation is requested, beginning with G0. Do not scaffold new code
+inside the upstream snapshot.
 
 ```
 AGENTS.md
 README.md
 docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
-cmd/crocstream/main.go                 # Wails v3 bootstrap
-internal/app/                         # Wails service methods + app/session coordinator
-internal/session/                     # role/state machine and lifetime
-internal/capture/                     # Source interface, screen (P0), webcam (P1)
-internal/frame/                       # Packed RGBA normalization, dimensions
-internal/delta/                       # encoder, decoder, bounded reusable buffers
-internal/protocol/                    # typed header, binary config, packet parsing
-internal/transport/                   # duplex interface; croc adapter only after G0
-internal/bridge/                      # loopback authenticated binary WS to WebView
-internal/telemetry/                   # capture/codec/protocol counters and 1s windows
-frontend/src/{pages,components,hooks,types}/
-frontend/package.json
-build/                                 # Wails build assets
+croc/                                 # Existing pristine upstream source
+app/                                  # Future CrocStream module; not yet created
+  cmd/crocstream/main.go               # Wails v3 bootstrap
+  internal/app/                       # Wails service methods + app/session coordinator
+  internal/session/                   # role/state machine and lifetime
+  internal/capture/                   # Source interface, screen (P0), webcam (P1)
+  internal/frame/                     # Packed RGBA normalization, dimensions
+  internal/delta/                     # encoder, decoder, bounded reusable buffers
+  internal/protocol/                  # typed header, binary config, packet parsing
+  internal/transport/                 # duplex interface; croc adapter only after G0
+  internal/bridge/                    # loopback authenticated binary WS to WebView
+  internal/telemetry/                 # capture/codec/protocol counters and 1s windows
+  frontend/src/{pages,components,hooks,types}/
+  frontend/package.json
+  build/                             # Wails build assets
 ```
 Adjust the paths to the actual initialized Wails v3 template; app structure is conceptual, not a license to invent outdated framework methods.
 

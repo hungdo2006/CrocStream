@@ -10,8 +10,10 @@
 
 This is a source snapshot, not a submodule. Upstream `.git` metadata and local
 untracked files are excluded. Tracked files, including upstream documentation,
-tests and build configuration, retain their original contents. The separate
-local checkout at `../croc/` remains untouched.
+tests and build configuration, retain their original contents. The former
+standalone local checkout was backed up outside the workspace when the owner
+chose a single CrocStream repository. `croc/` now has no independent `.git`;
+all source files are tracked by the root CrocStream repository.
 
 The snapshot is reference code for the CrocStream feasibility work. It is not
 an implementation of the proposed screen-streaming application. No build or

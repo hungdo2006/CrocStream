@@ -1,6 +1,6 @@
 # PRD — CrocStream Desktop (MVP v1, proposed)
 
-**Status:** proposed desktop screen-sharing prototype, pending G0 transport validation and approval of provisional [decisions](ARCHITECTURE.md#decisions-and-blockers). No CrocStream implementation is retained; the current workspace is pristine upstream croc plus planning documents (D-12).
+**Status:** proposed desktop screen-sharing prototype, pending G0 transport validation and approval of provisional [decisions](ARCHITECTURE.md#decisions-and-blockers). No CrocStream implementation is retained; one CrocStream repository contains pristine upstream source in `croc/`, planning documents in `docs/`, and a reserved future application location `app/` (D-12). Paths here are relative to the repository root.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
