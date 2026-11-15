@@ -1,0 +1,268 @@
+# Architecture — CrocStream Desktop v1 (proposed)
+
+## Contents
+- [Reference source](#reference-source)
+- [Decisions and blockers](#decisions-and-blockers)
+- [Pending clarifications](#pending-clarifications)
+- [Principles and module layout](#principles)
+- [Local WebView bridge](#local-webview-media-bridge)
+- [Media protocol v1](#media-protocol-v1)
+- [Telemetry contract](#telemetry-contract)
+- [Sources and licensing](#sources-and-licensing)
+
+## Reference source
+The reference is `../croc/` at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. No CrocStream implementation or historical experiment evidence is retained.
+
+Source inspection, not runtime feasibility evidence:
+- `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
+- `src/comm/comm.go`: framed message API, not directly the proposed `io.ReadWriteCloser`; access to `Connection()` alone does not provide authenticated media transport.
+- `src/pakekey/pakekey.go`: transcript-bound PAKE with mutual confirmation; accepted purposes are transfer, local probe and SSH, not CrocStream.
+- `src/crypt/crypt.go`: cryptographic primitives do not constitute a complete authenticated session.
+- `src/tailcattransport/`: exported Listen/Accept/Dial data-plane facilities require a session key and authenticated offer exchange. `src/sshshare/` supplies SSH-specific authentication/lifecycle, not a generic CrocStream API.
+- `web/`: upstream browser file-transfer/SSH client, not Wails or CrocStream.
+
+## Decisions and blockers
+Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisional.** Keep IDs stable and distinguish design requirements from verified implementation.
+
+| ID | Decision | Reason / tradeoff |
+| --- | --- | --- |
+| D-01 | Separate CrocStream desktop app; preserve upstream file-transfer behavior. | Custom media protocol is not interoperable with stock croc send/receive. |
+| D-02 | Windows 10/11 x64 first; macOS/Linux later. | One testable platform before cross-platform claims. |
+| D-03 | Proposed Wails v3 stable line, target v3.1.0; Go 1.27.3+ pending toolchain checks; React/TypeScript/Tailwind. Pin exact transitive dependencies after G0. | Recheck versions; v2 event/binding APIs cannot be copied into v3. |
+| D-04 | Pin the exact reference commit above, not merely the version string or v11.6.5 tag. | Reproducibility; v9/v10 APIs cannot be assumed. |
+| D-05 | Exactly one broadcaster and one viewer per session. | One coherent canonical-reference/PLI sequence. |
+| D-06 | RGBA8888 alpha=255, 32×32 tiles, LZ4 frame format, lossless network KEY. JPEG only for local UI. | Deterministic sender/viewer reference equality. |
+| D-07 | Fixed session resolution; default 1280×720 at 24 FPS, fallback 640×360 at 15 FPS; key interval 30 emitted frames, MAE tau=4, dirty ratio >0.65 triggers KEY. | Testable defaults, not performance guarantees; C-01/C-02 need clarification. |
+| D-08 | Webcam after screen-capture MVP; no audio, cloud storage, accounts, recording or multi-viewer. | Avoid CGO/OpenCV complexity before network proof. |
+| D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
+| D-10 | Optional measured RTT and viewer-local decode→render; no one-way E2E claim without tested clock synchronization. | Unsynchronized host timestamps cannot establish E2E latency. |
+| D-11 | Full-frame LZ4 baseline on each emitted sample versus actual video packet bytes in the same window; transport overhead separate. | Fair and honestly labeled comparison. |
+| D-12 (owner-confirmed) | Preserve pristine `../croc/` and separate planning-only documents; remove former custom code and experiments. Agree on a separate implementation workspace before creating code. | Owner decision 2026-11-15; previous implementation permission does not authorize modifying the reference checkout again. |
+
+### G0 blockers
+| ID | Status | Required evidence / decision |
+| --- | --- | --- |
+| B-01 | BLOCKED | Verify a secure duplex adapter compatible with `io.ReadWriteCloser`, independent of file-transfer lifecycle. No custom adapter currently exists. |
+| B-02 | BLOCKED | Repeated arbitrary payloads and reverse control over local LAN and a real relay; session longevity, policy, usage and bandwidth limits. |
+| B-03 | BLOCKED | PAKE, transcript binding, mutual confirmation, AEAD and protocol isolation for the actual adapter; wrong-password/protocol-confusion tests. Removed experiments do not validate new code. |
+| B-04 | BLOCKED | Feasible Windows build combining selected Go/Wails/croc/capture dependencies; `go version`, `wails3 doctor`, licenses and minimal compile. |
+| B-05 | BLOCKED / conditional | If croc internals are unsuitable, owner chooses explicit-commit fork, upstream contribution or separate authenticated transport/relay. Never silently substitute plaintext TCP. |
+
+Deferred owner choices: webcam versus macOS/Linux priority; installer format; self-hosted versus public demo relay; Vietnamese-only versus bilingual UI; named hardware/network before absolute performance acceptance; whether the academic demo requires raw-capture losslessness (`tau=0`) or tolerates skipped changes (`tau=4`). Both tau modes must preserve sender/viewer canonical equality.
+
+### Change control and risks
+Update the existing decision ID, affected product requirements, protocol, tests and roadmap together. Document backward incompatibility; do not reuse protocolVersion=1 after changing wire bytes.
+
+G0 must quantify internal API/fork maintenance costs, relay capacity/policy and security assumptions. Avoid low-latency/P2P claims without evidence. High-entropy LZ4 keys, local JPEG encoding and full-frame baseline computation require separate profiling; static desktops do not establish universal performance.
+
+## Pending clarifications
+These are pre-existing ambiguities, **not new approved behavior**. Resolve the affected item before implementation and update its decision/spec/tests together.
+
+| ID | Existing requirements | Proposed resolution to confirm |
+| --- | --- | --- |
+| C-01 | PRD maximum key interval 30; CONFIG allows 1–120, default 30; UI exposes advanced interval. | Decide whether 30 is only the default or the product maximum. Preserve CONFIG range and default until explicitly resolved. |
+| C-02 | Product lists two resolution pairs; CONFIG lists width/height independently. | Explicitly allow only (640,360) and (1280,720), rejecting mixed pairs. |
+| C-03 | Architecture listener is app-lifetime; PRD/AGENTS require bridge closure with session. | Define session-owned listener versus app service that recreates a listener per session; always close session connections/queues and stop delivery on Stop. |
+| C-04 | AGENTS validates Origin where available; test plan rejects missing/foreign Origin. | Inspect dev/packaged WebView Origin behavior and specify exact allowlist/missing-Origin policy. No permissive wildcard; mandatory token stays unchanged. |
+| C-05 | Accessibility listed as P2; UI already requires keyboard navigation, labels, focus and screen-reader acceptance. | Keep basic accessibility in MVP, defer enhancements; confirm priority explicitly. |
+
+## Principles
+1. **Transport is replaceable**, but its security cannot be weakened; no hard dependency on undocumented `comm.Comm` layout beyond an experimentally verified adapter.
+2. **Codec is a pure Go library** with no Wails, relay, capture, UI or disk dependency. Input images have deterministic packed RGBA normalization.
+3. Sender and receiver maintain separate canonical references but **must converge byte-for-byte** under a valid sequence; the network payload is not JPEG.
+4. **Real-time over backpressure**: bounded latest-only capture before encoder, sequential codec and network write; decode all deltas, optionally skip UI display snapshots.
+5. **Wails v3 not v2**: v3 services/events/app/window APIs only. Do not blindly port `runtime.EventsEmit`/v2 `app.go` examples.
+
+## Proposed future application layout
+
+Current layout is `../croc/` (pristine upstream reference) plus this documentation
+folder. The application tree below does not exist. Agree on a separate
+implementation repository/module before creating it; do not scaffold it inside
+the upstream reference checkout.
+
+```
+AGENTS.md
+README.md
+docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
+cmd/crocstream/main.go                 # Wails v3 bootstrap
+internal/app/                         # Wails service methods + app/session coordinator
+internal/session/                     # role/state machine and lifetime
+internal/capture/                     # Source interface, screen (P0), webcam (P1)
+internal/frame/                       # Packed RGBA normalization, dimensions
+internal/delta/                       # encoder, decoder, bounded reusable buffers
+internal/protocol/                    # typed header, binary config, packet parsing
+internal/transport/                   # duplex interface; croc adapter only after G0
+internal/bridge/                      # loopback authenticated binary WS to WebView
+internal/telemetry/                   # capture/codec/protocol counters and 1s windows
+frontend/src/{pages,components,hooks,types}/
+frontend/package.json
+build/                                 # Wails build assets
+```
+Adjust the paths to the actual initialized Wails v3 template; app structure is conceptual, not a license to invent outdated framework methods.
+
+## Suggested Go boundaries
+```
+// Pseudocode interfaces, not a claim about upstream croc's actual APIs.
+type Duplex interface { io.Reader; io.Writer; io.Closer }
+type TransportFactory interface {
+    Host(ctx context.Context, options HostOptions) (listener Listener, err error)
+    Join(ctx context.Context, invite string) (duplex Duplex, err error)
+}
+type Listener interface {
+    Invitation() string
+    Accept(ctx context.Context) (Duplex, error)
+    Close() error
+}
+type Source interface {
+    Open(ctx context.Context, cfg CaptureConfig) error
+    Next(ctx context.Context) (Frame, error)
+    Close() error
+}
+type Frame struct { Width, Height int; RGBA []byte; CapturedAt time.Time }
+```
+Implement transport adapter only from real investigated upstream API; session must support cancellation even when read/write blocked via closable connections/deadlines as supported.
+
+### Transport lifecycle requirements
+Host preparation must expose an invitation before waiting for a joiner; it must
+not report a peer-authenticated stream at that stage. Accept/Join should return
+the duplex stream only after mutual authentication. Define context ownership,
+blocked-I/O cancellation, deadlines, close semantics and bounded buffering.
+Keep raw sockets and traffic keys private. These are proposed requirements,
+not exported APIs in the current upstream checkout.
+
+## Sender pipeline
+`Capture Screen` → `packed RGBA` → `latest-only queue (1–2)` → `Delta Encoder (canonical ref)` → `Protocol writer (single writer; CONFIG+KEY+DELTA)` → `secure Duplex transport`.
+
+A **separate** preview sampling path accepts captured frames and may encode JPEG for local WebView. Preview frame processing must not block media writer. It is allowed to drop intermediate previews; it must not mutate reference state. Encoder writes frame ID only for video packets selected/emitted; if sending fails terminate session.
+
+## Viewer pipeline
+`Secure Duplex` → `io.ReadFull header+bounded payload` → `Protocol validator` → `LZ4 decoder + reference buffer` → `jpeg preview encoder (local-only)` → `local WebSocket` → `React canvas`.
+
+Receiver processing validates entire DELTA before touching canonical reference. Reader cannot skip codec packets. Render bridge uses latest-only output buffer when UI is slower. Apply lossless codec before UI JPEG sampling to retain valid reference.
+
+## Control plane
+- The same duplex channel allows viewer `REQUEST_KEYFRAME` and either side `PING/PONG` concurrently. One **serialized writer goroutine per endpoint** receives outbound video/control packets from bounded queues; priority: END/PLI/PONG before video (while preserving valid ordering and encoder state).
+- Send config, keyframe, and periodic keys; viewer requests resync when invalid. PLI only signals sender's **next** emitted KEY, not an immediate copy of a stale raw buffer. PLI is rate-limited.
+- Wails service methods: `ListDisplays`, `StartBroadcast`, `StopBroadcast`, `JoinSession`, `LeaveSession`, `GetBridgeEndpoint`, `GetStats`. Their exact signatures derive from v3 app bindings and test doubles; use explicit success/error states. Events carry **only statuses/statistics**, never Base64 frames.
+
+## Local WebView media bridge
+- Bind **only** `127.0.0.1:<OS-assigned-port>`; require per-launch 128-bit+ cryptographically random bearer token on WebSocket upgrade; reject invalid/missing token and unexpected Origin. The earlier app-lifetime listener requirement conflicts with session closure (C-03); missing-Origin policy awaits WebView observations (C-04).
+- Provide token + ephemeral URL only via trusted app binding to own frontend; do not expose in logs or telemetry. Explicitly close upgrade connections on Stop/exit; bound send queue (1-2), per-client caps and WebSocket write deadline.
+- Distinguish `/preview` and `/viewer` channels/roles, or use one tagged binary envelope with validated role; no accidental cross-role data mixing. **Frontend media bytes are independent encoded JPEG frames** (`image/jpeg`) for `createImageBitmap` in this MVP; `createImageBitmap` does **not** parse raw RGBA without a format-specific wrapper. Stop and clear canvases when session ends; close bitmap in `finally` after draw.
+- Wails v3 origin may differ in dev vs packaged; test both without permissive `Origin: *` behavior.
+- Frontend: `binaryType='blob'`, `createImageBitmap(blob)`, draw into `useRef<HTMLCanvasElement>` with fitted letterboxing; always `bitmap.close()` in `finally`. Keep newest queued display image only and close stale bitmaps.
+- On unmount/Stop/Leave, close WS and listeners, invalidate outstanding decode work with generation tokens and clear canvas. Failed image decode reports `Preview unavailable` without collapsing media transport. Lifecycle/Origin ambiguities are tracked in C-03/C-04.
+
+## Buffers, concurrency, cancellation
+- Use `context.Context` for all worker loops and `errgroup` or WaitGroup for bounded shutdown. Explicit buffer ownership: pool item cannot be released while encoder, decoder, websocket or image encoding still refers to it. `sync.Pool` only for profiled hot paths, not as an unconditional requirement.
+- Avoid shared mutable frame buffers between capture/codec/render without immutable handoff or copy. Decode stage must not mutate reference before all checks succeed.
+- Single writer serializes frames, PLI, PING/PONG and END. Control priority must preserve CONFIG-before-KEY ordering and prevent video after END; cancellation unblocks blocked I/O.
+- Verify lifecycle and concurrency using [TEST_PLAN](TEST_PLAN.md#c-session-backpressure-concurrency).
+
+## Transport feasibility is G0
+- Inspect the pinned `github.com/schollz/croc/v11` commit and exact cryptographic/relay handshakes. Do not assume using `crypt.New()` alone reproduces croc security or that grabbing `comm.Comm` automatically bypasses file metadata safely.
+- Prove same-machine two-process persistent duplex stream, then two machines via expected relay, including reverse control. Report measured limits, license/attribution and security model. If impossible/unsafe, stop and propose options — no silent fallback to unencrypted plain TCP.
+
+## Packaging and deployment
+- Target Wails v3.1.0, toolchain from tested upstream `go.mod` (provisionally Go 1.27.3+), Windows x64 initially. Verify `wails3 doctor`, native screen-capture permission, WebView2, firewall/relay usage and signed/unsigned installer behavior. Tests on actual macOS/Linux and webcam hardware are deferred to subsequent phases.
+
+## Media protocol v1
+**Normative draft, not deployed.** Application framing runs inside an authenticated/encrypted transport; stock croc clients do not understand it. The transport record envelope remains to be selected at G0. Changing wire bytes requires a protocol revision and tests.
+
+### Stream and header
+One reliable ordered bidirectional byte stream per session, one receive parser and one serialized writer per endpoint. Reverse keyframe requests share that duplex stream.
+
+Packet = exactly **18-byte header + PayloadLength bytes**, BigEndian, no padding. Use `io.ReadFull` for both. Mid-header/payload EOF is fatal; never scan for a later magic byte. Validate type, session/configuration and type-specific lengths **before allocation**. `MAX_PAYLOAD = 8,388,608` (8 MiB); separately cap decompression.
+
+| Offset | Bytes | Field | Validation |
+| --- | ---: | --- | --- |
+| 0 | 1 | Magic uint8 | `0xC5` |
+| 1 | 1 | Type uint8 | One of the types below |
+| 2 | 4 | FrameID uint32 | 1-based video IDs; 0 for control/END |
+| 6 | 8 | TimestampMs int64 | Broadcaster Unix ms for media; 0 for control/END; not a synchronized latency clock |
+| 14 | 4 | PayloadLength uint32 | Exact following byte count, <=8 MiB plus type-specific bounds |
+
+| Type | Direction | FrameID | Payload / rules |
+| --- | --- | --- | --- |
+| `KEYFRAME 0x01` (KEY) | broadcaster → viewer | >=1 | Independent LZ4 frame of full packed RGBA; first video always KEY id1 |
+| `DELTA 0x02` | broadcaster → viewer | >=1 | Independent LZ4 frame of tile record; valid prior reference and sequential video ID required |
+| `REQUEST_KEYFRAME 0x03` (PLI) | viewer → broadcaster | 0 | Empty; max 1/s, ignore excess; next emitted video must be KEY |
+| `SESSION_CONFIG 0x04` (CONFIG) | broadcaster → viewer | 0 | Exactly 11 bytes; once immediately after handshake, before video; reconnect is a new session |
+| `PING 0x05` | either | 0 | 8-byte arbitrary nonce |
+| `PONG 0x06` | either | 0 | Promptly echo nonce; initiator measures monotonic RTT |
+| `END 0xFF` (EOS) | either | 0 | Empty; best-effort delivery; also honor EOF/cancellation |
+
+Unknown types are fatal in v1; no silent fallback.
+
+### SESSION_CONFIG
+| Offset | Bytes | Field | Value |
+| --- | ---: | --- | --- |
+| 0 | 1 | ProtocolVersion uint8 | 1 |
+| 1 | 2 | Width uint16 | 640 or 1280 |
+| 3 | 2 | Height uint16 | 360 or 720 |
+| 5 | 1 | TileSize uint8 | 32 |
+| 6 | 1 | PixelFormat uint8 | 1 = packed RGBA8888, alpha=255 |
+| 7 | 1 | Compression uint8 | 1 = LZ4 **frame**, not block API |
+| 8 | 1 | FPS uint8 | 15, 24 or 30 desired; actual rate measured |
+| 9 | 2 | KeyInterval uint16 | 1–120, default 30; C-01 unresolved |
+
+Reject unsupported values; no silent downscale/rescale. Resolution pairing is tracked by C-02. Checked `Width*Height*4 <= MAX_RAW = 3,686,400` (1280×720×4). Larger formats require a new protocol revision and bounds.
+
+### Canonical image and compression
+- Normalize native capture stride into contiguous row-major `R,G,B,A`, length `Width*Height*4`, alpha forced to 255 without premultiplied alpha. Any RGB color transformation must be deterministic and identical in tests. Resolution cannot change within a session.
+- KEY compresses exact canonical RGBA into one self-contained LZ4 frame. Decoded length must equal `Width*Height*4`; reject overrun, underrun and trailing unsupported data. No JPEG/WebP network reference.
+- DELTA compresses the entire record below as one self-contained LZ4 frame. Compression is independent per packet; reconstruction still needs the canonical reference.
+- Skipped sub-threshold tiles leave sender reference unchanged. Compare new capture against **transmitted canonical reference**, not the last capture; equality is between peers, not necessarily raw capture when tau>0.
+
+### DELTA record before compression
+```text
+uint16 dirtyCount (BE)
+repeat dirtyCount times, strictly increasing tileIndex:
+    uint16 tileIndex (BE)
+    uint8 tileRGBA[effectiveTileWidth * effectiveTileHeight * 4]
+```
+`tileColumns=ceil(Width/32)`, `tileRows=ceil(Height/32)`, `tileIndex=tileY*tileColumns+tileX` (zero-based).
+For each tile: `x=tileX*32`, `y=tileY*32`, `w=min(32,Width-x)`, `h=min(32,Height-y)`. Pack tile rows without a per-tile length field; config/index determine size. There are 920 tiles (40×23) at 1280×720 and 240 (20×12) at 640×360. Empty DELTA is two zero count bytes before compression.
+
+- Require `dirtyCount<=tileCount`, valid strictly ascending unique indices, exact parsed length and no trailing bytes.
+- Decompressed cap: `2 + 2*tileCount + Width*Height*4` with overflow checks; stop streaming decompression on overshoot.
+- Tile RGB MAE = `sum(|a-b|)/(3*pixelCount)`, excluding alpha; dirty iff `MAE > tau`, default 4.
+- If `dirtyCount/tileCount > 0.65`, emit lossless KEY. Optional cost-aware fallback may use KEY when encoded DELTA >= encoded KEY, only if both candidates were actually measured.
+- After DELTA, update only transmitted dirty tiles; after KEY, replace the entire canonical reference. Commit reference/FrameID only after acceptance by the session writer. A network write failure terminates the session; never continue from uncertain state.
+
+### Ordering and recovery
+1. CONFIG then KEY id1 after authentication. Receiver has no reference until a valid KEY decodes.
+2. KEY with `FrameID>lastVideoID` independently resets reference, including across ID gaps. Reject non-increasing IDs/replay within a session.
+3. DELTA requires a reference and `FrameID=lastVideoID+1`. Validate the full record before mutation or use a staged buffer. On error/gap retain last good image/reference bytes, mark reference invalid, issue rate-limited PLI and await KEY.
+4. At most one emitted video per encoded capture tick; only emitted frames acquire IDs. Drop/replace raw captures before encoding, never intermediate DELTA packets or decode operations. UI may skip display snapshots.
+5. For interval 30, scheduled KEY IDs are `1,31,61,...`; PLI/dirty fallback may force earlier KEY. Near uint32 overflow terminate and establish a fresh authenticated session; never wrap to 0.
+6. On close: best-effort END, cancel workers, close sockets/readers/writers, release screen/camera, clear in-memory codephrase/token. EOF, timeout or cryptographic failure means Disconnected, with no silent reuse of delta state.
+7. Bound latest-only capture to 1–2 samples; encoder maintains one canonical sequence and sender serializes writes. No unbounded queues.
+
+Treat even decrypted input as untrusted. Malformed framing, directions, sizes, versions and compressed data must yield bounded errors, never panic or uncontrolled allocation. Room codes, frames, keys and tokens must not enter plaintext logs/telemetry or frame storage. Reuse verified upstream PAKE/E2E mechanisms rather than inventing a handshake. Exact byte fixtures and parser/fuzz obligations are in [TEST_PLAN](TEST_PLAN.md#a-protocol-tests-unit--fuzz-no-network-required).
+
+## Telemetry contract
+- `CaptureStats`: captured/queued/dropped samples; `CodecStats`: types, compressed/raw sizes, encode/decode CPU duration; `ProtocolStats`: custom-wire video versus baseline; `TransportStats`: measured RTT and route only when observable.
+- Actual video bytes = sum of `18 + compressed payload length` for emitted KEY/DELTA. Exclude CONFIG, PLI/PING/PONG and crypto/relay/network overhead. Label application-level video rate, not NIC traffic.
+- Full-frame baseline = independently LZ4-encode each **same emitted sample** as a full frame with the same codec settings, plus 18-byte header. Align actual/baseline in the same rolling 1-second window.
+- `savingPct = 100*(1-sum(actualBytes)/sum(baselineBytes))`; may be negative, undefined when denominator is zero. Include baseline CPU cost in benchmarks; label estimates/sampling explicitly.
+- `KiB/s = bytes_per_1s/1024` (do not label this KB/s). FPS counters separately track capture, emission, decode and render. Key/Delta mean packet sizes consistently include the header.
+- TimestampMs is broadcaster wall clock; do not subtract an unsynchronized viewer clock for E2E latency. Ping/Pong uses initiator monotonic time; decode→render is viewer-local. Unmeasured latency is N/A; MVP hides true E2E.
+
+## Sources and licensing
+The following external observations were recorded on 2026-11-13; the local commit was recorded on 2026-11-15. They are background references, **not fresh release checks or proof of installed tools**. Recheck APIs, build requirements and licenses against the pinned revision at G0.
+
+| Reference | URL / recorded context |
+| --- | --- |
+| Pinned croc source | https://github.com/schollz/croc/tree/552f40fd2d7593316118370bec0a93478d48e715 |
+| Upstream | https://github.com/schollz/croc — MIT; README describes P2P with relay fallback |
+| Releases | https://github.com/schollz/croc/releases — v11.6.5 recorded as latest, released 2026-11-07 |
+| Module | https://github.com/schollz/croc/blob/main/go.mod — `github.com/schollz/croc/v11`, Go 1.27.3 when checked; main is mutable |
+| Packages | https://pkg.go.dev/github.com/schollz/croc/v11/src — comm/crypt/codephrase/pakekey/sshshare existence does not prove duplex integration |
+| Wails v3 release | https://wails.io/blog/wails-v3-released/ — v3.0.0 recorded 2026-10-26 |
+| Wails changelog | https://wails.io/changelog/ — v3.1.0 recorded 2026-11-01 |
+| Installation | https://wails.io/quick-start/installation/ |
+| v2→v3 migration | https://v3.wails.io/migration/v2-to-v3/ — incompatible bindings/events |
+| Codex AGENTS discovery | https://learn.chatgpt.com/docs/agent-configuration/agents-md |
+
+Verify croc MIT license/notices and licenses of all selected dependencies. Preserve attribution in the redistributed app and any fork; do not copy code of unknown licensing.
