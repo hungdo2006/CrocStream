@@ -2,11 +2,11 @@
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
 
-Hiện repository chỉ chứa tài liệu thiết kế và kế hoạch kiểm chứng, chưa có mã ứng
-dụng CrocStream. Thư mục `crocstream-docs/` trong bố trí cục bộ bên dưới chính là
-gốc repository này; `../croc/` là bản upstream tham chiếu riêng, không được đưa
-vào repository. Khi clone ở máy khác, có thể đặt tên thư mục là `crocstream-docs`
-để giữ nguyên các đường dẫn tham chiếu trong tài liệu.
+Repository chứa tài liệu thiết kế CrocStream và bản mã nguồn upstream croc trong
+[`croc/`](croc/README.md). Chưa có mã ứng dụng chia sẻ màn hình CrocStream.
+Thư mục `crocstream-docs/` trong bố trí cục bộ bên dưới là gốc repository này.
+Bản upstream được đưa vào dưới dạng snapshot mã nguồn đầy đủ, không phải submodule;
+xem [nguồn gốc và giấy phép](UPSTREAM.md).
 
 ## Bố trí hiện tại
 
@@ -15,9 +15,11 @@ Theo lựa chọn của chủ dự án ngày 2026-11-15:
 ```text
 D:\CrocStream\
 ├── croc\                 # Mã nguồn upstream nguyên gốc và metadata Git
-└── crocstream-docs\       # Chỉ tài liệu định hướng CrocStream
+└── crocstream-docs\       # Repository hungdo2006/CrocStream
     ├── README.md
     ├── AGENTS.md
+    ├── UPSTREAM.md
+    ├── croc\             # Snapshot upstream giữ nguyên nội dung
     └── docs\
 ```
 
@@ -57,7 +59,7 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 ## Cách tiếp tục
 
 Đọc `AGENTS.md`, rồi `PRD → ARCHITECTURE → TEST_PLAN → ROADMAP`.
-Giữ `../croc/` nguyên gốc để tham chiếu. Khi được giao triển khai, thống nhất vị trí
+Giữ `croc/` và checkout riêng `../croc/` nguyên gốc để tham chiếu. Khi được giao triển khai, thống nhất vị trí
 repository/module CrocStream riêng trước khi tạo code hoặc cài toolchain. Mọi đường
 dẫn `docs/` trong bộ này tính từ `crocstream-docs/`; cấu trúc ứng dụng trong tài liệu
 kiến trúc là đề xuất, chưa tồn tại.

@@ -11,7 +11,7 @@
 - [Sources and licensing](#sources-and-licensing)
 
 ## Reference source
-The reference is `../croc/` at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. No CrocStream implementation or historical experiment evidence is retained.
+The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md); the separate local checkout remains unchanged. No CrocStream implementation or historical experiment evidence is retained.
 
 Source inspection, not runtime feasibility evidence:
 - `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
@@ -37,7 +37,7 @@ Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisiona
 | D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
 | D-10 | Optional measured RTT and viewer-local decode→render; no one-way E2E claim without tested clock synchronization. | Unsynchronized host timestamps cannot establish E2E latency. |
 | D-11 | Full-frame LZ4 baseline on each emitted sample versus actual video packet bytes in the same window; transport overhead separate. | Fair and honestly labeled comparison. |
-| D-12 (owner-confirmed) | Preserve pristine `../croc/` and separate planning-only documents; remove former custom code and experiments. Agree on a separate implementation workspace before creating code. | Owner decision 2026-11-15; previous implementation permission does not authorize modifying the reference checkout again. |
+| D-12 (owner-confirmed) | Preserve pristine upstream reference and separate planning documents; remove former custom code and experiments. Publish the upstream snapshot in `croc/` alongside documents as subsequently requested. Agree on a separate implementation workspace before creating code. | Owner decisions 2026-11-15; source publication does not authorize modifying the reference checkout or snapshot. |
 
 ### G0 blockers
 | ID | Status | Required evidence / decision |
@@ -75,7 +75,7 @@ These are pre-existing ambiguities, **not new approved behavior**. Resolve the a
 
 ## Proposed future application layout
 
-Current layout is `../croc/` (pristine upstream reference) plus this documentation
+Current layout is `croc/` (pristine upstream reference snapshot) plus this documentation
 folder. The application tree below does not exist. Agree on a separate
 implementation repository/module before creating it; do not scaffold it inside
 the upstream reference checkout.
