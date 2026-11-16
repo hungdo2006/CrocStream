@@ -5,15 +5,19 @@
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
 
-**Status:** desktop screen-sharing prototype in development; [G0 feasibility PASS](../app/G0_CLOSEOUT.md), with [G1 framing/config PASS](../app/G1_CLOSEOUT.md) in `app/internal/protocol`. No screen-sharing application is runnable yet. The repository contains pristine upstream `croc/`, planning `docs/`, isolated G0 artifacts and the pure-Go application module in `app/` (D-12). Local/remote >600s secure duplex, minimal Windows native build/runtime and dependency-notice review passed at G0. The latest G0 network measured 48–51ms mean application RTT; old-network limits remain documented. Real capture, media/UI, performance and packaging acceptance belong to later gates. C-01/C-02 were owner-confirmed for G1 on 2026-11-16; other provisional choices remain subject to their checkpoints. Paths are repository-root relative.
+**Status:** desktop screen-sharing prototype in development. **G0–G3 PASS**: transport feasibility, framing/config, codec/telemetry and Windows local preview ([G3 evidence](../app/G3_CLOSEOUT.md)). Remote sharing/pairing remains G4. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). The G0 network's measured RTT and limits remain historical transport evidence, not screen-sharing latency. C-01/C-02 and G3's C-03/C-05 choices were owner-confirmed; C-04 uses observed WebView Origins. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
 **G2 update (2026-11-16): [codec/telemetry PASS](../app/G2_CLOSEOUT.md).**
 Pure-Go normalization, lossless KEY/tile DELTA, canonical-reference validation
-and rolling telemetry are implemented/tested on synthetic data. Capture,
-preview UI, secure application integration and full-app performance acceptance
-remain later gates. The approved LZ4 dependency and notices are pinned in `app/`.
+and rolling telemetry are implemented/tested on synthetic data. The approved
+LZ4 dependency and notices are pinned in `app/`. Actual capture/preview work is
+tracked in G3 below; secure app integration remains G4.
+
+**G3 implementation:** a runnable Windows local preview now exists; see
+[G3 evidence](../app/G3_CLOSEOUT.md) and [build/run](../app/README.md#g3-desktop-preview--build-and-run).
+Remote broadcaster/viewer behavior below remains the product target for G4/G5.
 
 ## Product outcome
 Two separate desktop app processes on two Windows 10/11 x64 machines can join a secret-code 1:1 session. Broadcaster shares one screen; Viewer watches live output reconstructed from a lossless Keyframe + selected dirty tiles. Users can start/stop safely and compare bandwidth against a fair whole-frame compressed baseline.
@@ -25,7 +29,7 @@ Two separate desktop app processes on two Windows 10/11 x64 machines can join a 
 | --- | --- | --- |
 | P0 MVP | Two roles, 1:1, screen capture, 1280×720/640×360, 15/24/30 FPS selector, fixed resolution per session, codephrase join, lossless KEY and tile DELTA, safe stop, errors, core telemetry, Windows package | audio, recording, cloud, account, multi-user |
 | P1 | Webcam source, capture device switch when stopped, reliable settings, latency tooltips, relay configuration/self-hosted demo | webcam must not block P0 |
-| P2 | macOS/Linux packaging + capture permissions, accessibility, optional detailed benchmarks | cross-platform success is not claimed without real builds |
+| P2 | macOS/Linux packaging + capture permissions, enhanced accessibility, optional detailed benchmarks | cross-platform success is not claimed without real builds |
 
 The screen source is a real display chosen from enumerated displays, with user consent; do not capture screens before Start. For Webcam P1, report missing camera/permission, release device on Stop, test separately per OS.
 
@@ -81,7 +85,14 @@ Croc's persistent duplex stream viability, relay usage/capacity, security handsh
 ### Design and screens
 Desktop-first dark layout: default ~1150×760, minimum ~960×640, scrolling at smaller sizes. Palette: `slate-950` background, `slate-900` cards, `indigo-500` primary, `emerald-500` connected, `amber-400` waiting/recovering, `rose-500` error/stop. System font; `font-mono tabular-nums` for metrics/code. Preserve 16:9 canvas with letterboxing, never stretch.
 
-High-contrast focus rings, full keyboard navigation and accessible labels remain explicit UI requirements. Their delivery priority versus the P2 accessibility entry is unresolved (C-05).
+High-contrast focus rings, keyboard navigation, accessible labels and status
+announcements are MVP requirements (C-05, owner-confirmed for G3).
+Enhanced accessibility remains P2.
+
+G3's runnable screen is explicitly **Local preview**, with
+`Idle → Preparing → Previewing → Stopping → Idle` and Error. It captures only
+after Start, does not advertise Live/remote connection, and displays only
+measured capture/JPEG/render metrics. Broadcaster/viewer pairing belongs to G4.
 
 | Screen | Layout and controls |
 | --- | --- |

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://v3.wails.io/schemas/wails.v3.json
+version: 3
+project:
+  name: crocstream
+  product_name: CrocStream
+  company: CrocStream
+  identifier: local.crocstream.desktop
+  version: 0.0.1
+frontend:
+  directory: frontend
+  install: [npm, ci, --ignore-scripts, --no-audit, --no-fund]
+  build: [npm, run, build]
+  dev: [npm, run, dev]
+  output: frontend/dist
+build:
+  output: bin
+  trim_path: true
+  strip: true

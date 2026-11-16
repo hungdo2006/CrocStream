@@ -28,12 +28,13 @@ Theo cập nhật 2026-11-16:
 | --- | --- |
 | `croc/` | Snapshot upstream để khảo sát; giữ nguyên mã nguồn và giấy phép |
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
-| `app/` | Có G1 framing/config, G2 codec delta + telemetry, báo cáo/tooling/PoC G0; chưa có UI/capture |
+| `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture + local preview Wails và báo cáo/tooling/PoC G0 |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
-| Ứng dụng và benchmark | Chưa có ứng dụng chia sẻ màn hình hoặc benchmark media |
+| Ứng dụng và benchmark | Local preview Windows G3 PASS, 720p/≈24 FPS trong 10 phút; remote session/full-app benchmark thuộc G4+ |
 
-**Chưa có lệnh chạy ứng dụng chia sẻ màn hình CrocStream.** Có
-[lệnh chạy PoC G0](../app/g0/poc/README.md) để thử dữ liệu tổng hợp.
+**Có ứng dụng local preview**, chưa chia sẻ tới máy thứ hai.
+[Lệnh build/chạy G3](../app/README.md#g3-desktop-preview--build-and-run);
+[PoC G0](../app/g0/poc/README.md) dùng riêng để thử transport dữ liệu tổng hợp.
 Các lệnh test/build package G1 nằm trong [app README](../app/README.md).
 Chạy được croc upstream cũng không chứng minh ứng dụng chia sẻ màn hình đã
 hoạt động. Các lệnh desktop/frontend trong Test Plan dành cho những gate sau.
@@ -52,6 +53,8 @@ gốc với RTT trung bình 48–51ms; kết quả mạng cũ vẫn được gi�
 [G1 closeout](../app/G1_CLOSEOUT.md) ghi bằng chứng framing/config và bước G2.
 [G2 closeout](../app/G2_CLOSEOUT.md) ghi bằng chứng codec/telemetry và benchmark
 ảnh tổng hợp; chưa phải benchmark chia sẻ màn hình thật.
+[G3 closeout](../app/G3_CLOSEOUT.md) ghi kiểm chứng capture/preview Windows,
+Origin thực tế và vòng đời tài nguyên.
 
 ## 3. Hình ảnh đi từ máy phát tới máy xem thế nào?
 
@@ -151,8 +154,9 @@ KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm 
 ## 7. Bước tiếp theo và cách báo cáo
 
 G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
-framing/config thuần Go; G2 đã triển khai codec delta và telemetry.
-Xem [tiến độ](ROADMAP.md#current-progress) và [bằng chứng G2](../app/G2_CLOSEOUT.md).
+framing/config thuần Go; G2 đã triển khai codec delta và telemetry;
+G3 đã có capture và preview cục bộ. Xem [tiến độ](ROADMAP.md#current-progress)
+và [bằng chứng G3](../app/G3_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh
 → bản Windows bàn giao. Chi tiết và điều kiện chuyển bước ở [bảng gate](ROADMAP.md#gates).

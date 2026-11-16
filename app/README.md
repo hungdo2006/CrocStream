@@ -32,8 +32,9 @@ foreach ($target in @('FuzzDecodeHeader', 'FuzzDecodeConfig', 'FuzzDecodePacket'
 }
 ```
 
-There is no screen-sharing executable yet. `go build ./...` checks the library
-on the current platform; the desktop executable belongs to later gates.
+The G3 executable provides **local preview only**. Remote sharing/pairing starts
+in G4. See the desktop build/run instructions below; `go build ./...` alone
+does not regenerate frontend assets or Wails bindings.
 
 ## Protocol API and ownership
 
@@ -80,7 +81,8 @@ access and handles END in either direction by stopping the whole session.
 Closing only one half is not application-level shutdown.
 
 G2 supplies bounded LZ4 decoding, canonical reference bytes, tile validation
-and telemetry (below). G4 supplies the actual secure transport integration, PLI
+and telemetry (below). G3 supplies Windows capture, local bridge and the
+React/Wails preview; G4 supplies the actual secure transport integration, PLI
 limiting, Ping/Pong timing, serialized queues and session-wide lifecycle.
 The G1 tests use synthetic opaque payloads and explicit mock codec acceptance;
 they do not claim successful media decoding.
@@ -193,3 +195,74 @@ go -C app test ./internal/delta -run '^$' -bench '^BenchmarkCodec$' -benchmem -b
 The benchmark alternates prebuilt synthetic inputs, includes encode, full
 baseline and decode, and excludes capture/transport/UI. Results are not a
 screen-sharing FPS or end-to-end latency acceptance test.
+
+## G3 desktop preview — build and run
+
+Requirements verified on this Windows machine: Go 1.27.4, Wails 3.1.0,
+Node 24.22.1/npm 12.2.1, WebView2 157.0.4341.46. Existing tool setup is
+`g0/Use-Toolchain.ps1`; no frontend global tool install is needed.
+
+From `app/`:
+
+```powershell
+. .\g0\Use-Toolchain.ps1
+$env:WAILS_EXP_USE_WAKE='1'
+wails3 build
+.\bin\crocstream.exe
+```
+
+Wails 3.1.0's `wails.yaml` manifest route requires the process-local Wake
+opt-in above. It installs locked npm dependencies with `npm ci --ignore-scripts`,
+generates service bindings, runs the TypeScript/Vite build, generates Windows
+resources and builds `bin/crocstream.exe`. Generated files live under
+`.wails/`, `frontend/bindings`, `frontend/dist` and `bin`, all ignored.
+`frontend/dist-bootstrap.txt` allows Go package analysis for binding generation
+before the first frontend build. Build order is important on a fresh checkout.
+
+Development:
+
+```powershell
+. .\g0\Use-Toolchain.ps1
+$env:WAILS_EXP_USE_WAKE='1'
+wails3 dev -host 127.0.0.1 -port 9245
+```
+
+The fixed port is part of the tested dev-Origin contract; do not casually
+change it without updating/testing that contract. Ctrl+C ends the dev watcher;
+closing the app window alone leaves the watcher active by Wails design.
+Dev uses a fresh CSP nonce for Vite's React-refresh bootstrap; the packaged
+HTML permits only self-hosted scripts and has no dev nonce/debug port.
+
+Operation:
+
+1. Choose a display and 1280×720 or 640×360 at 15/24/30 FPS.
+2. **Bắt đầu preview** is explicit consent to capture that display. GDI has
+   no separate OS picker prompt; no screen read happens at app startup.
+3. Preview is JPEG on this computer only; render/capture/JPEG FPS are measured.
+   Window source aspect ratio is retained with black bars as needed.
+4. **Dừng preview** clears canvas and closes native capture, HTTP listener and
+   WebSocket. Settings unlock after cleanup. A timeout remains Stopping,
+   reports the delay and prevents creating an overlapping session.
+
+Token and ephemeral endpoint are returned only through the trusted Wails
+Start binding. The token is placed in a WebSocket subprotocol offer, never a
+URL/query. Bridge checks exact Host, exact Origin and token before upgrade,
+serves only `/preview`, caps sockets/clients/queues and closes on Stop.
+Production Origin is `http://wails.localhost`; dev Origin is
+`http://wails.localhost:9245`. Missing, null and foreign Origins are rejected.
+
+Frontend checks, after binding generation:
+
+```powershell
+cd frontend
+npm ci --ignore-scripts --no-audit --no-fund
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+```
+
+Actual capture test/probe/UI automation: [g3/README](g3/README.md).
+Evidence, command failures and measured limits: [G3_CLOSEOUT](G3_CLOSEOUT.md).
+No frames are written to disk. Numeric diagnostics exclude WebView2 subprocess
+memory; they must not be presented as total system/application-tree RSS.

@@ -1,0 +1,2 @@
+Run wails3 build (WAILS_EXP_USE_WAKE=1) to generate frontend/dist before running
+the packaged application. This non-HTML placeholder permits first binding generation.

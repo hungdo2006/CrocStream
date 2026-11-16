@@ -1,0 +1,1066 @@
+[
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/coder/websocket",
+        "version":  "v1.8.14",
+        "file":  "LICENSE.txt",
+        "sha256":  "CC0975A5F6305145BDD7B41CE9479632FDAC3870E6AC4281F28017F18C767C4E"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/go-ole/go-ole",
+        "version":  "v1.3.0",
+        "file":  "LICENSE",
+        "sha256":  "D883DBCA28769FF23DD4368A8EDB7AD9F9F23A8F86ADDE2875C6E41A828AAC62"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/wailsapp/wails/v3",
+        "version":  "v3.1.0",
+        "file":  "LICENSE",
+        "sha256":  "CEDE95C28E6E9D67D1C1E49E8BA3C20250C7D4080C3FACA1579B6732327AE40D"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/wailsapp/wails/v3",
+        "version":  "v3.1.0",
+        "file":  "internal\\go-common-file-dialog\\LICENSE",
+        "sha256":  "2C09E92358414EF4DA9739026ACADFBD0663118E590238B306D70CCF60DB3159"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/wailsapp/wails/v3",
+        "version":  "v3.1.0",
+        "file":  "internal\\templates\\ios\\frontend\\public\\puppertino\\LICENSE",
+        "sha256":  "A82239687742375C71EF1CC05B9351F86DB937B0DBA8120C1F0A02E2B444508B"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "github.com/wailsapp/wails/v3",
+        "version":  "v3.1.0",
+        "file":  "internal\\webview2\\webviewloader\\LICENSE",
+        "sha256":  "E2C9290019954C3C3664428B73B34186B2BB8FAAD9B2C50605D7CDD9DF5C7177"
+    },
+    {
+        "ecosystem":  "go",
+        "name":  "golang.org/x/sys",
+        "version":  "v0.50.0",
+        "file":  "LICENSE",
+        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@cacheable/memory",
+        "version":  "2.2.0",
+        "file":  "LICENSE",
+        "sha256":  "465E8DA349D50D8512E4A0E9B26D2BEE50392C394F17EDAA3BE6E0DF7C2B27AD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@cacheable/utils",
+        "version":  "2.5.0",
+        "file":  "LICENSE",
+        "sha256":  "465E8DA349D50D8512E4A0E9B26D2BEE50392C394F17EDAA3BE6E0DF7C2B27AD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint-community/eslint-utils",
+        "version":  "4.10.1",
+        "file":  "LICENSE",
+        "sha256":  "FCF6EABF68CA96988A6B506B4FDC6CC32535D80EB2E11C79724AF5AC6F50262B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "eslint-visitor-keys",
+        "version":  "3.4.3",
+        "file":  "LICENSE",
+        "sha256":  "D8BF34FF6D190640A01E7704AD78253FC181BC128949D71273FBBAA12F33C0B4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint-community/regexpp",
+        "version":  "4.12.3",
+        "file":  "LICENSE",
+        "sha256":  "FCF6EABF68CA96988A6B506B4FDC6CC32535D80EB2E11C79724AF5AC6F50262B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint/config-array",
+        "version":  "0.23.6",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint/config-helpers",
+        "version":  "0.7.0",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint/core",
+        "version":  "1.2.1",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint/object-schema",
+        "version":  "3.0.5",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@eslint/plugin-kit",
+        "version":  "0.7.3",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@humanfs/core",
+        "version":  "0.19.2",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@humanfs/node",
+        "version":  "0.16.8",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@humanfs/types",
+        "version":  "0.15.0",
+        "file":  "package.json license field only",
+        "sha256":  "1B849AA49814883FC0E70CA461C9FACCB675ED1C801E784F1858E75E3B36EEC5"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@humanwhocodes/module-importer",
+        "version":  "1.0.1",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@humanwhocodes/retry",
+        "version":  "0.4.3",
+        "file":  "LICENSE",
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@isaacs/nonrecursive-glob-match",
+        "version":  "1.1.0",
+        "file":  "LICENSE.md",
+        "sha256":  "8A1AF140FDFBF5AFD3DF27F7E662F989C5B963A300020DFAFCE42033CAE9E004"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@jridgewell/resolve-uri",
+        "version":  "3.1.3",
+        "file":  "LICENSE",
+        "sha256":  "B8778B155BFDE5A28B023A558753C0FA058A52BB9DE35C343C250BE1BBCDEDAB"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@jridgewell/sourcemap-codec",
+        "version":  "1.6.0",
+        "file":  "LICENSE",
+        "sha256":  "769D154FBDE32A915AF110B1123650BC79F4CBE675ACC66E005265BF069C6C6C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@jridgewell/trace-mapping",
+        "version":  "0.3.31",
+        "file":  "LICENSE",
+        "sha256":  "769D154FBDE32A915AF110B1123650BC79F4CBE675ACC66E005265BF069C6C6C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@keyv/bigmap",
+        "version":  "1.3.1",
+        "file":  "LICENSE",
+        "sha256":  "F18CAD8D98D4454AD42C33F1950D642CD3B939F2CCD3C36710FA8F50842CACC0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@keyv/serialize",
+        "version":  "1.1.1",
+        "file":  "LICENSE",
+        "sha256":  "1F7DCA26D2D328C3DBB9B6FE3B15EC3CDA08FFE2288E47B73D617454B256F959"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@oxc-project/types",
+        "version":  "0.156.0",
+        "file":  "LICENSE",
+        "sha256":  "95CED5ECF1133FBF41D409B5555C86C344F83F3B019926057DDBC07CFDCC27B3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@playwright/test",
+        "version":  "1.65.1",
+        "file":  "LICENSE",
+        "sha256":  "45873D00A0DD243596DEB4AA23B2493B3D1F0671921BF2538EA431D7380220EB"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@playwright/test",
+        "version":  "1.65.1",
+        "file":  "NOTICE",
+        "sha256":  "6D602191187B35B9B01D2CFFA01C8469C2C8D9DE8A96F1BF868E0F264F51C81D"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@rolldown/binding-win32-x64-msvc",
+        "version":  "1.2.19",
+        "file":  "package.json license field only",
+        "sha256":  "F7F54AF48C8268C4401471B4A0C6E9947671CB6F232B319C01EF15D0FC2D5D8C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@rolldown/pluginutils",
+        "version":  "1.1.1",
+        "file":  "LICENSE",
+        "sha256":  "E1919B3B98B8BF6C1B99FCC60A0ED46027C97AC947432E1278446C9606F50161"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/chai",
+        "version":  "5.2.3",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/deep-eql",
+        "version":  "4.0.2",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/esrecurse",
+        "version":  "4.3.1",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/estree",
+        "version":  "1.0.10",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/json-schema",
+        "version":  "7.0.15",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/react",
+        "version":  "19.3.0",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@types/react-dom",
+        "version":  "19.3.0",
+        "file":  "LICENSE",
+        "sha256":  "C2CFCCB812FE482101A8F04597DFC5A9991A6B2748266C47AC91B6A5AAE15383"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/eslint-plugin",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "ignore",
+        "version":  "7.0.14",
+        "file":  "LICENSE-MIT",
+        "sha256":  "9C94DB23DC4B1E9AAEE5D195668B916AFC71EFED54AF226B66CF0CCC4389C1C0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/parser",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/project-service",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "053A75A14B7508A897466B65E12797201A06B0E9B5066D1223DA72CAC99601B5"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/scope-manager",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/tsconfig-utils",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "053A75A14B7508A897466B65E12797201A06B0E9B5066D1223DA72CAC99601B5"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/type-utils",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "F3C51ACE7F159B21566D72535E84FF354505AE7FFDCA835DAC81FCDAFBF9E879"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/types",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/typescript-estree",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "minimatch",
+        "version":  "10.2.6",
+        "file":  "LICENSE.md",
+        "sha256":  "2C7C5D22ED5A8EE968C64757710979AFCD77438C48B4A265B94E615BABD8A901"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/utils",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@typescript-eslint/visitor-keys",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@vitejs/plugin-react",
+        "version":  "6.3.0",
+        "file":  "LICENSE",
+        "sha256":  "29B68325FE026047D13E187B44C33B2ACACF7DC647DEC4583702E59F235E13B5"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@vitest/mocker",
+        "version":  "5.1.0",
+        "file":  "LICENSE",
+        "sha256":  "04575FC5BFAE19A9B63100F8691F901A2E15A399011AC02DB435A9EF27295551"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@vitest/spy",
+        "version":  "5.1.0",
+        "file":  "LICENSE",
+        "sha256":  "04575FC5BFAE19A9B63100F8691F901A2E15A399011AC02DB435A9EF27295551"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "@wailsio/runtime",
+        "version":  "3.1.0",
+        "file":  "package.json license field only",
+        "sha256":  "E09A12BFAC1731F5B45DAB4338B79A738A02E666B7280BC090FED88AB65490C1"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "acorn",
+        "version":  "8.19.0",
+        "file":  "LICENSE",
+        "sha256":  "76A876CF886FF9BE2A8B5E2E86514FED06223C8C9F0C1E9EE9606E93841E00B7"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "acorn-jsx",
+        "version":  "5.3.2",
+        "file":  "LICENSE",
+        "sha256":  "CFA72B62B9AE173078823A3796B25C027A9071046A263BEDDF966DF67018CE06"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "ajv",
+        "version":  "6.15.0",
+        "file":  "LICENSE",
+        "sha256":  "E85E131FA4ED25538FF1F4962CED1FB6F68B079BD9164A790597A0F30B8FD030"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "assertion-error",
+        "version":  "2.0.1",
+        "file":  "LICENSE",
+        "sha256":  "2130216D5AB4C02134F8247F32999FEDA0ABE1EAF028218BAEAC445C19CE4CEA"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "balanced-match",
+        "version":  "4.0.4",
+        "file":  "LICENSE.md",
+        "sha256":  "D408F38FFA3355C5FAEC517153295338892EB0F1EA43F57874BB23C6075979B5"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "brace-expansion",
+        "version":  "5.0.13",
+        "file":  "LICENSE",
+        "sha256":  "9C63A23124D68CD30CD316A94A1A0BCA34F032786DF6DF69FC4B5F136BAC8D2E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "cacheable",
+        "version":  "2.5.0",
+        "file":  "LICENSE",
+        "sha256":  "465E8DA349D50D8512E4A0E9B26D2BEE50392C394F17EDAA3BE6E0DF7C2B27AD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "chai",
+        "version":  "6.3.0",
+        "file":  "LICENSE",
+        "sha256":  "B181DA80336FF9DD1043FC8BE1A764D7382363433319AA872E4D2CB5CE2A3066"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "cross-spawn",
+        "version":  "7.0.6",
+        "file":  "LICENSE",
+        "sha256":  "AAA78451B6FECD1B9C4594C796C133C0E90CAD100372FF8BC6DE615E9EF9ADF1"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "csstype",
+        "version":  "3.2.3",
+        "file":  "LICENSE",
+        "sha256":  "11D55BD4541C75EE7879547AC49089C489163DAE49551389713C3D026CAB383E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "debug",
+        "version":  "4.4.3",
+        "file":  "LICENSE",
+        "sha256":  "3A61C6C96CAF5C1D9B623FB9B04C822B783DFCB78AA7E49C76A3F643E6ED7F95"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "deep-is",
+        "version":  "0.1.4",
+        "file":  "LICENSE",
+        "sha256":  "F2042F3634C4136D06B5139C9C6AEFB81A3A462B514548BC1845953233DFBA98"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "detect-libc",
+        "version":  "2.1.2",
+        "file":  "LICENSE",
+        "sha256":  "B40930BBCF80744C86C46A12BC9DA056641D722716C378F5659B9E555EF833E1"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "es-module-lexer",
+        "version":  "2.3.2",
+        "file":  "LICENSE",
+        "sha256":  "8A4B6C44EEBFB026D23719A348145A661A555568DBFDC11618FF2D0DD9306B00"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "escape-string-regexp",
+        "version":  "4.0.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "eslint",
+        "version":  "10.15.0",
+        "file":  "LICENSE",
+        "sha256":  "3B6BE04F862A077A4B97929DBF247299360824D9365F8603C263769303ACE18C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "eslint-scope",
+        "version":  "9.1.2",
+        "file":  "LICENSE",
+        "sha256":  "D3A724E2ED749F172FF70B62A1D0631B7D4B0EA273782365A3464D4E2D6B6DBD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "eslint-visitor-keys",
+        "version":  "5.0.1",
+        "file":  "LICENSE",
+        "sha256":  "D8BF34FF6D190640A01E7704AD78253FC181BC128949D71273FBBAA12F33C0B4"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "espree",
+        "version":  "11.2.0",
+        "file":  "LICENSE",
+        "sha256":  "26C95937762A3DC17A3934A0A2773C70259BA4BF28DAB713C225E4AF8EB9D349"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "esquery",
+        "version":  "1.7.0",
+        "file":  "license.txt",
+        "sha256":  "AC68116AE73740DE4190892F334992E449A124600924EC761E64319D3AAC9E6E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "esrecurse",
+        "version":  "4.3.0",
+        "file":  "package.json license field only",
+        "sha256":  "3BC67CB54672EC6957B53947613C23599371BF9222DBBE97275D20516A561A20"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "estraverse",
+        "version":  "5.3.0",
+        "file":  "LICENSE.BSD",
+        "sha256":  "0E74697A68CEBDCD61502C30FE80AB7F9E341D995DCD452023654D57133534B1"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "estree-walker",
+        "version":  "3.0.3",
+        "file":  "LICENSE",
+        "sha256":  "8A6DCBABE7179F9C8489C08A7D874D0F1E093AE7449E03756CCF87CB9D0E296E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "esutils",
+        "version":  "2.0.3",
+        "file":  "LICENSE.BSD",
+        "sha256":  "0E74697A68CEBDCD61502C30FE80AB7F9E341D995DCD452023654D57133534B1"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "expect-type",
+        "version":  "1.4.0",
+        "file":  "LICENSE",
+        "sha256":  "7C6CC83C84EAA249A85BF12FE3EEDD831BB50C696E8890B5248223AE68C7B408"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "fast-deep-equal",
+        "version":  "3.1.3",
+        "file":  "LICENSE",
+        "sha256":  "7BF9B2DE73A6B356761C948D0E9EEB4BE6C1270BD04C79CD489C1E400FFDFC1A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "fast-json-stable-stringify",
+        "version":  "2.1.0",
+        "file":  "LICENSE",
+        "sha256":  "A833D366242C298CF1B10263516572FB8DCBE68EB5072CDCAC2B4546E2B4EB36"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "fast-levenshtein",
+        "version":  "2.0.6",
+        "file":  "LICENSE.md",
+        "sha256":  "942A98CB8846A6354266193F173C1354615827FBB7D67F68399599DFF12C4D6A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "fdir",
+        "version":  "6.5.0",
+        "file":  "LICENSE",
+        "sha256":  "9A39F2AADAB11A3697EDD668FF2D8AD885B649737B7AB4D3BF12B34E5ADA0C86"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "file-entry-cache",
+        "version":  "11.1.5",
+        "file":  "LICENSE",
+        "sha256":  "465E8DA349D50D8512E4A0E9B26D2BEE50392C394F17EDAA3BE6E0DF7C2B27AD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "find-up",
+        "version":  "5.0.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "flat-cache",
+        "version":  "6.1.23",
+        "file":  "LICENSE",
+        "sha256":  "465E8DA349D50D8512E4A0E9B26D2BEE50392C394F17EDAA3BE6E0DF7C2B27AD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "flatted",
+        "version":  "3.4.4",
+        "file":  "LICENSE",
+        "sha256":  "148718606D34F467FD08A2176BB4C1AB275F999576F779368503D8D3E3642861"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "glob-parent",
+        "version":  "6.0.2",
+        "file":  "LICENSE",
+        "sha256":  "FC68EB8F1C8E1D6B8BE50F3C177927E24791CAE7DC251E6253A012F37926A30C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "hashery",
+        "version":  "1.5.1",
+        "file":  "LICENSE",
+        "sha256":  "2EEF776EFE4BAE7FCD2D8162ECADF2B0873AAE20AFAC343A936DDB0DE3D79253"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "hookified",
+        "version":  "1.15.1",
+        "file":  "LICENSE",
+        "sha256":  "3902E57E73412BD91BA81A47FA2CEF45E1729C152C835114C1692CC5E685DDBE"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "ignore",
+        "version":  "5.3.2",
+        "file":  "LICENSE-MIT",
+        "sha256":  "9C94DB23DC4B1E9AAEE5D195668B916AFC71EFED54AF226B66CF0CCC4389C1C0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "imurmurhash",
+        "version":  "0.1.4",
+        "file":  "package.json license field only",
+        "sha256":  "AA3B07E7FA3D63AA96E401C3842B8CCA1DD3247954BAF92377094766E903C185"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "is-extglob",
+        "version":  "2.1.1",
+        "file":  "LICENSE",
+        "sha256":  "73B5283588BAA142C5BAAEF5F56D3E8FDEA7A30B214E8C5737E87640F882453A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "is-glob",
+        "version":  "4.0.3",
+        "file":  "LICENSE",
+        "sha256":  "4CD903859549D4B20B571041F96DFAE1136ED079C476126268F9D7CC1B611150"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "isexe",
+        "version":  "2.0.0",
+        "file":  "LICENSE",
+        "sha256":  "4EC3D4C66CD87F5C8D8AD911B10F99BF27CB00CDFCFF82621956E379186B016B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "json-schema-traverse",
+        "version":  "0.4.1",
+        "file":  "LICENSE",
+        "sha256":  "7BF9B2DE73A6B356761C948D0E9EEB4BE6C1270BD04C79CD489C1E400FFDFC1A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "json-stable-stringify-without-jsonify",
+        "version":  "1.0.1",
+        "file":  "LICENSE",
+        "sha256":  "435A6722C786B0A56FBE7387028F1D9D3F3A2D0FB615BB8FEE118727C3F59B7B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "keyv",
+        "version":  "5.6.0",
+        "file":  "LICENSE",
+        "sha256":  "1F7DCA26D2D328C3DBB9B6FE3B15EC3CDA08FFE2288E47B73D617454B256F959"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "levn",
+        "version":  "0.4.1",
+        "file":  "LICENSE",
+        "sha256":  "B9EB082C39FE245E38793699074C394C43A722C51FCE031C3C165CB92A31035C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "lightningcss",
+        "version":  "1.33.0",
+        "file":  "LICENSE",
+        "sha256":  "5EBA353FE5076AC3432177F8AB1CF75E3AFCD0584251E37C3BFEAD5F447D040E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "lightningcss-win32-x64-msvc",
+        "version":  "1.33.0",
+        "file":  "LICENSE",
+        "sha256":  "5EBA353FE5076AC3432177F8AB1CF75E3AFCD0584251E37C3BFEAD5F447D040E"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "locate-path",
+        "version":  "6.0.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "magic-string",
+        "version":  "1.4.5",
+        "file":  "LICENSE",
+        "sha256":  "1CBE51B907662F6CB1492B16C359384A595180BF0E4D101603ED525E75C4E484"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "minimatch",
+        "version":  "11.0.8",
+        "file":  "LICENSE.md",
+        "sha256":  "2C7C5D22ED5A8EE968C64757710979AFCD77438C48B4A265B94E615BABD8A901"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "ms",
+        "version":  "2.1.3",
+        "file":  "license.md",
+        "sha256":  "1662FAE9B5314D11CF51284E2DCD1F006A354F7343F08712A730FCFF9A359801"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "nanoid",
+        "version":  "3.3.20",
+        "file":  "LICENSE",
+        "sha256":  "DA4DB1480D9BEEA3483A2EDA5C53B22238D0827D57DA162B48F122E04D2D9987"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "natural-compare",
+        "version":  "1.4.0",
+        "file":  "package.json license field only",
+        "sha256":  "3D99911CCFA0CA34AE0C68BFD32C038B952542E55DB7C649C37B11DD1573F6AF"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "obug",
+        "version":  "3.0.0",
+        "file":  "LICENSE",
+        "sha256":  "EE48679D379CA6B4493D5E231094D85F818DD9BE40B1A4F234FB7FF657EE35D9"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "optionator",
+        "version":  "0.9.4",
+        "file":  "LICENSE",
+        "sha256":  "B9EB082C39FE245E38793699074C394C43A722C51FCE031C3C165CB92A31035C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "p-limit",
+        "version":  "3.1.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "p-locate",
+        "version":  "5.0.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "path-exists",
+        "version":  "4.0.0",
+        "file":  "license",
+        "sha256":  "48DA2F39E100D4085767E94966B43F4FA95FF6A0698FBA57ED460914E35F94A0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "path-key",
+        "version":  "3.1.1",
+        "file":  "license",
+        "sha256":  "48DA2F39E100D4085767E94966B43F4FA95FF6A0698FBA57ED460914E35F94A0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "picocolors",
+        "version":  "1.1.1",
+        "file":  "LICENSE",
+        "sha256":  "6582629E2979466878F6014313DCC2F3756C9616148682227CE3063DDE310750"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "picomatch",
+        "version":  "4.0.7",
+        "file":  "LICENSE",
+        "sha256":  "D0CD141B0C322FDED5DFAD1D4645BB2FEDFC05B7321FE1009469638190D59EF9"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "playwright",
+        "version":  "1.65.1",
+        "file":  "LICENSE",
+        "sha256":  "45873D00A0DD243596DEB4AA23B2493B3D1F0671921BF2538EA431D7380220EB"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "playwright",
+        "version":  "1.65.1",
+        "file":  "NOTICE",
+        "sha256":  "6D602191187B35B9B01D2CFFA01C8469C2C8D9DE8A96F1BF868E0F264F51C81D"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "playwright-core",
+        "version":  "1.65.1",
+        "file":  "LICENSE",
+        "sha256":  "45873D00A0DD243596DEB4AA23B2493B3D1F0671921BF2538EA431D7380220EB"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "playwright-core",
+        "version":  "1.65.1",
+        "file":  "NOTICE",
+        "sha256":  "6D602191187B35B9B01D2CFFA01C8469C2C8D9DE8A96F1BF868E0F264F51C81D"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "postcss",
+        "version":  "8.5.33",
+        "file":  "LICENSE",
+        "sha256":  "5BE1F3465BBA68A626777F984878814AAF35E7EF8E9FD314D469BCF887050FB8"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "prelude-ls",
+        "version":  "1.2.1",
+        "file":  "LICENSE",
+        "sha256":  "B9EB082C39FE245E38793699074C394C43A722C51FCE031C3C165CB92A31035C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "punycode",
+        "version":  "2.3.1",
+        "file":  "LICENSE-MIT.txt",
+        "sha256":  "483ACB265F182907D1CAF6CFF9C16C96F31325ED23792832CC5D8B12D5F88C8A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "qified",
+        "version":  "0.10.1",
+        "file":  "LICENSE",
+        "sha256":  "3902E57E73412BD91BA81A47FA2CEF45E1729C152C835114C1692CC5E685DDBE"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "hookified",
+        "version":  "2.2.0",
+        "file":  "LICENSE",
+        "sha256":  "3902E57E73412BD91BA81A47FA2CEF45E1729C152C835114C1692CC5E685DDBE"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "react",
+        "version":  "19.3.1",
+        "file":  "LICENSE",
+        "sha256":  "DA6D3703ED11CBE42BD212C725957C98DA23CBFF1998C05FA4B3D976D1A58E93"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "react-dom",
+        "version":  "19.3.1",
+        "file":  "LICENSE",
+        "sha256":  "DA6D3703ED11CBE42BD212C725957C98DA23CBFF1998C05FA4B3D976D1A58E93"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "rolldown",
+        "version":  "1.2.19",
+        "file":  "LICENSE",
+        "sha256":  "23ECFFF35A5A2E80D92142F75228912C3B1ABC4B5A8337A821FF4397E2F9F734"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "scheduler",
+        "version":  "0.28.0",
+        "file":  "LICENSE",
+        "sha256":  "DA6D3703ED11CBE42BD212C725957C98DA23CBFF1998C05FA4B3D976D1A58E93"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "semver",
+        "version":  "7.8.6",
+        "file":  "LICENSE",
+        "sha256":  "4EC3D4C66CD87F5C8D8AD911B10F99BF27CB00CDFCFF82621956E379186B016B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "shebang-command",
+        "version":  "2.0.0",
+        "file":  "license",
+        "sha256":  "69DEE148A2CC470554DFA7142E830662062394D0FE67CDDD379ABA90DC60D6B3"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "shebang-regex",
+        "version":  "3.0.0",
+        "file":  "license",
+        "sha256":  "48DA2F39E100D4085767E94966B43F4FA95FF6A0698FBA57ED460914E35F94A0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "source-map-js",
+        "version":  "1.2.2",
+        "file":  "LICENSE",
+        "sha256":  "6CB0631F71C7749763FD3DD1D5BEE52DD1070EC17F2EDC1710079AD070BD2FBD"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "std-env",
+        "version":  "4.3.0",
+        "file":  "LICENCE",
+        "sha256":  "A6F36438E46FB911859F3B9C4CAD045BA64E1AF3D8F4512C60258FA2D7552D28"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "tinybench",
+        "version":  "6.2.3",
+        "file":  "LICENSE",
+        "sha256":  "CEBC084D54E6DD99E53292DDB4BC1CDB63D9BFCD9CE438FE3AA6EB106D79E2EA"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "tinyexec",
+        "version":  "1.3.1",
+        "file":  "LICENSE",
+        "sha256":  "F95F668FE64081DDB4153B322E34FDD719B991285ED08177D5AD7133B7988D92"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "tinyglobby",
+        "version":  "0.2.17",
+        "file":  "LICENSE",
+        "sha256":  "22C68811E174CBBFB3813D4135918DF4F540959C14D872E601D9ABE83D3CDE8F"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "ts-api-utils",
+        "version":  "2.5.0",
+        "file":  "LICENSE.md",
+        "sha256":  "76C9D5F5EA942054715C026F33F8717C9E24603196A3737B8899AFA216BCBDAB"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "type-check",
+        "version":  "0.4.0",
+        "file":  "LICENSE",
+        "sha256":  "B9EB082C39FE245E38793699074C394C43A722C51FCE031C3C165CB92A31035C"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "typescript",
+        "version":  "6.0.3",
+        "file":  "LICENSE.txt",
+        "sha256":  "A7D00BFD54525BC694B6E32F64C7EBCF5E6B7AE3657BE5CC12767BCE74654A47"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "typescript-eslint",
+        "version":  "8.72.2",
+        "file":  "LICENSE",
+        "sha256":  "2EB5C7A0BBA9DEB77A98C81BF6B9D3FB1C67118EEBF968B6B1A787B3F8928EE0"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "uri-js",
+        "version":  "4.4.1",
+        "file":  "LICENSE",
+        "sha256":  "0AF366EFF4C01EC147C9C61EA9E8FFAD64A4294754C9D79355F3FD1B97CB2FB9"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "vite",
+        "version":  "8.3.8",
+        "file":  "LICENSE.md",
+        "sha256":  "A22152BAA1AEF74402443008E767E7C689A524C0909D19B0431D97F5AB066A13"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "vitest",
+        "version":  "5.1.0",
+        "file":  "LICENSE.md",
+        "sha256":  "7F3DDF93A2280EF07BDDD352939F5A09D345E1FFE619C518C010021344F22312"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "which",
+        "version":  "2.0.2",
+        "file":  "LICENSE",
+        "sha256":  "4EC3D4C66CD87F5C8D8AD911B10F99BF27CB00CDFCFF82621956E379186B016B"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "why-is-node-running",
+        "version":  "3.2.1",
+        "file":  "LICENSE",
+        "sha256":  "6A134E51AA31496C15A741592FC5D782B2DBF8D8B6B8524E15C8520AE0CD6374"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "word-wrap",
+        "version":  "1.2.5",
+        "file":  "LICENSE",
+        "sha256":  "73B5283588BAA142C5BAAEF5F56D3E8FDEA7A30B214E8C5737E87640F882453A"
+    },
+    {
+        "ecosystem":  "npm",
+        "name":  "yocto-queue",
+        "version":  "0.1.0",
+        "file":  "license",
+        "sha256":  "5C932D88256B4AB958F64A856FA48E8BD1F55BC1D96B8149C65689E0C61789D3"
+    },
+    {
+        "ecosystem":  "npm-inline",
+        "name":  "@wailsio/runtime",
+        "version":  "3.1.0",
+        "file":  "callable.js",
+        "sha256":  "BEA2B035F3CB263B1F48B7AA0518EF53EDD4C23DE3423C3D6A64B69B1E86A8A8"
+    },
+    {
+        "ecosystem":  "npm-inline",
+        "name":  "@wailsio/runtime",
+        "version":  "3.1.0",
+        "file":  "nanoid.js",
+        "sha256":  "6DCE2FA3016128A7F2C53ABED52BC2C93F564C5D5DF7B89F5335004C43705B66"
+    },
+    {
+        "ecosystem":  "npm-inline",
+        "name":  "@wailsio/runtime",
+        "version":  "3.1.0",
+        "file":  "utils.js",
+        "sha256":  "C5898A0801F41E5003C09495CEEEBB857AB344060D3EAA5BE8BE135CE3394D81"
+    }
+]

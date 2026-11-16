@@ -1,5 +1,11 @@
 # Application dependency notices
 
+G3 adds owner-approved Wails 3.1.0, x/sys 0.50.0, coder/websocket 1.8.14
+and locked frontend/build/test dependencies. See
+[G3 notice scope and full bundle](g3/licenses/README.md). Runtime and
+development tools are distinguished; G6 must audit the exact distributed
+package. The LZ4 notice below remains applicable to G2 components.
+
 G2 dependency approval: owner explicitly approved `github.com/pierrec/lz4/v4`
 **v4.1.33** on 2026-11-16. Module and content hashes are pinned in `go.mod` /
 `go.sum`. Source tag:

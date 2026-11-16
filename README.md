@@ -9,12 +9,13 @@ và hiệu quả gửi các vùng ảnh thay đổi thay vì toàn bộ ảnh.
 
 | Trạng thái hiện tại | Nội dung |
 | --- | --- |
-| Đã có | Toolchain, adapter/PoC G0, framing/config G1, [codec delta + telemetry G2](app/README.md) |
-| Chưa có | Ứng dụng chia sẻ màn hình; G3–G7 chưa triển khai |
+| Đã có | G0 transport PoC, G1 protocol, G2 codec/telemetry và [ứng dụng local preview G3](app/README.md#g3-desktop-preview--build-and-run) |
+| Chưa có | Chia sẻ màn hình từ xa; G4–G7 chưa triển khai |
 | Trạng thái G0 | **PASS** cho khả thi prototype: transport local/remote, native build/runtime và notice review; [quyết định cuối](app/G0_CLOSEOUT.md) |
 | Trạng thái G1 | **PASS** framing/config, tests/race/vet/build/fuzz; [báo cáo](app/G1_CLOSEOUT.md); C-01/C-02 đã chốt |
 | Trạng thái G2 | **PASS** codec/telemetry, tests/race/vet/build/fuzz/bench; [báo cáo](app/G2_CLOSEOUT.md) |
-| Công việc phát triển kế tiếp | G3 capture màn hình + preview bảo vệ token/Origin |
+| Trạng thái G3 | **PASS** local preview 720p/≈24 FPS trong 10 phút, Stop 118ms; [báo cáo kiểm chứng](app/G3_CLOSEOUT.md) |
+| Công việc phát triển kế tiếp | G4 tích hợp ứng dụng hai máy qua transport đã kiểm chứng |
 | Bằng chứng | Remote >600s, [mạng mới](app/G0_LATENCY_FOLLOWUP.md) RTT mean 48–51ms; giữ giới hạn mạng cũ, không hứa latency/FPS chung |
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
@@ -28,7 +29,8 @@ dung và giấy phép. Đây là thư mục mã nguồn bình thường trong re
 không có repo Git lồng bên trong; xem [nguồn gốc và giấy phép](UPSTREAM.md).
 `app/` chứa module Go framing/config, codec LZ4 tile-delta, telemetry và các
 báo cáo/tooling/PoC G0. Codec được kiểm thử bằng ảnh tổng hợp; capture màn hình
-thật thuộc G3. Lệnh kiểm tra và API nằm trong [app README](app/README.md).
+thật và local preview đã được triển khai ở G3. Lệnh build/chạy và API nằm trong
+[app README](app/README.md).
 
 ## Bố trí hiện tại
 
@@ -88,6 +90,7 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 | [G0_LOCAL_PROOF](app/G0_LOCAL_PROOF.md) | Kết quả PoC, lệnh kiểm chứng, giới hạn và điều kiện remote còn thiếu |
 | [G1_CLOSEOUT](app/G1_CLOSEOUT.md) | Framing/config, quyết định C-01/C-02, tests/fuzz và bàn giao G2 |
 | [G2_CLOSEOUT](app/G2_CLOSEOUT.md) | Codec delta, canonical reference, telemetry, tests/fuzz và benchmark |
+| [G3_CLOSEOUT](app/G3_CLOSEOUT.md) | Capture GDI, bridge token/Origin, React canvas, bản Windows và bằng chứng thực tế |
 
 ## Cách tiếp tục
 
@@ -97,4 +100,4 @@ Giữ `croc/` nguyên gốc để tham chiếu; phát triển phần mới trong
 repo khi được giao triển khai. G0 đã đóng; package protocol G1 hiện có trong
 `app/internal/protocol`. Xem closeout và gate kế tiếp trong Roadmap khi nhận
 task mới. Mọi đường dẫn `docs/`, `croc/` và `app/` tính từ gốc repository;
-capture/UI trong kiến trúc vẫn là các bước tiếp theo.
+remote integration/full UI trong kiến trúc vẫn là các bước tiếp theo.

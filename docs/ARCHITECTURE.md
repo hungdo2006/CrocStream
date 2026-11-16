@@ -84,16 +84,17 @@ G0 must quantify internal API/fork maintenance costs, relay capacity/policy and 
 
 ## Pending clarifications
 These are pre-existing ambiguities. C-01/C-02 were explicitly resolved by the
-owner on 2026-11-16 when authorizing G1; remaining proposals are not approved.
+owner on 2026-11-16 when authorizing G1. At G3, the owner also confirmed C-03
+and C-05, and authorized an exact observed-Origin policy for C-04.
 Resolve affected items before implementation and update decision/spec/tests together.
 
 | ID | Existing requirements | Proposed resolution to confirm |
 | --- | --- | --- |
 | C-01 — RESOLVED | PRD previously described maximum 30 versus CONFIG 1–120. | Owner confirmed 1–120 emitted frames, default 30; 30 is not the maximum. Wire layout/version unchanged. |
 | C-02 — RESOLVED | Product lists two resolution pairs; CONFIG listed width/height independently. | Owner confirmed only (640,360) and (1280,720); reject mixed pairs. Wire layout/version unchanged. |
-| C-03 | Architecture listener is app-lifetime; PRD/AGENTS require bridge closure with session. | Define session-owned listener versus app service that recreates a listener per session; always close session connections/queues and stop delivery on Stop. |
-| C-04 | AGENTS validates Origin where available; test plan rejects missing/foreign Origin. | Inspect dev/packaged WebView Origin behavior and specify exact allowlist/missing-Origin policy. No permissive wildcard; mandatory token stays unchanged. |
-| C-05 | Accessibility listed as P2; UI already requires keyboard navigation, labels, focus and screen-reader acceptance. | Keep basic accessibility in MVP, defer enhancements; confirm priority explicitly. |
+| C-03 — RESOLVED | Architecture previously suggested app-lifetime listener versus session shutdown. | Owner confirmed session-owned loopback listener/WebSockets/queue; Start creates, Stop closes. Cryptographic 256-bit token generated at launch and additionally rotated each session. |
+| C-04 — RESOLVED for Windows | Owner authorized exact Origin allowlist, reject missing/null/foreign Origin. | Actual Windows WebView2 probe and application UI: embedded `http://wails.localhost`, dev `http://wails.localhost:9245`. Production accepts only embedded Origin; fixed-port dev accepts only the observed dev Origin. Full dev/app evidence in G3 closeout; other platforms require fresh observations. |
+| C-05 — RESOLVED | Basic accessibility delivery priority was ambiguous. | Owner confirmed keyboard navigation, labels, visible focus and accessible status in G3/MVP; enhancements remain later. |
 
 ### When to resolve clarifications
 
@@ -103,8 +104,8 @@ proposed resolutions above.
 | Before implementing | Items | Evidence / decision needed |
 | --- | --- | --- |
 | G1 configuration validation | C-01, C-02 — resolved | Owner confirmed 1–120/default 30 and only the two product resolution pairs on 2026-11-16 |
-| G3 local bridge | C-03, C-04 | Confirm listener ownership; observe dev/packaged WebView Origins and define the exact policy before bridge acceptance |
-| G3 preview UI and G5 full UI | C-05 | Confirm basic accessibility scope before implementing affected controls and acceptance cases |
+| G3 local bridge | C-03 confirmed; C-04 observation-based | Session ownership and exact Origin policy implemented; verify full dev/packaged UI and resource cleanup |
+| G3 preview UI and G5 full UI | C-05 confirmed | Basic accessible controls implemented; verify keyboard and accessibility tree, record actual screen-reader testing separately |
 
 ## Principles
 1. **Transport is replaceable**, but its security cannot be weakened; no hard dependency on undocumented `comm.Comm` layout beyond an experimentally verified adapter.
@@ -116,11 +117,13 @@ proposed resolutions above.
 ## Application layout and future modules
 
 The current single repository contains `croc/` (pristine upstream reference snapshot),
-`docs/` (planning documents), G0 artifacts and the G1 pure-Go application
-module in `app/`. G0 and G1 are closed PASS; see their closeout evidence.
+`docs/` (planning documents), G0 artifacts and the application module in `app/`.
+G0–G3 are closed PASS; local-preview implementation and evidence are
+tracked in [G3_CLOSEOUT](../app/G3_CLOSEOUT.md).
 `internal/protocol`, `internal/frame`, `internal/delta` and
 `internal/telemetry` are implemented; G2 evidence is in
-[G2_CLOSEOUT](../app/G2_CLOSEOUT.md). Other runtime directories remain proposed.
+[G2_CLOSEOUT](../app/G2_CLOSEOUT.md). G3 also implements capture, bridge,
+preview, desktop bindings and frontend. Session/remote integration remains G4.
 
 ```
 AGENTS.md
@@ -146,15 +149,19 @@ app/                                  # Application core and G0 artifacts
   g0/Use-Toolchain.ps1                 # Process-local environment
   g0/buildprobe/                       # Isolated minimal Go/Wails/croc compile probe
   g0/poc/                              # Experimental transport + CLI harness + tests
+  main_windows.go                     # G3 Wails bootstrap; root package for actual v3 build
+  wails.yaml                          # Wails v3.1 manifest (Wake opt-in)
+  internal/capture/                   # G3 Win32 GDI display capture, consent at Start
+  internal/bridge/                    # G3 session-owned binary JPEG WebSocket
+  internal/preview/                   # G3 preview lifecycle and bounded sampling
+  internal/desktop/                   # G3 Wails service bindings
+  frontend/src/                       # G3 React/TypeScript canvas preview
+  frontend/package.json               # Pinned dependencies + package-lock.json
+  g3/                                # Capture-free Origin probe, opt-in verification
   # Everything below is proposed, not implemented:
-  cmd/crocstream/main.go               # Wails v3 bootstrap
   internal/app/                       # Wails service methods + app/session coordinator
   internal/session/                   # role/state machine and lifetime
-  internal/capture/                   # Source interface, screen (P0), webcam (P1)
   internal/transport/                 # duplex interface; croc adapter only after G0
-  internal/bridge/                    # loopback authenticated binary WS to WebView
-  frontend/src/{pages,components,hooks,types}/
-  frontend/package.json
   build/                             # Wails build assets
 ```
 Adjust the paths to the actual initialized Wails v3 template; app structure is conceptual, not a license to invent outdated framework methods.
@@ -205,12 +212,28 @@ Receiver processing validates entire DELTA before touching canonical reference. 
 - Wails service methods: `ListDisplays`, `StartBroadcast`, `StopBroadcast`, `JoinSession`, `LeaveSession`, `GetBridgeEndpoint`, `GetStats`. Their exact signatures derive from v3 app bindings and test doubles; use explicit success/error states. Events carry **only statuses/statistics**, never Base64 frames.
 
 ## Local WebView media bridge
-- Bind **only** `127.0.0.1:<OS-assigned-port>`; require per-launch 128-bit+ cryptographically random bearer token on WebSocket upgrade; reject invalid/missing token and unexpected Origin. The earlier app-lifetime listener requirement conflicts with session closure (C-03); missing-Origin policy awaits WebView observations (C-04).
+- Bind **only** `127.0.0.1:<OS-assigned-port>`; require a cryptographic 256-bit launch/session token on WebSocket upgrade. The listener and upgraded connections belong to the preview session (C-03). Reject absent/null/foreign Origin with an exact mode-specific allowlist (C-04); no wildcard.
 - Provide token + ephemeral URL only via trusted app binding to own frontend; do not expose in logs or telemetry. Explicitly close upgrade connections on Stop/exit; bound send queue (1-2), per-client caps and WebSocket write deadline.
 - Distinguish `/preview` and `/viewer` channels/roles, or use one tagged binary envelope with validated role; no accidental cross-role data mixing. **Frontend media bytes are independent encoded JPEG frames** (`image/jpeg`) for `createImageBitmap` in this MVP; `createImageBitmap` does **not** parse raw RGBA without a format-specific wrapper. Stop and clear canvases when session ends; close bitmap in `finally` after draw.
 - Wails v3 origin may differ in dev vs packaged; test both without permissive `Origin: *` behavior.
 - Frontend: `binaryType='blob'`, `createImageBitmap(blob)`, draw into `useRef<HTMLCanvasElement>` with fitted letterboxing; always `bitmap.close()` in `finally`. Keep newest queued display image only and close stale bitmaps.
-- On unmount/Stop/Leave, close WS and listeners, invalidate outstanding decode work with generation tokens and clear canvas. Failed image decode reports `Preview unavailable` without collapsing media transport. Lifecycle/Origin ambiguities are tracked in C-03/C-04.
+- On unmount/Stop/Leave, close WS and listeners, invalidate outstanding decode work with generation tokens and clear canvas. Failed image decode reports `Preview unavailable` without collapsing media transport.
+
+G3 handshake: `/preview` only, one authenticated client, token offered via
+`Sec-WebSocket-Protocol: crocstream.preview, auth.<token>`, never in URL/query.
+Server negotiates only `crocstream.preview`, never echoes the token. Exact
+Host and Origin are checked before upgrade. JPEG messages are binary and bounded
+to 4 MiB; newest-only one-message queue, one-second write timeout and bounded
+HTTP headers/read timeouts. `/viewer` is rejected until its distinct G4 role
+exists. Stop closes hijacked sockets as well as the HTTP listener.
+
+G3 capture uses Win32 GDI on a locked worker thread: monitor enumeration,
+per-monitor DPI context, bounded top-down 32-bit DIB, aspect-fitted StretchBlt
+and G2 RGBA normalization. Black letterboxing preserves source aspect ratio.
+Only explicit Start invokes screen reads. GDI surface selection is restored
+before deletion; DC acquisition/release remains on its owner thread. Display
+removal/geometry change stops the session. Protected content, HDR and secondary
+monitor behavior must be reported based on actual tests, not inferred.
 
 ## Buffers, concurrency, cancellation
 - Use `context.Context` for all worker loops and `errgroup` or WaitGroup for bounded shutdown. Explicit buffer ownership: pool item cannot be released while encoder, decoder, websocket or image encoding still refers to it. `sync.Pool` only for profiled hot paths, not as an unconditional requirement.

@@ -23,7 +23,9 @@ Product IDs are defined in [PRD](PRD.md); decisions/blockers and protocol in [AR
 
 [C-01/C-02](ARCHITECTURE.md#pending-clarifications) were owner-resolved on
 2026-11-16: key interval 1–120/default 30, only 640×360 and 1280×720.
-C-03–C-05 still require resolution at the bridge/UI checkpoints.
+C-03/C-05 were owner-confirmed for G3; C-04 now uses the actual observed
+WebView2 Origins and rejects missing/null/foreign values. Evidence and
+remaining manual checks must be recorded in G3 closeout.
 
 ## A. Protocol tests (unit + fuzz; no network required)
 G1 framing/config implementation and executed commands:
@@ -72,6 +74,10 @@ image correctness evidence: [G2 closeout](../app/G2_CLOSEOUT.md).
 - Confirm CONFIG/KEY ordering and END termination despite control priority; no video after END, no interleaved writes. Hold last good image after invalid DELTA, await valid KEY, and reset reference on reconnect.
 - Local bridge: OS-assigned port, per-launch >=128-bit random token via trusted app binding only, client caps, bounded queues and write deadline; reject cross-role preview/viewer access. Test dev and packaged Origin behavior without wildcard acceptance.
 - Confirm Stop closes session media connections/queues, clears canvases and invalidates stale decode work; final listener ownership follows C-03. WS display dropping must close stale ImageBitmaps; image-decode failure must not kill network transport.
+- G3: test missing/null/wrong-scheme/wrong-port Origin, missing/wrong token,
+  `/viewer` and query-token rejection, one-client cap, binary ownership,
+  latest-only queue, deadline/close and 100 session lifecycles. Native capture
+  tests require explicit consent; ordinary tests use synthetic DIB/fake sources.
 
 ## D. Transport G0 proof (two processes, no GUI)
 Execution status (2026-11-16): **G0 PASS** for the named prototype paths; see
