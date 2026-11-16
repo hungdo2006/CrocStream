@@ -28,7 +28,7 @@ Theo cập nhật 2026-11-16:
 | --- | --- |
 | `croc/` | Snapshot upstream để khảo sát; giữ nguyên mã nguồn và giấy phép |
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
-| `app/` | Có module Go G1 framing/config, báo cáo G0, tooling, build probe và PoC transport; chưa có UI/capture/codec |
+| `app/` | Có G1 framing/config, G2 codec delta + telemetry, báo cáo/tooling/PoC G0; chưa có UI/capture |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
 | Ứng dụng và benchmark | Chưa có ứng dụng chia sẻ màn hình hoặc benchmark media |
 
@@ -50,6 +50,8 @@ notice review và giới hạn rõ ràng; capture màn hình thật vẫn thuộ
 Follow-up [mạng mới](../app/G0_LATENCY_FOLLOWUP.md) đã chạy đủ 600.1s ở mức tải
 gốc với RTT trung bình 48–51ms; kết quả mạng cũ vẫn được giữ riêng.
 [G1 closeout](../app/G1_CLOSEOUT.md) ghi bằng chứng framing/config và bước G2.
+[G2 closeout](../app/G2_CLOSEOUT.md) ghi bằng chứng codec/telemetry và benchmark
+ảnh tổng hợp; chưa phải benchmark chia sẻ màn hình thật.
 
 ## 3. Hình ảnh đi từ máy phát tới máy xem thế nào?
 
@@ -149,8 +151,8 @@ KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm 
 ## 7. Bước tiếp theo và cách báo cáo
 
 G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
-framing/config thuần Go; bước kế tiếp là G2 codec delta và telemetry.
-Xem [tiến độ](ROADMAP.md#current-progress) và [bằng chứng G1](../app/G1_CLOSEOUT.md).
+framing/config thuần Go; G2 đã triển khai codec delta và telemetry.
+Xem [tiến độ](ROADMAP.md#current-progress) và [bằng chứng G2](../app/G2_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh
 → bản Windows bàn giao. Chi tiết và điều kiện chuyển bước ở [bảng gate](ROADMAP.md#gates).

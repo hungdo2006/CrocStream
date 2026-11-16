@@ -5,20 +5,21 @@
 > [GETTING_STARTED](GETTING_STARTED.md) trước. **G0 PASS** cho khả thi prototype
 > đã kiểm chứng; xem [closeout](../app/G0_CLOSEOUT.md). **G1 PASS** cho
 > framing/config; [bằng chứng G1](../app/G1_CLOSEOUT.md).
+> **G2 PASS** codec/telemetry; [bằng chứng G2](../app/G2_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
 Current workspace (2026-11-16): one CrocStream repository containing pristine
 upstream source in `croc/`, planning documents in `docs/`, G0 artifacts,
 isolated `app/g0/buildprobe` / `app/g0/poc` modules, and the pure-Go application
-module with `app/internal/protocol`. The transport PoC and media framing/config
-are implemented; the desktop application is not.
+module with `app/internal/{protocol,frame,delta,telemetry}`. The transport PoC,
+framing/config and codec/telemetry are implemented; the desktop app is not.
 Previous custom code and experiment records are not retained. Source and
 workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0 PASS, G1 PASS**, ngày 2026-11-16.
+Kết quả hiện hành: **G0 PASS, G1 PASS, G2 PASS**, ngày 2026-11-16.
 Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
@@ -42,7 +43,8 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G0.4 | LOCAL_PASS; remote 605s trên mạng cũ và 600.1s trên mạng mới; hash/control/cleanup đúng; RTT mạng mới 48–51ms mean | Ghi rõ giới hạn theo mạng, không suy ra FPS/latency chung |
 | G0.5 | PASS: quyết định GO cho G1, bằng chứng native/license/security và giới hạn ở G0_CLOSEOUT | C-01/C-02 đã được chủ dự án chốt khi giao G1 |
 | G1 | PASS: framing/config, reader/writer, tests/race/vet/Windows build và 4 fuzz targets; xem G1_CLOSEOUT | Bàn giao G2 codec + telemetry |
-| G2–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+| G2 | PASS: codec/telemetry, canonical/oracle, malformed, tests/race/vet/build/fuzz/bench; [G2_CLOSEOUT](../app/G2_CLOSEOUT.md) | Bàn giao G3; theo dõi allocation khi tích hợp |
+| G3–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
 transport local/remote, native compile/runtime, tests và notice review.
@@ -60,12 +62,18 @@ bounded, fixtures, malformed/truncation/replay tests và fuzz.
 Chi tiết lệnh/kết quả, API codec acceptance và giới hạn:
 [G1_CLOSEOUT](../app/G1_CLOSEOUT.md), [app README](../app/README.md).
 
-### Next focused gate: G2 — not started
+### G2 implementation and verification
 
-Codec thuần Go và telemetry: canonical RGBA, LZ4-frame KEY/DELTA, tile records,
-test nhiều frame tau=0/tau=4, giải nén có giới hạn và baseline cùng mẫu phát.
-Chọn/pin dependency LZ4 theo phê duyệt trước khi thêm dependency production.
-G2 chưa được triển khai trong lượt G1 này.
+Chủ dự án đã yêu cầu G2 và phê duyệt pin `pierrec/lz4/v4 v4.1.33`.
+Đã triển khai canonical RGBA, LZ4-frame KEY/DELTA, tile records, bounded decode,
+tau=0/tau=4 và baseline cùng mẫu phát; telemetry cửa sổ 1s có giới hạn.
+Lệnh/kết quả thực tế nằm trong [G2_CLOSEOUT](../app/G2_CLOSEOUT.md).
+
+### Next focused gate: G3 — not started
+
+Capture màn hình Windows và preview qua WebSocket loopback bảo vệ token/Origin.
+Chốt C-03/C-04/C-05 ở checkpoint tương ứng; kiểm chứng capture thật và tốc độ
+1280×720/24fps trên máy chỉ định. G2 chưa phải bằng chứng capture/UI.
 
 ## Next work: G0
 

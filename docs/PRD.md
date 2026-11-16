@@ -9,6 +9,12 @@
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
+**G2 update (2026-11-16): [codec/telemetry PASS](../app/G2_CLOSEOUT.md).**
+Pure-Go normalization, lossless KEY/tile DELTA, canonical-reference validation
+and rolling telemetry are implemented/tested on synthetic data. Capture,
+preview UI, secure application integration and full-app performance acceptance
+remain later gates. The approved LZ4 dependency and notices are pinned in `app/`.
+
 ## Product outcome
 Two separate desktop app processes on two Windows 10/11 x64 machines can join a secret-code 1:1 session. Broadcaster shares one screen; Viewer watches live output reconstructed from a lossless Keyframe + selected dirty tiles. Users can start/stop safely and compare bandwidth against a fair whole-frame compressed baseline.
 

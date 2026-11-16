@@ -4,7 +4,7 @@
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
 > [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
-> thực tế; kết quả toolchain G0 và framing G1 được ghi trong các closeout.
+> thực tế; kết quả toolchain G0, framing G1 và codec G2 nằm trong các closeout.
 
 ## Contents
 - [Reference source](#reference-source)
@@ -29,7 +29,7 @@ Source inspection, not runtime feasibility evidence:
 
 ## Decisions and blockers
 Updated 2026-11-16. **D-12 and D-07's C-01/C-02 choices are owner-confirmed;
-other D entries remain provisional.** Keep IDs stable and distinguish design
+G2 LZ4 dependency is approved; other D entries remain provisional.** Keep IDs stable and distinguish design
 requirements from verified implementation.
 
 | ID | Decision | Reason / tradeoff |
@@ -39,7 +39,7 @@ requirements from verified implementation.
 | D-03 | Proposed Wails v3 stable line, target v3.1.0; Go 1.27.3+ pending toolchain checks; React/TypeScript/Tailwind. Pin exact transitive dependencies after G0. | Recheck versions; v2 event/binding APIs cannot be copied into v3. |
 | D-04 | Pin the exact reference commit above, not merely the version string or v11.6.5 tag. | Reproducibility; v9/v10 APIs cannot be assumed. |
 | D-05 | Exactly one broadcaster and one viewer per session. | One coherent canonical-reference/PLI sequence. |
-| D-06 | RGBA8888 alpha=255, 32×32 tiles, LZ4 frame format, lossless network KEY. JPEG only for local UI. | Deterministic sender/viewer reference equality. |
+| D-06 | RGBA8888 alpha=255, 32×32 tiles, LZ4 frame format, lossless network KEY. G2 pins owner-approved `pierrec/lz4/v4 v4.1.33` (2026-11-16). JPEG only for local UI. | Deterministic sender/viewer reference equality; dependency provenance/notice in `app/THIRD_PARTY_NOTICES.md`. |
 | D-07 | Fixed session resolution: only 1280×720 or 640×360; default 1280×720 at 24 FPS, fallback 640×360 at 15 FPS; key interval 1–120 emitted frames, default 30, MAE tau=4, dirty ratio >0.65 triggers KEY. | Resolution pairs and key interval owner-confirmed 2026-11-16 (C-01/C-02); defaults are not performance guarantees. |
 | D-08 | Webcam after screen-capture MVP; no audio, cloud storage, accounts, recording or multi-viewer. | Avoid CGO/OpenCV complexity before network proof. |
 | D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
@@ -118,8 +118,9 @@ proposed resolutions above.
 The current single repository contains `croc/` (pristine upstream reference snapshot),
 `docs/` (planning documents), G0 artifacts and the G1 pure-Go application
 module in `app/`. G0 and G1 are closed PASS; see their closeout evidence.
-Only `internal/protocol` exists among the application packages below;
-the other runtime directories remain proposed.
+`internal/protocol`, `internal/frame`, `internal/delta` and
+`internal/telemetry` are implemented; G2 evidence is in
+[G2_CLOSEOUT](../app/G2_CLOSEOUT.md). Other runtime directories remain proposed.
 
 ```
 AGENTS.md
@@ -133,9 +134,13 @@ app/                                  # Application core and G0 artifacts
   G0_LOCAL_PROOF.md                    # Historical local PoC evidence
   G0_CLOSEOUT.md                       # G0 PASS, notices/native checks and G1 handoff
   G1_CLOSEOUT.md                       # Framing/config implementation and evidence
+  G2_CLOSEOUT.md                       # Codec/telemetry evidence and benchmarks
   README.md                           # Application-core commands and API contract
-  go.mod                              # Pure Go, standard library only at G1
+  go.mod                              # Pure Go, approved LZ4 dependency at G2
   internal/protocol/                  # Implemented: header, CONFIG, reader/writer, tests/fuzz
+  internal/frame/                     # Implemented: stride/order/alpha normalization
+  internal/delta/                     # Implemented: bounded LZ4 KEY/DELTA, canonical state
+  internal/telemetry/                 # Implemented: bounded exact rolling 1s measurements
   g0/Inspect-Environment.ps1           # Existing read-only inventory script
   g0/Install-Toolchain.ps1             # Approved portable tool installation
   g0/Use-Toolchain.ps1                 # Process-local environment
@@ -146,11 +151,8 @@ app/                                  # Application core and G0 artifacts
   internal/app/                       # Wails service methods + app/session coordinator
   internal/session/                   # role/state machine and lifetime
   internal/capture/                   # Source interface, screen (P0), webcam (P1)
-  internal/frame/                     # Packed RGBA normalization, dimensions
-  internal/delta/                     # encoder, decoder, bounded reusable buffers
   internal/transport/                 # duplex interface; croc adapter only after G0
   internal/bridge/                    # loopback authenticated binary WS to WebView
-  internal/telemetry/                 # capture/codec/protocol counters and 1s windows
   frontend/src/{pages,components,hooks,types}/
   frontend/package.json
   build/                             # Wails build assets
@@ -225,7 +227,7 @@ Receiver processing validates entire DELTA before touching canonical reference. 
 
 ## Media protocol v1
 **Normative v1 contract, not deployed.** G1 implements framing/configuration;
-codec and application integration are later gates. Application framing runs
+G2 implements codec/telemetry; application integration is a later gate. Framing runs
 inside an authenticated/encrypted transport; stock croc clients do not
 understand it. G0 tested a separate experimental transport record envelope.
 The media byte layout below is unchanged. Changing wire bytes requires a
@@ -282,6 +284,15 @@ Checked `Width*Height*4 <= MAX_RAW = 3,686,400` (1280×720×4). Larger formats r
 - DELTA compresses the entire record below as one self-contained LZ4 frame. Compression is independent per packet; reconstruction still needs the canonical reference.
 - Skipped sub-threshold tiles leave sender reference unchanged. Compare new capture against **transmitted canonical reference**, not the last capture; equality is between peers, not necessarily raw capture when tau>0.
 
+G2 uses standard LZ4 frames with Fast compression, independent 64-KiB blocks,
+content size and block/content checksums, concurrency=1. Decoder accepts all
+standard block sizes and dependent blocks within a self-contained frame.
+Preflight requires exactly one standard frame: no legacy, skippable,
+dictionary-dependent, concatenated or trailing data. Decode is bounded to the
+configured raw cap plus one overshoot-detection byte; checksums and content size
+are checked before committing pixels. This selects permitted LZ4-frame options;
+it does not change media v1 header/config/tile bytes.
+
 ### DELTA record before compression
 ```text
 uint16 dirtyCount (BE)
@@ -295,6 +306,9 @@ For each tile: `x=tileX*32`, `y=tileY*32`, `w=min(32,Width-x)`, `h=min(32,Height
 - Require `dirtyCount<=tileCount`, valid strictly ascending unique indices, exact parsed length and no trailing bytes.
 - Decompressed cap: `2 + 2*tileCount + Width*Height*4` with overflow checks; stop streaming decompression on overshoot.
 - Tile RGB MAE = `sum(|a-b|)/(3*pixelCount)`, excluding alpha; dirty iff `MAE > tau`, default 4.
+  G2 uses the equivalent exact integer comparison `sum > tau*3*pixelCount`;
+  local encoder tau is integer 0–255. Both supported widths divide by 32, so
+  v1 has partial-height bottom tiles only, including the bottom-right tile.
 - If `dirtyCount/tileCount > 0.65`, emit lossless KEY. Optional cost-aware fallback may use KEY when encoded DELTA >= encoded KEY, only if both candidates were actually measured.
 - After DELTA, update only transmitted dirty tiles; after KEY, replace the entire canonical reference. Commit reference/FrameID only after acceptance by the session writer. A network write failure terminates the session; never continue from uncertain state.
 
@@ -313,7 +327,10 @@ decode; a separate consumed-wire-ID high-water mark rejects non-increasing
 IDs even when earlier payloads failed validation. A recoverable sequence error
 discards exactly the bounded payload, invalidates the reference and waits for
 a forward KEY. Malformed framing or truncated discard is terminal. Actual
-reference bytes and decompression validation are G2 responsibilities.
+reference bytes and decompression validation are implemented in G2.
+After a parser-level `ErrNeedKeyframe`, also invalidate the codec reference.
+After codec Decode, pass success/failure to `Reader.ResolveVideo`; only then
+read the next video. See [application API](../app/README.md).
 
 Treat even decrypted input as untrusted. Malformed framing, directions, sizes, versions and compressed data must yield bounded errors, never panic or uncontrolled allocation. Room codes, frames, keys and tokens must not enter plaintext logs/telemetry or frame storage. Reuse verified upstream PAKE/E2E mechanisms rather than inventing a handshake. Exact byte fixtures and parser/fuzz obligations are in [TEST_PLAN](TEST_PLAN.md#a-protocol-tests-unit--fuzz-no-network-required).
 
@@ -324,6 +341,15 @@ Treat even decrypted input as untrusted. Malformed framing, directions, sizes, v
 - `savingPct = 100*(1-sum(actualBytes)/sum(baselineBytes))`; may be negative, undefined when denominator is zero. Include baseline CPU cost in benchmarks; label estimates/sampling explicitly.
 - `KiB/s = bytes_per_1s/1024` (do not label this KB/s). FPS counters separately track capture, emission, decode and render. Key/Delta mean packet sizes consistently include the header.
 - TimestampMs is broadcaster wall clock; do not subtract an unsynchronized viewer clock for E2E latency. Ping/Pong uses initiator monotonic time; decode→render is viewer-local. Unmeasured latency is N/A; MVP hides true E2E.
+
+G2 records successful emission and complete received video separately from
+successful decode/render. Baseline and actual emission bytes enter the same
+event/window; KEY can reuse its measured full-frame bytes as baseline.
+The exact rolling interval is `(now-1s, now]`, with a fixed 4096-event ring.
+Overflow is explicit/incomplete, never an exact savings claim. Unknown baseline
+or empty window disables savings; negative values remain valid. G2 codec timing
+is measured elapsed execution time including baseline, not process CPU usage.
+Full process CPU, RTT and render timing require later integration measurements.
 
 ## Sources and licensing
 The following external observations were recorded on 2026-11-13; the local commit was recorded on 2026-11-15. They are background references, **not fresh release checks or proof of installed tools**. Recheck APIs, build requirements and licenses against the pinned revision at G0.

@@ -28,7 +28,7 @@ C-03–C-05 still require resolution at the bridge/UI checkpoints.
 ## A. Protocol tests (unit + fuzz; no network required)
 G1 framing/config implementation and executed commands:
 [G1 closeout](../app/G1_CLOSEOUT.md). Decompression, tile records and canonical
-image correctness in the requirements below remain G2 obligations.
+image correctness evidence: [G2 closeout](../app/G2_CLOSEOUT.md).
 
 - Header: fixed 18 bytes, BigEndian encode/decode fixtures below and [media protocol](ARCHITECTURE.md#media-protocol-v1), all packet types, EOF between any two bytes, invalid magic/type/direction, unsupported version.
 - Reject lengths >8 MiB **before allocation**, negative/overflow arithmetic in dimension calculation, oversize decompression and unexpected trailing data. A fuzz target should cover `DecodeHeader`, `DecodeConfig`, `DecodePacket`, `DecodeDelta`; prohibit panics and unbounded memory for any input.
@@ -48,12 +48,20 @@ image correctness in the requirements below remain G2 obligations.
 - Header: `c5 01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00` = first KEY header with zero timestamp/payload length. This is a **header-only encoder fixture, not a valid video packet**.
 
 ## B. Delta correctness (unit/property)
-1. Image patterns: black/single dirty pixel, white, colorbars, text-on-static-desktop, moving rectangle, full-screen random pixels, 640×360 with right/bottom partial 32×32 tiles, 1280×720.
+1. Image patterns: black/single dirty pixel, white, colorbars, text-on-static-desktop, moving rectangle, full-screen random pixels, 640×360 and 1280×720 with rightmost tiles and partial-height bottom 32×32 tiles. Both widths are divisible by 32; there are no partial-width tiles in supported v1 formats.
 2. Frame 1 KEY, then 200 successive frames, every decoded reference **byte-equal** to the sender's canonical transmitted reference, for `tau=0` and `tau=4`. Explicitly test a slowly changing sub-threshold pixel over repeated captures to prove no sender/viewer drift.
 3. Tile record: `dirtyCount=0`, max count, sorted/duplicate/unsorted indices, out-of-range, truncated tile bytes, extra bytes, tile at bottom/right edge; malformed cases must leave old reference unchanged.
 4. Early KEY via `dirtyRatio>0.65` and via PLI; every scheduled 30 emitted frame interval; wrong/missing IDs force Recovering until KEY; duplicate/replayed FrameID rejected.
 5. Property tests: random current/reference frames; apply output to separate decoder; recovered reference matches encoder canonical; compare results to a slow reference implementation.
 6. Compression: independent LZ4 **frame** stream for each packet; reject corrupted/truncated frame and decompressed output exceeding cap.
+7. G2 implementation tests use generated patterns and an independent slow pixel
+   oracle, not captured screens. Require opaque alpha, no partial canonical
+   mutation on late record error, single-frame boundaries (including a trailing
+   empty frame), no-size compression bombs, false content sizes, cancellation
+   during work, failed-writer terminal state and copied snapshots.
+8. Baseline test compares each emitted capture's full-frame compression, even
+   when thresholded canonical pixels differ. On KEY actual and baseline bytes
+   are equal; measurements include headers and baseline cost.
 
 ## C. Session, backpressure, concurrency
 - In-memory duplex mocked transport with 1 byte reads, delayed/blocked writes, mock disconnect and reverse PLI. Assert one writer, no interleaved headers or partial writes misparsed.
@@ -105,6 +113,10 @@ Local adapter tests do not satisfy G1 media framing or remote acceptance.
 - Future: webcam actual hardware, macOS capture permission, Linux Wayland/X11 distinction and packaging are **deferred**, not automatically passed.
 
 ## F. Benchmark and metrics methodology
+- G2 unit checks cover exact one-second cutoff, missing baselines,
+  received-but-not-decoded frames, explicit ring overflow/clock errors and
+  concurrent recording/snapshot. Synthetic codec microbenchmarks include encode,
+  baseline and decode; do not substitute them for full-app timed acceptance.
 - Record OS, CPU, RAM, monitor capture source, resolution, fps, exact croc commit, relay route, time window and start/end timestamp. Run at least 2 min after warmup; >=10 min memory/leak check.
 - Content scenarios: static desktop (savings likely high), document scroll, moving window, full-screen video/random noise (savings may be low or negative); never promise a universal %.
 - Record raw `Captured`, `Emitted`, `Rendered` FPS; Key/Delta sizes, rolling full LZ4 baseline and actual protocol bytes, compression CPU, CPU%, max RSS, allocs/frame, dropped captures, UI frame lag p50/p95, RTT p50/p95 where measured. Include data CSV for actual benchmarks if requested.

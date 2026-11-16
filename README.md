@@ -9,11 +9,12 @@ và hiệu quả gửi các vùng ảnh thay đổi thay vì toàn bộ ảnh.
 
 | Trạng thái hiện tại | Nội dung |
 | --- | --- |
-| Đã có | Toolchain, build probe, adapter thử nghiệm, [PoC hai process](app/g0/poc/README.md) và [module framing/config G1](app/README.md) |
-| Chưa có | Ứng dụng chia sẻ màn hình; G2–G7 chưa triển khai |
+| Đã có | Toolchain, adapter/PoC G0, framing/config G1, [codec delta + telemetry G2](app/README.md) |
+| Chưa có | Ứng dụng chia sẻ màn hình; G3–G7 chưa triển khai |
 | Trạng thái G0 | **PASS** cho khả thi prototype: transport local/remote, native build/runtime và notice review; [quyết định cuối](app/G0_CLOSEOUT.md) |
 | Trạng thái G1 | **PASS** framing/config, tests/race/vet/build/fuzz; [báo cáo](app/G1_CLOSEOUT.md); C-01/C-02 đã chốt |
-| Công việc phát triển kế tiếp | G2 codec delta + telemetry |
+| Trạng thái G2 | **PASS** codec/telemetry, tests/race/vet/build/fuzz/bench; [báo cáo](app/G2_CLOSEOUT.md) |
+| Công việc phát triển kế tiếp | G3 capture màn hình + preview bảo vệ token/Origin |
 | Bằng chứng | Remote >600s, [mạng mới](app/G0_LATENCY_FOLLOWUP.md) RTT mean 48–51ms; giữ giới hạn mạng cũ, không hứa latency/FPS chung |
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
@@ -25,9 +26,9 @@ nhánh hiện dùng là `main`.
 [`croc/`](croc/README.md) chứa snapshot mã nguồn upstream đầy đủ, giữ nguyên nội
 dung và giấy phép. Đây là thư mục mã nguồn bình thường trong repo CrocStream,
 không có repo Git lồng bên trong; xem [nguồn gốc và giấy phép](UPSTREAM.md).
-`app/` chứa module Go framing/config và các báo cáo, tooling, build probe,
-PoC transport của G0. PoC truyền dữ liệu tổng hợp; package protocol chưa giải
-mã video. Lệnh kiểm tra và API nằm trong [app README](app/README.md).
+`app/` chứa module Go framing/config, codec LZ4 tile-delta, telemetry và các
+báo cáo/tooling/PoC G0. Codec được kiểm thử bằng ảnh tổng hợp; capture màn hình
+thật thuộc G3. Lệnh kiểm tra và API nằm trong [app README](app/README.md).
 
 ## Bố trí hiện tại
 
@@ -86,6 +87,7 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 | [G0_ADAPTER_DESIGN](app/G0_ADAPTER_DESIGN.md) | Thiết kế transport thử nghiệm để review trước triển khai |
 | [G0_LOCAL_PROOF](app/G0_LOCAL_PROOF.md) | Kết quả PoC, lệnh kiểm chứng, giới hạn và điều kiện remote còn thiếu |
 | [G1_CLOSEOUT](app/G1_CLOSEOUT.md) | Framing/config, quyết định C-01/C-02, tests/fuzz và bàn giao G2 |
+| [G2_CLOSEOUT](app/G2_CLOSEOUT.md) | Codec delta, canonical reference, telemetry, tests/fuzz và benchmark |
 
 ## Cách tiếp tục
 
@@ -95,4 +97,4 @@ Giữ `croc/` nguyên gốc để tham chiếu; phát triển phần mới trong
 repo khi được giao triển khai. G0 đã đóng; package protocol G1 hiện có trong
 `app/internal/protocol`. Xem closeout và gate kế tiếp trong Roadmap khi nhận
 task mới. Mọi đường dẫn `docs/`, `croc/` và `app/` tính từ gốc repository;
-các module capture/codec/UI trong kiến trúc vẫn là đề xuất.
+capture/UI trong kiến trúc vẫn là các bước tiếp theo.
