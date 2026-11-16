@@ -5,7 +5,7 @@
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
 
-**Status:** proposed desktop screen-sharing prototype; [G0 feasibility PASS](../app/G0_CLOSEOUT.md), not product completion. No screen-sharing application is implemented; the repository contains pristine upstream `croc/`, planning `docs/` and isolated G0 artifacts in `app/` (D-12). Local/remote >600s secure duplex, minimal Windows native build/runtime and dependency-notice review passed. The latest network measured 48–51ms mean application RTT; old-network limits remain documented. Real capture, media/UI, performance and packaging acceptance belong to later gates. Provisional product decisions and C-01/C-02 still need confirmation before affected implementation. Paths are repository-root relative.
+**Status:** desktop screen-sharing prototype in development; [G0 feasibility PASS](../app/G0_CLOSEOUT.md), with [G1 framing/config PASS](../app/G1_CLOSEOUT.md) in `app/internal/protocol`. No screen-sharing application is runnable yet. The repository contains pristine upstream `croc/`, planning `docs/`, isolated G0 artifacts and the pure-Go application module in `app/` (D-12). Local/remote >600s secure duplex, minimal Windows native build/runtime and dependency-notice review passed at G0. The latest G0 network measured 48–51ms mean application RTT; old-network limits remain documented. Real capture, media/UI, performance and packaging acceptance belong to later gates. C-01/C-02 were owner-confirmed for G1 on 2026-11-16; other provisional choices remain subject to their checkpoints. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
@@ -38,7 +38,8 @@ The screen source is a real display chosen from enumerated displays, with user c
 
 ### US-03 Deterministic codec
 - Follow the [media protocol](ARCHITECTURE.md#media-protocol-v1): validated CONFIG before video, first video KEY id1, lossless LZ4-frame RGBA and deterministic dirty tiles.
-- Default tiles 32×32, RGB MAE threshold `tau=4`, KEY fallback above 65% dirty tiles, periodic KEY every 30 emitted frames. The original product maximum of 30 versus configurable protocol range 1–120 remains open as C-01.
+- Default tiles 32×32, RGB MAE threshold `tau=4`, KEY fallback above 65% dirty tiles. Key interval is configurable from **1–120 emitted frames**, default **30** (C-01, owner-confirmed 2026-11-16).
+- CONFIG permits only **640×360** or **1280×720**, never mixed width/height pairs (C-02, owner-confirmed 2026-11-16).
 - Under backpressure skip capture **before** encoding; do not skip intermediate deltas and continue decoding later frames. No permanent sender/viewer drift, even with noise filtering (`tau=4`).
 - No pixel-perfect match to every raw capture is promised when threshold >0; the acceptance proof compares **receiver output to sender canonical transmitted image**. Test `tau=0` where every pixel change should be represented losslessly.
 

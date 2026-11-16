@@ -4,7 +4,7 @@
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
 > [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
-> thực tế; phiên bản công cụ được ghi nhận cần kiểm chứng tại G0.
+> thực tế; kết quả toolchain G0 và framing G1 được ghi trong các closeout.
 
 ## Contents
 - [Reference source](#reference-source)
@@ -28,7 +28,9 @@ Source inspection, not runtime feasibility evidence:
 - `web/`: upstream browser file-transfer/SSH client, not Wails or CrocStream.
 
 ## Decisions and blockers
-Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisional.** Keep IDs stable and distinguish design requirements from verified implementation.
+Updated 2026-11-16. **D-12 and D-07's C-01/C-02 choices are owner-confirmed;
+other D entries remain provisional.** Keep IDs stable and distinguish design
+requirements from verified implementation.
 
 | ID | Decision | Reason / tradeoff |
 | --- | --- | --- |
@@ -38,7 +40,7 @@ Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisiona
 | D-04 | Pin the exact reference commit above, not merely the version string or v11.6.5 tag. | Reproducibility; v9/v10 APIs cannot be assumed. |
 | D-05 | Exactly one broadcaster and one viewer per session. | One coherent canonical-reference/PLI sequence. |
 | D-06 | RGBA8888 alpha=255, 32×32 tiles, LZ4 frame format, lossless network KEY. JPEG only for local UI. | Deterministic sender/viewer reference equality. |
-| D-07 | Fixed session resolution; default 1280×720 at 24 FPS, fallback 640×360 at 15 FPS; key interval 30 emitted frames, MAE tau=4, dirty ratio >0.65 triggers KEY. | Testable defaults, not performance guarantees; C-01/C-02 need clarification. |
+| D-07 | Fixed session resolution: only 1280×720 or 640×360; default 1280×720 at 24 FPS, fallback 640×360 at 15 FPS; key interval 1–120 emitted frames, default 30, MAE tau=4, dirty ratio >0.65 triggers KEY. | Resolution pairs and key interval owner-confirmed 2026-11-16 (C-01/C-02); defaults are not performance guarantees. |
 | D-08 | Webcam after screen-capture MVP; no audio, cloud storage, accounts, recording or multi-viewer. | Avoid CGO/OpenCV complexity before network proof. |
 | D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
 | D-10 | Optional measured RTT and viewer-local decode→render; no one-way E2E claim without tested clock synchronization. | Unsynchronized host timestamps cannot establish E2E latency. |
@@ -81,12 +83,14 @@ Update the existing decision ID, affected product requirements, protocol, tests 
 G0 must quantify internal API/fork maintenance costs, relay capacity/policy and security assumptions. Avoid low-latency/P2P claims without evidence. High-entropy LZ4 keys, local JPEG encoding and full-frame baseline computation require separate profiling; static desktops do not establish universal performance.
 
 ## Pending clarifications
-These are pre-existing ambiguities, **not new approved behavior**. Resolve the affected item before implementation and update its decision/spec/tests together.
+These are pre-existing ambiguities. C-01/C-02 were explicitly resolved by the
+owner on 2026-11-16 when authorizing G1; remaining proposals are not approved.
+Resolve affected items before implementation and update decision/spec/tests together.
 
 | ID | Existing requirements | Proposed resolution to confirm |
 | --- | --- | --- |
-| C-01 | PRD maximum key interval 30; CONFIG allows 1–120, default 30; UI exposes advanced interval. | Decide whether 30 is only the default or the product maximum. Preserve CONFIG range and default until explicitly resolved. |
-| C-02 | Product lists two resolution pairs; CONFIG lists width/height independently. | Explicitly allow only (640,360) and (1280,720), rejecting mixed pairs. |
+| C-01 — RESOLVED | PRD previously described maximum 30 versus CONFIG 1–120. | Owner confirmed 1–120 emitted frames, default 30; 30 is not the maximum. Wire layout/version unchanged. |
+| C-02 — RESOLVED | Product lists two resolution pairs; CONFIG listed width/height independently. | Owner confirmed only (640,360) and (1280,720); reject mixed pairs. Wire layout/version unchanged. |
 | C-03 | Architecture listener is app-lifetime; PRD/AGENTS require bridge closure with session. | Define session-owned listener versus app service that recreates a listener per session; always close session connections/queues and stop delivery on Stop. |
 | C-04 | AGENTS validates Origin where available; test plan rejects missing/foreign Origin. | Inspect dev/packaged WebView Origin behavior and specify exact allowlist/missing-Origin policy. No permissive wildcard; mandatory token stays unchanged. |
 | C-05 | Accessibility listed as P2; UI already requires keyboard navigation, labels, focus and screen-reader acceptance. | Keep basic accessibility in MVP, defer enhancements; confirm priority explicitly. |
@@ -98,7 +102,7 @@ proposed resolutions above.
 
 | Before implementing | Items | Evidence / decision needed |
 | --- | --- | --- |
-| G1 configuration validation | C-01, C-02 | Owner confirms supported key intervals and resolution pairs; update PRD, protocol and tests together |
+| G1 configuration validation | C-01, C-02 — resolved | Owner confirmed 1–120/default 30 and only the two product resolution pairs on 2026-11-16 |
 | G3 local bridge | C-03, C-04 | Confirm listener ownership; observe dev/packaged WebView Origins and define the exact policy before bridge acceptance |
 | G3 preview UI and G5 full UI | C-05 | Confirm basic accessibility scope before implementing affected controls and acceptance cases |
 
@@ -109,26 +113,29 @@ proposed resolutions above.
 4. **Real-time over backpressure**: bounded latest-only capture before encoder, sequential codec and network write; decode all deltas, optionally skip UI display snapshots.
 5. **Wails v3 not v2**: v3 services/events/app/window APIs only. Do not blindly port `runtime.EventsEmit`/v2 `app.go` examples.
 
-## Proposed future application layout
+## Application layout and future modules
 
 The current single repository contains `croc/` (pristine upstream reference snapshot),
-`docs/` (planning documents), and initial G0 survey artifacts in `app/`.
-The runtime application directories below remain proposed; isolated
-G0 build-probe and transport-PoC modules exist. Continue within G0 until its
-blockers are resolved. Do not scaffold
-new code inside the upstream snapshot.
+`docs/` (planning documents), G0 artifacts and the G1 pure-Go application
+module in `app/`. G0 and G1 are closed PASS; see their closeout evidence.
+Only `internal/protocol` exists among the application packages below;
+the other runtime directories remain proposed.
 
 ```
 AGENTS.md
 README.md
 docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
 croc/                                 # Existing pristine upstream source
-app/                                  # Exists for initial G0 artifacts
-  G0_FEASIBILITY.md                    # Existing survey and BLOCKED decision
+app/                                  # Application core and G0 artifacts
+  G0_FEASIBILITY.md                    # Historical survey; final status in closeout
   G0_TOOLCHAIN.md                      # Tool/build/test evidence
   G0_ADAPTER_DESIGN.md                 # Experimental transport contract
   G0_LOCAL_PROOF.md                    # Historical local PoC evidence
   G0_CLOSEOUT.md                       # G0 PASS, notices/native checks and G1 handoff
+  G1_CLOSEOUT.md                       # Framing/config implementation and evidence
+  README.md                           # Application-core commands and API contract
+  go.mod                              # Pure Go, standard library only at G1
+  internal/protocol/                  # Implemented: header, CONFIG, reader/writer, tests/fuzz
   g0/Inspect-Environment.ps1           # Existing read-only inventory script
   g0/Install-Toolchain.ps1             # Approved portable tool installation
   g0/Use-Toolchain.ps1                 # Process-local environment
@@ -141,7 +148,6 @@ app/                                  # Exists for initial G0 artifacts
   internal/capture/                   # Source interface, screen (P0), webcam (P1)
   internal/frame/                     # Packed RGBA normalization, dimensions
   internal/delta/                     # encoder, decoder, bounded reusable buffers
-  internal/protocol/                  # typed header, binary config, packet parsing
   internal/transport/                 # duplex interface; croc adapter only after G0
   internal/bridge/                    # loopback authenticated binary WS to WebView
   internal/telemetry/                 # capture/codec/protocol counters and 1s windows
@@ -218,7 +224,12 @@ Receiver processing validates entire DELTA before touching canonical reference. 
 - Target Wails v3.1.0, toolchain from tested upstream `go.mod` (provisionally Go 1.27.3+), Windows x64 initially. Verify `wails3 doctor`, native screen-capture permission, WebView2, firewall/relay usage and signed/unsigned installer behavior. Tests on actual macOS/Linux and webcam hardware are deferred to subsequent phases.
 
 ## Media protocol v1
-**Normative draft, not deployed.** Application framing runs inside an authenticated/encrypted transport; stock croc clients do not understand it. G0 tested a separate experimental transport record envelope; the media bytes below are unchanged and not yet implemented. Changing wire bytes requires a protocol revision and tests.
+**Normative v1 contract, not deployed.** G1 implements framing/configuration;
+codec and application integration are later gates. Application framing runs
+inside an authenticated/encrypted transport; stock croc clients do not
+understand it. G0 tested a separate experimental transport record envelope.
+The media byte layout below is unchanged. Changing wire bytes requires a
+protocol revision and tests.
 
 ### Stream and header
 One reliable ordered bidirectional byte stream per session, one receive parser and one serialized writer per endpoint. Reverse keyframe requests share that duplex stream.
@@ -245,6 +256,10 @@ Packet = exactly **18-byte header + PayloadLength bytes**, BigEndian, no padding
 
 Unknown types are fatal in v1; no silent fallback.
 
+The G1 API enforces CONFIG as the first broadcaster packet, with END allowed
+for early abort; reverse controls require no reverse CONFIG. After CONFIG,
+controls may precede the first KEY. See [API and ownership](../app/README.md).
+
 ### SESSION_CONFIG
 | Offset | Bytes | Field | Value |
 | --- | ---: | --- | --- |
@@ -255,9 +270,11 @@ Unknown types are fatal in v1; no silent fallback.
 | 6 | 1 | PixelFormat uint8 | 1 = packed RGBA8888, alpha=255 |
 | 7 | 1 | Compression uint8 | 1 = LZ4 **frame**, not block API |
 | 8 | 1 | FPS uint8 | 15, 24 or 30 desired; actual rate measured |
-| 9 | 2 | KeyInterval uint16 | 1–120, default 30; C-01 unresolved |
+| 9 | 2 | KeyInterval uint16 | 1–120 emitted frames, default 30 (C-01 resolved) |
 
-Reject unsupported values; no silent downscale/rescale. Resolution pairing is tracked by C-02. Checked `Width*Height*4 <= MAX_RAW = 3,686,400` (1280×720×4). Larger formats require a new protocol revision and bounds.
+Reject unsupported values; no silent downscale/rescale. Only resolution pairs
+**(640,360)** and **(1280,720)** are permitted; reject mixed pairs (C-02 resolved).
+Checked `Width*Height*4 <= MAX_RAW = 3,686,400` (1280×720×4). Larger formats require a new protocol revision and bounds.
 
 ### Canonical image and compression
 - Normalize native capture stride into contiguous row-major `R,G,B,A`, length `Width*Height*4`, alpha forced to 255 without premultiplied alpha. Any RGB color transformation must be deterministic and identical in tests. Resolution cannot change within a session.
@@ -289,6 +306,14 @@ For each tile: `x=tileX*32`, `y=tileY*32`, `w=min(32,Width-x)`, `h=min(32,Height
 5. For interval 30, scheduled KEY IDs are `1,31,61,...`; PLI/dirty fallback may force earlier KEY. Near uint32 overflow terminate and establish a fresh authenticated session; never wrap to 0.
 6. On close: best-effort END, cancel workers, close sockets/readers/writers, release screen/camera, clear in-memory codephrase/token. EOF, timeout or cryptographic failure means Disconnected, with no silent reuse of delta state.
 7. Bound latest-only capture to 1–2 samples; encoder maintains one canonical sequence and sender serializes writes. No unbounded queues.
+
+G1 integration: `Reader.ResolveVideo` separates payload receipt from codec
+acceptance. `lastVideoID`/canonical progress advances only after successful
+decode; a separate consumed-wire-ID high-water mark rejects non-increasing
+IDs even when earlier payloads failed validation. A recoverable sequence error
+discards exactly the bounded payload, invalidates the reference and waits for
+a forward KEY. Malformed framing or truncated discard is terminal. Actual
+reference bytes and decompression validation are G2 responsibilities.
 
 Treat even decrypted input as untrusted. Malformed framing, directions, sizes, versions and compressed data must yield bounded errors, never panic or uncontrolled allocation. Room codes, frames, keys and tokens must not enter plaintext logs/telemetry or frame storage. Reuse verified upstream PAKE/E2E mechanisms rather than inventing a handshake. Exact byte fixtures and parser/fuzz obligations are in [TEST_PLAN](TEST_PLAN.md#a-protocol-tests-unit--fuzz-no-network-required).
 

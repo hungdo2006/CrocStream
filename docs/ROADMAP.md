@@ -3,20 +3,23 @@
 > **Cách đọc:** tài liệu này cho biết thứ tự triển khai và điều kiện chuyển bước,
 > áp dụng cho cả thành viên nhóm và coding agent. Người mới nên đọc
 > [GETTING_STARTED](GETTING_STARTED.md) trước. **G0 PASS** cho khả thi prototype
-> đã kiểm chứng; xem [closeout](../app/G0_CLOSEOUT.md). G1 chưa bắt đầu.
+> đã kiểm chứng; xem [closeout](../app/G0_CLOSEOUT.md). **G1 PASS** cho
+> framing/config; [bằng chứng G1](../app/G1_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
 Current workspace (2026-11-16): one CrocStream repository containing pristine
-upstream source in `croc/`, planning documents in `docs/`, and initial G0 survey
-artifacts in `app/`, including isolated `app/g0/buildprobe` and `app/g0/poc` Go
-modules. The transport PoC is implemented; the desktop application is not.
+upstream source in `croc/`, planning documents in `docs/`, G0 artifacts,
+isolated `app/g0/buildprobe` / `app/g0/poc` modules, and the pure-Go application
+module with `app/internal/protocol`. The transport PoC and media framing/config
+are implemented; the desktop application is not.
 Previous custom code and experiment records are not retained. Source and
 workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0 PASS**, ngày 2026-11-16.
+Kết quả hiện hành: **G0 PASS, G1 PASS**, ngày 2026-11-16.
+Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
 [toolchain](../app/G0_TOOLCHAIN.md),
@@ -37,8 +40,9 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G0.2 | PASS G0: hợp đồng adapter, self-review, provenance và negative tests | Không coi là audit production độc lập |
 | G0.3 | PASS: CLI PoC, Host/Accept/Join, secure stream; tests/race/vet/checksums đạt | Giữ tách transport khỏi codec/capture/UI khi tích hợp |
 | G0.4 | LOCAL_PASS; remote 605s trên mạng cũ và 600.1s trên mạng mới; hash/control/cleanup đúng; RTT mạng mới 48–51ms mean | Ghi rõ giới hạn theo mạng, không suy ra FPS/latency chung |
-| G0.5 | PASS: quyết định GO cho G1, bằng chứng native/license/security và giới hạn ở G0_CLOSEOUT | Chốt C-01/C-02 trước validation G1 bị ảnh hưởng |
-| G1–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+| G0.5 | PASS: quyết định GO cho G1, bằng chứng native/license/security và giới hạn ở G0_CLOSEOUT | C-01/C-02 đã được chủ dự án chốt khi giao G1 |
+| G1 | PASS: framing/config, reader/writer, tests/race/vet/Windows build và 4 fuzz targets; xem G1_CLOSEOUT | Bàn giao G2 codec + telemetry |
+| G2–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
 transport local/remote, native compile/runtime, tests và notice review.
@@ -47,13 +51,21 @@ Ngày 2026-11-16, chủ dự án xác nhận **chưa có máy thứ hai/relay**.
 Các blocker thiếu môi trường tại mốc đó đã được đóng bằng kết quả thực tế,
 không phải thu hẹp tiêu chí.
 
-### Next focused gate: G1 — not started
+### G1 handoff and implementation
 
-G0 đã đóng; chủ dự án chưa yêu cầu triển khai G1 trong lượt closeout này.
-Task kế tiếp là framing/config thuần Go: header 18 byte, CONFIG 11 byte,
-fixtures, bounded parsing, malformed/truncation tests và fuzz.
-Giải quyết C-01/C-02 với chủ dự án trước khi chốt validation khoảng key interval
-và cặp resolution. Chưa scaffold UI/capture hoặc thay đổi media wire format.
+Ngày 2026-11-16, sau khi xác nhận G0, chủ dự án yêu cầu triển khai G1 và chốt
+C-01/C-02: key interval 1–120, default 30; chỉ 640×360 và 1280×720.
+`app/internal/protocol` hiện có header 18 byte, CONFIG 11 byte, reader/writer
+bounded, fixtures, malformed/truncation/replay tests và fuzz.
+Chi tiết lệnh/kết quả, API codec acceptance và giới hạn:
+[G1_CLOSEOUT](../app/G1_CLOSEOUT.md), [app README](../app/README.md).
+
+### Next focused gate: G2 — not started
+
+Codec thuần Go và telemetry: canonical RGBA, LZ4-frame KEY/DELTA, tile records,
+test nhiều frame tau=0/tau=4, giải nén có giới hạn và baseline cùng mẫu phát.
+Chọn/pin dependency LZ4 theo phê duyệt trước khi thêm dependency production.
+G2 chưa được triển khai trong lượt G1 này.
 
 ## Next work: G0
 
@@ -94,7 +106,9 @@ và phê duyệt hiện hành; bảng task không tự cấp phép các thay đ�
   Roadmap hiện là thứ tự phụ thuộc, chưa phải cam kết lịch bàn giao.
 
 ## Codex handoff
-Use this starting task **only when the owner requests continued development**. Scope: **G0 architecture and transport feasibility**, not the whole application.
+The checklist below is the **historical initial G0 handoff**, now completed.
+For current development use the latest closeout and next focused gate above;
+do not repeat G0 or treat this checklist as authorization for the whole app.
 
 1. Read [AGENTS.md](../AGENTS.md), then [PRD](PRD.md), [ARCHITECTURE](ARCHITECTURE.md) (decisions, blockers, protocol), [TEST_PLAN](TEST_PLAN.md) and this roadmap. Inspect Git status, source, dependencies and available tools; old experimental toolchains are no longer assumed installed. Use `app/` for the CrocStream module within this same repository and keep `croc/` pristine; do not create another Git repository.
 2. Verify `github.com/schollz/croc/v11` at **552f40fd2d7593316118370bec0a93478d48e715**, which reports 11.6.5 but is not the tag itself. Check proposed Wails v3 APIs/toolchain; identify actual codephrase, PAKE, mutual confirmation, E2E encryption, relay/P2P and file-lifecycle code paths. Do not assume v9/v10 APIs.

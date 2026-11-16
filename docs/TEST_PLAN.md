@@ -21,17 +21,27 @@ Product IDs are defined in [PRD](PRD.md); decisions/blockers and protocol in [AR
 | US-05; failures, cleanup, recovery | A malformed data, C concurrency, D.5 adapter, E GUI | G1–G5 |
 | US-06; reproducibility and packaging | D two-process evidence, E installed build, F conditions | G0 / G6 |
 
-Resolve [C-01–C-05](ARCHITECTURE.md#pending-clarifications) before asserting acceptance for configurable key intervals, resolution pair validation, bridge lifetime, missing-Origin policy or accessibility delivery priority.
+[C-01/C-02](ARCHITECTURE.md#pending-clarifications) were owner-resolved on
+2026-11-16: key interval 1–120/default 30, only 640×360 and 1280×720.
+C-03–C-05 still require resolution at the bridge/UI checkpoints.
 
 ## A. Protocol tests (unit + fuzz; no network required)
+G1 framing/config implementation and executed commands:
+[G1 closeout](../app/G1_CLOSEOUT.md). Decompression, tile records and canonical
+image correctness in the requirements below remain G2 obligations.
+
 - Header: fixed 18 bytes, BigEndian encode/decode fixtures below and [media protocol](ARCHITECTURE.md#media-protocol-v1), all packet types, EOF between any two bytes, invalid magic/type/direction, unsupported version.
 - Reject lengths >8 MiB **before allocation**, negative/overflow arithmetic in dimension calculation, oversize decompression and unexpected trailing data. A fuzz target should cover `DecodeHeader`, `DecodeConfig`, `DecodePacket`, `DecodeDelta`; prohibit panics and unbounded memory for any input.
 - CONFIG: verify the exact fixture below; reject zero/unsupported dimensions, tile size, codec, FPS and non-11-byte config.
 - Full packet roundtrip over `io.Pipe` with a reader returning 1-3 bytes per Read; verify `io.ReadFull` reconstructs correctly. Simulate fragmented writes and sender termination halfway through payload.
 - Validate control packets `FrameID=0`, `TimestampMs=0`, correct payload size, invalid PLI lengths, wrong direction.
-- CONFIG exactly once before video; reject unsupported KeyInterval and mixed resolutions according to the resolved C-01/C-02 contract. First video must be KEY id1. Unknown type/version is fatal, with no magic scanning after truncation.
+- CONFIG exactly once before video; accept KeyInterval 1–120 (including 31/120), reject 0/121/65535; accept only 640×360 and 1280×720, reject mixed pairs (C-01/C-02 resolved). First video must be KEY id1. Unknown type/version is fatal, with no magic scanning after truncation.
 - Fuzz header, CONFIG, tile records and compressed content even after decryption: wrong direction, invalid LZ4, replayed IDs, length overflow, impossible dimensions, malicious tile indices and compression bombs must not panic or allocate unbounded memory.
 - Check uint32 FrameID exhaustion triggers a fresh authenticated session rather than wraparound; KEY resync allows forward ID gaps but rejects non-increasing IDs.
+- Failed codec acceptance must retain the last good ID but consume the wire ID:
+  test replay of a rejected initial/later KEY and a lower KEY after a discarded
+  DELTA gap. Require forward KEY recovery and no payload read-ahead before codec
+  resolution. Session reconnect itself remains G4 integration acceptance.
 
 ### Exact byte fixtures
 - CONFIG: `01 05 00 02 d0 20 01 01 18 00 1e` = version1, 1280×720, tile32, rgba1, lz4frame1, fps24, interval30. Assert exact encoding and decoding.
@@ -103,16 +113,17 @@ Local adapter tests do not satisfy G1 media framing or remote acceptance.
 - Measure 1280×720/24 FPS target on named Windows hardware with p50/p95; document deviations and lower-resolution/FPS results. Record queue sizes, goroutine counts and memory growth over >=10 minutes; no zero-allocation guarantee. Report LAN recovery and relay performance separately; no public-relay 24 FPS guarantee.
 
 ## Typical verification commands (only after repository/toolchain exists)
-This is a future application verification reference, not a runnable CrocStream
-quickstart. The repository and `app/` G0 artifacts exist, including an isolated
-`app/g0/buildprobe` and `app/g0/poc` modules, but no desktop application module.
+The pure-Go `app/` application module now supports the Go checks below; see its
+[README](../app/README.md). The isolated `app/g0/buildprobe` and `app/g0/poc`
+modules are checked separately. Desktop/frontend commands remain future
+verification requirements, not a runnable screen-sharing quickstart.
 PoC commands: [README](../app/g0/poc/README.md).
 Toolchain/baseline results: [G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md).
 For documentation-only edits, check the diff and local Markdown links/anchors;
 application tests/builds are not applicable. Record those checks separately from
 gate acceptance evidence.
 
-Run the application checks from `app/` after that module has been implemented.
+Run the application Go checks from `app/`.
 Upstream regression checks run separately from `croc/`. Both directories belong
 to the same root Git repository; no second repository is needed.
 

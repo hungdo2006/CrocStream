@@ -28,18 +28,19 @@ Theo cập nhật 2026-11-16:
 | --- | --- |
 | `croc/` | Snapshot upstream để khảo sát; giữ nguyên mã nguồn và giấy phép |
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
-| `app/` | Có báo cáo G0, tooling, build probe và PoC transport; chưa có UI/capture/codec |
+| `app/` | Có module Go G1 framing/config, báo cáo G0, tooling, build probe và PoC transport; chưa có UI/capture/codec |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
 | Ứng dụng và benchmark | Chưa có ứng dụng chia sẻ màn hình hoặc benchmark media |
 
 **Chưa có lệnh chạy ứng dụng chia sẻ màn hình CrocStream.** Có
 [lệnh chạy PoC G0](../app/g0/poc/README.md) để thử dữ liệu tổng hợp.
-Chạy được croc upstream cũng không
-chứng minh ứng dụng chia sẻ màn hình đã hoạt động. Các lệnh trong Test Plan là
-hướng dẫn cho giai đoạn có module/toolchain phù hợp, không phải quickstart hiện tại.
+Các lệnh test/build package G1 nằm trong [app README](../app/README.md).
+Chạy được croc upstream cũng không chứng minh ứng dụng chia sẻ màn hình đã
+hoạt động. Các lệnh desktop/frontend trong Test Plan dành cho những gate sau.
 
-Các quyết định kiến trúc phần lớn còn đề xuất; D-12 về một repository đã được
-chủ dự án xác nhận. Xem [quyết định và blocker](ARCHITECTURE.md#decisions-and-blockers).
+Các quyết định kiến trúc phần lớn còn đề xuất; D-12 về một repository và
+C-01/C-02 về key interval/độ phân giải đã được chủ dự án xác nhận.
+Xem [quyết định và blocker](ARCHITECTURE.md#decisions-and-blockers).
 Khảo sát ban đầu nằm trong [G0_FEASIBILITY](../app/G0_FEASIBILITY.md);
 kết quả cài toolchain/build/test tiếp theo ở [G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md).
 Kết quả adapter ở [G0_LOCAL_PROOF](../app/G0_LOCAL_PROOF.md) và
@@ -48,6 +49,7 @@ EC2. [G0_CLOSEOUT](../app/G0_CLOSEOUT.md) chốt G0 PASS với native probe,
 notice review và giới hạn rõ ràng; capture màn hình thật vẫn thuộc G3.
 Follow-up [mạng mới](../app/G0_LATENCY_FOLLOWUP.md) đã chạy đủ 600.1s ở mức tải
 gốc với RTT trung bình 48–51ms; kết quả mạng cũ vẫn được giữ riêng.
+[G1 closeout](../app/G1_CLOSEOUT.md) ghi bằng chứng framing/config và bước G2.
 
 ## 3. Hình ảnh đi từ máy phát tới máy xem thế nào?
 
@@ -58,7 +60,7 @@ MÁY PHÁT
 Chụp màn hình → Chuẩn hóa RGBA → Chọn KEY hoặc DELTA → Nén LZ4
                                                         │
                       Kênh truyền xác thực, mã hóa       │
-                      cần kiểm chứng tại G0              ▼
+                      PoC đã đạt khả thi G0              ▼
 MÁY XEM
 Canvas ← Ảnh JPEG hiển thị cục bộ ← Dựng ảnh ← Kiểm tra và giải nén
 
@@ -83,7 +85,7 @@ liệu. Điều phải chứng minh là ảnh tham chiếu của bên nhận b�
 | Thành phần đề xuất | Vai trò |
 | --- | --- |
 | Go | Capture, codec, giao thức, quản lý phiên và đo lường |
-| croc | Khảo sát tái sử dụng cơ chế kết nối/xác thực/mã hóa/relay; chưa có adapter được xác nhận |
+| croc | Adapter thử nghiệm đã đạt khả thi G0; tích hợp với ứng dụng media thuộc G4 |
 | Wails v3 | Khung ứng dụng desktop, kết nối Go với WebView |
 | React + TypeScript | Giao diện, trạng thái kết nối và dashboard |
 | LZ4 + tile delta | Nén ảnh đầy đủ hoặc các ô ảnh thay đổi |
@@ -138,17 +140,17 @@ Architecture; không suy ra “đã duyệt” chỉ từ việc một mục có
 - [ ] Phân biệt code upstream `croc/` với vị trí code ứng dụng tương lai `app/`.
 - [ ] Xác định gate hiện tại và đọc test tương ứng; không coi kế hoạch là kết quả.
 - [ ] Ghi lại những giả định ảnh hưởng tới task, đối chiếu bảng `B-` và `C-`.
-- [ ] Nhận một task có đầu ra kiểm chứng được từ [danh sách G0](ROADMAP.md#next-work-g0).
+- [ ] Nhận một task có đầu ra kiểm chứng được từ [gate hiện tại](ROADMAP.md#current-progress).
 
-Task nhập môn phù hợp: vẽ lại vòng đời kết nối từ mã croc đã ghim, ghi rõ
-file/hàm liên quan và điểm nào có thể phụ thuộc truyền file. Đầu ra là bản khảo
-sát có dẫn chứng; đọc mã nguồn chưa đủ để kết luận transport đã khả thi.
+Task nhập môn phù hợp: đọc fixtures và reader/writer G1, giải thích CONFIG,
+KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm tra đầy đủ.
+Đọc closeout để phân biệt các test đã chạy với phần codec/capture còn phải làm.
 
 ## 7. Bước tiếp theo và cách báo cáo
 
-G0 cần PoC hai process thực sự trao đổi dữ liệu hai chiều có xác thực/mã hóa,
-kiểm tra hash/thứ tự, điều khiển ngược, vòng đời và đường relay mục tiêu.
-Xem [task G0](ROADMAP.md#next-work-g0) và [tiêu chí thử nghiệm](TEST_PLAN.md#d-transport-g0-proof-two-processes-no-gui).
+G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
+framing/config thuần Go; bước kế tiếp là G2 codec delta và telemetry.
+Xem [tiến độ](ROADMAP.md#current-progress) và [bằng chứng G1](../app/G1_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh
 → bản Windows bàn giao. Chi tiết và điều kiện chuyển bước ở [bảng gate](ROADMAP.md#gates).

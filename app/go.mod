@@ -1,0 +1,3 @@
+module crocstream.local/app
+
+go 1.27.3
