@@ -1,0 +1,416 @@
+{
+    "generated_utc":  "2026-11-16T11:57:41.8438574Z",
+    "scope":  "G0 Windows ordinary/race package closures",
+    "modules":  [
+                    {
+                        "path":  "filippo.io/edwards25519",
+                        "version":  "v1.2.0"
+                    },
+                    {
+                        "path":  "github.com/cespare/xxhash/v2",
+                        "version":  "v2.3.0"
+                    },
+                    {
+                        "path":  "github.com/go-ole/go-ole",
+                        "version":  "v1.3.0"
+                    },
+                    {
+                        "path":  "github.com/kalafut/imohash",
+                        "version":  "v1.1.1"
+                    },
+                    {
+                        "path":  "github.com/magisterquis/connectproxy",
+                        "version":  "v0.0.0-20200725203833-3582e84f0c9b"
+                    },
+                    {
+                        "path":  "github.com/mattn/go-colorable",
+                        "version":  "v0.1.16"
+                    },
+                    {
+                        "path":  "github.com/mattn/go-isatty",
+                        "version":  "v0.0.24"
+                    },
+                    {
+                        "path":  "github.com/minio/highwayhash",
+                        "version":  "v1.0.4"
+                    },
+                    {
+                        "path":  "github.com/mitchellh/colorstring",
+                        "version":  "v0.0.0-20190213212951-d06e56a500db"
+                    },
+                    {
+                        "path":  "github.com/rivo/uniseg",
+                        "version":  "v0.4.7"
+                    },
+                    {
+                        "path":  "github.com/schollz/croc/v11",
+                        "version":  "v11.6.5"
+                    },
+                    {
+                        "path":  "github.com/schollz/pake/v3",
+                        "version":  "v3.2.1"
+                    },
+                    {
+                        "path":  "github.com/schollz/progressbar/v3",
+                        "version":  "v3.19.1"
+                    },
+                    {
+                        "path":  "github.com/tscholl2/siec",
+                        "version":  "v0.0.0-20240310163802-c2c6f6198406"
+                    },
+                    {
+                        "path":  "github.com/twmb/murmur3",
+                        "version":  "v1.2.2"
+                    },
+                    {
+                        "path":  "github.com/wailsapp/wails/v3",
+                        "version":  "v3.1.0"
+                    },
+                    {
+                        "path":  "golang.org/x/crypto",
+                        "version":  "v0.59.0"
+                    },
+                    {
+                        "path":  "golang.org/x/net",
+                        "version":  "v0.62.0"
+                    },
+                    {
+                        "path":  "golang.org/x/sys",
+                        "version":  "v0.50.0"
+                    },
+                    {
+                        "path":  "golang.org/x/term",
+                        "version":  "v0.48.0"
+                    },
+                    {
+                        "path":  "golang.org/x/text",
+                        "version":  "v0.44.0"
+                    }
+                ],
+    "notices":  [
+                    {
+                        "origin":  "EFF-wordlist-attribution",
+                        "sha256":  "06267B8687488ADBF82CE4E8329E0FB41547A4BB9E3FB2A0B51B68565B8721E4"
+                    },
+                    {
+                        "origin":  "filippo.io/edwards25519@v1.2.0/LICENSE",
+                        "sha256":  "2D36597F7117C38B006835AE7F537487207D8EC407AA9D9980794B2030CBC067"
+                    },
+                    {
+                        "origin":  "github.com/cespare/xxhash/v2@v2.3.0/LICENSE.txt",
+                        "sha256":  "F566A9F97BACDAF00D9F21DD991E81DC11201C4E016C86B470799429A1C9A79C"
+                    },
+                    {
+                        "origin":  "github.com/go-ole/go-ole@v1.3.0/LICENSE",
+                        "sha256":  "D883DBCA28769FF23DD4368A8EDB7AD9F9F23A8F86ADDE2875C6E41A828AAC62"
+                    },
+                    {
+                        "origin":  "github.com/kalafut/imohash@v1.1.1/LICENSE",
+                        "sha256":  "A2754A08A079C22429351EB34798E4D24859A1D1A21C5A3291B1235DBBBDDF18"
+                    },
+                    {
+                        "origin":  "github.com/magisterquis/connectproxy@v0.0.0-20200725203833-3582e84f0c9b/LICENSE",
+                        "sha256":  "6650A5A078489C63FC8D1B35E79A7B1AB78693D53DC540C5497E1AEDDC69B3EB"
+                    },
+                    {
+                        "origin":  "github.com/mattn/go-colorable@v0.1.16/LICENSE",
+                        "sha256":  "88A2379B3CA34BF5C57127AFF9DCB802BBB60ECE0805CDBDA65B3BD115F971D9"
+                    },
+                    {
+                        "origin":  "github.com/mattn/go-isatty@v0.0.24/LICENSE",
+                        "sha256":  "08EAB1118C80885FA1FA6A6DD7303F65A379FCB3733E063D20D1BBC2C76E6FA1"
+                    },
+                    {
+                        "origin":  "github.com/minio/highwayhash@v1.0.4/LICENSE",
+                        "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30"
+                    },
+                    {
+                        "origin":  "github.com/mitchellh/colorstring@v0.0.0-20190213212951-d06e56a500db/LICENSE",
+                        "sha256":  "3C377FAD2E5AE1D7081C7C2F16DA867A87CCA1D1F5F1AA7ED0B8A16BB553142A"
+                    },
+                    {
+                        "origin":  "github.com/rivo/uniseg@v0.4.7/LICENSE.txt",
+                        "sha256":  "A59885F5F0F3B3C07CF9444DB5FE399B6F0791EAC82055F7B85CC65500551039"
+                    },
+                    {
+                        "origin":  "github.com/schollz/croc/v11@v11.6.5/LICENSE",
+                        "sha256":  "0DE8A5845E8F6B92E1D27461D164466F39557CCBC986B07D906571A3C4E851B6"
+                    },
+                    {
+                        "origin":  "github.com/schollz/croc/v11@v11.6.5/src/codephrase/wordlists/LICENSE.txt",
+                        "sha256":  "CBD5AF318286B74656F145DFF5091907CC23D6D8C9AD09E0291EC2497792BA41"
+                    },
+                    {
+                        "origin":  "github.com/schollz/pake/v3@v3.2.1/LICENSE",
+                        "sha256":  "212186B36A3918811ED69D8DF18254C8E468F11DD68C690E231F55FF9BD98DC1"
+                    },
+                    {
+                        "origin":  "github.com/schollz/progressbar/v3@v3.19.1/LICENSE",
+                        "sha256":  "0C27314BC4294775C1C7768690FA90B1884A3E27B72B92376EE505963F916E8A"
+                    },
+                    {
+                        "origin":  "github.com/tscholl2/siec@v0.0.0-20240310163802-c2c6f6198406/LICENSE",
+                        "sha256":  "EADBBED003B10D61A34B01F66C8E8563334A069982329EC58C0E71D64105CA1A"
+                    },
+                    {
+                        "origin":  "github.com/twmb/murmur3@v1.2.2/LICENSE",
+                        "sha256":  "4228EF1819124B490D2E6A88E8C5E1348BEDF32FF05B8FB5DEED49921600E503"
+                    },
+                    {
+                        "origin":  "github.com/wailsapp/wails/v3@v3.1.0/internal/go-common-file-dialog/LICENSE",
+                        "sha256":  "2C09E92358414EF4DA9739026ACADFBD0663118E590238B306D70CCF60DB3159"
+                    },
+                    {
+                        "origin":  "github.com/wailsapp/wails/v3@v3.1.0/internal/webview2/webviewloader/LICENSE",
+                        "sha256":  "E2C9290019954C3C3664428B73B34186B2BB8FAAD9B2C50605D7CDD9DF5C7177"
+                    },
+                    {
+                        "origin":  "github.com/wailsapp/wails/v3@v3.1.0/LICENSE",
+                        "sha256":  "CEDE95C28E6E9D67D1C1E49E8BA3C20250C7D4080C3FACA1579B6732327AE40D"
+                    },
+                    {
+                        "origin":  "golang.org/x/crypto@v0.59.0/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "golang.org/x/crypto@v0.59.0/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "golang.org/x/net@v0.62.0/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "golang.org/x/net@v0.62.0/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "golang.org/x/sys@v0.50.0/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "golang.org/x/sys@v0.50.0/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "golang.org/x/term@v0.48.0/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "golang.org/x/term@v0.48.0/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "golang.org/x/text@v0.44.0/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "golang.org/x/text@v0.44.0/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "Go-race-runtime-provenance",
+                        "sha256":  "8E7CA72A2A50B5A8BA85884AD86A0321486E6880B4EBC465CBEFFBF9005E27AD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/crypto/internal/boring/LICENSE",
+                        "sha256":  "56210F826B8F0FBAC3160DFE55C97F4019EB6CDDA3963B5A0EAB8A8BDB62360E"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/crypto/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/crypto/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/net/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/net/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/sys/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/sys/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/text/LICENSE",
+                        "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                    },
+                    {
+                        "origin":  "Go-standard-library/src/vendor/golang.org/x/text/PATENTS",
+                        "sha256":  "96F408BFAE65BF137FC2525D3ECB030271C50C1E90799F87ABF8846D8DD505CC"
+                    },
+                    {
+                        "origin":  "modified-upstream-schedule-MIT",
+                        "sha256":  "8DC6526E85F2D9B696C10659617AEFD3A2CFE97B44562E79CCA7D0F19EE16E0A"
+                    },
+                    {
+                        "origin":  "modified-upstream-schedule-provenance",
+                        "sha256":  "6E809A30F3478289CA1261A2D325BF87FD61E9A935EC43126F0A276DB597063D"
+                    },
+                    {
+                        "origin":  "oxc-runtime-MIT",
+                        "url":  "https://unpkg.com/@oxc-project/runtime@0.155.0/LICENSE",
+                        "sha256":  "95CED5ECF1133FBF41D409B5555C86C344F83F3B019926057DDBC07CFDCC27B3"
+                    },
+                    {
+                        "origin":  "Babel-helper-attribution-MIT",
+                        "url":  "https://raw.githubusercontent.com/babel/babel/main/LICENSE",
+                        "sha256":  "117DA2AF0D4CE0FE1C8E19B5CFF9DCD806ADF973D328D27B11D4448C4FF24F76"
+                    },
+                    {
+                        "origin":  "Rolldown-generated-runtime-MIT",
+                        "url":  "https://unpkg.com/rolldown@1.2.15/LICENSE",
+                        "sha256":  "23ECFFF35A5A2E80D92142F75228912C3B1ABC4B5A8337A821FF4397E2F9F734"
+                    },
+                    {
+                        "origin":  "Chromium-screenmanager-BSD",
+                        "url":  "https://raw.githubusercontent.com/chromium/chromium/main/LICENSE",
+                        "sha256":  "368CCA1106BE99D39ECD32A38D8305585D802A475EFFB66380B91FFC9BCF709B"
+                    },
+                    {
+                        "origin":  "Winc-attribution-MIT",
+                        "url":  "https://raw.githubusercontent.com/tadvi/winc/master/LICENSE",
+                        "sha256":  "BCCEDBCE38390429AA2FBB6CDFF1E5622BE8CD14C2B5B6B1F522DB1813CDBB46"
+                    },
+                    {
+                        "origin":  "W32-attribution-BSD",
+                        "url":  "https://raw.githubusercontent.com/gonutz/w32/master/LICENSE",
+                        "sha256":  "CC30914E1E928B274A202FB702BC3664E5250EE566F8EABD6999EB1F2319FE5F"
+                    },
+                    {
+                        "origin":  "clipboard-attribution-BSD",
+                        "url":  "https://raw.githubusercontent.com/atotto/clipboard/master/LICENSE",
+                        "sha256":  "2C4BAC8E2A97180D6E7758C37DE85D1CDA1859AAF85B56DA15D935D2D9A5564F"
+                    },
+                    {
+                        "origin":  "LLVM-race-runtime",
+                        "url":  "https://raw.githubusercontent.com/llvm/llvm-project/51bfeff0e4b0757ff773da6882f4d538996c9b04/compiler-rt/LICENSE.TXT",
+                        "sha256":  "1A8F1058753F1BA890DE984E48F0242A3A5C29A6A8F2ED9FD813F36985387E8D"
+                    }
+                ],
+    "inline_notice_count":  134,
+    "embeds":  [
+                   {
+                       "package":  "github.com/schollz/croc/v11/src/codephrase",
+                       "file":  "wordlists/eff-short-wordlist-1.txt",
+                       "sha256":  "3087E73F0C50266F2C364599878F57203C289E2D1C7F4EE37290D9937399FCA4"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/internal/assetserver",
+                       "file":  "defaults/index.en.html",
+                       "sha256":  "C3FDA2D0E74B51E028F607C8777FCD80DDD9124A512A2FA67FD7D60D078081B0"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/internal/assetserver",
+                       "file":  "defaults/index.zh.html",
+                       "sha256":  "1A5A74D034B13192E704E3EBDDF6947AA98A141E188A030CEC5E4041ACEBC6B0"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/internal/assetserver/bundledassets",
+                       "file":  "runtime.debug.js",
+                       "sha256":  "52933C24EB8F39E1E8CB4AA12F5BDCD90094C795963A6BF7F7FC49083F55BBF4"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/internal/assetserver/bundledassets",
+                       "file":  "runtime.js",
+                       "sha256":  "243F2D6815DCE5281716CC3F8605300E2840C3F8F694FEDF4D67316FF742371A"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/internal/version",
+                       "file":  "version.txt",
+                       "sha256":  "761493B7C06BE53AB28DBBCBBEFBA9BF890E3BB68434A7CE9BC7368C1B711661"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/application",
+                       "file":  "assets/alpha/index.html",
+                       "sha256":  "E8E705E6033ED4B8413DC6AF614B71816CAC9A4BB3D3E8EF193D90DA514583C8"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/application",
+                       "file":  "inline_event_shim.js",
+                       "sha256":  "21D629282494DBD0593A460F0DD612AAD61BB12121C2317F6C14F13496354604"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/application",
+                       "file":  "request_keepalive_windows.js",
+                       "sha256":  "213B86D24E02C367BD4953C2F68B401AFD7D9B61A4BB10962982287D6E30064C"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/application",
+                       "file":  "worker_forwarding_windows.js",
+                       "sha256":  "8F2B4AB4CC32E9897C81FBB22F33408689865E739543AA69857958B2276636EB"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "ApplicationDarkMode-256.png",
+                       "sha256":  "9EE0B0CCA8364097AF1821AAEE86DC2C02AB5400F478BD8EC5695AD9633E60AC"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "ApplicationLightMode-256.png",
+                       "sha256":  "0FC0CAF4027FE7825DB938321E0690BD8E39060C7F4012281DDA12AB4A582993"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "DefaultMacTemplateIcon.png",
+                       "sha256":  "88E0691574D40BFFC8D7533D95FF205A2735761169CA690CF93FB7F0110DF284"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "icon.ico",
+                       "sha256":  "126F9C6BB544D001921FC60AC1FD21550940FDADA477E3F41D46C73E08AE84A7"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "systray-dark.png",
+                       "sha256":  "5F7855F90AF9403B717169F8D62420F9CF2C508FE869A0BDC22FF10D7DA52FEB"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "systray-light.png",
+                       "sha256":  "B194D660FD78EB17CF3BD984054AC75EA30FA49B00B3B6F9EE53359520B83019"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "WailsLogoBlack.png",
+                       "sha256":  "61EB682DF5252208C648D59E888B6DAE0AFE03FCAD89536B39DD393421889A73"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "WailsLogoBlackTransparent.png",
+                       "sha256":  "2D9285A026C9D5EA4806355A5462BB4445044AA3D8E14C812F76B506FA0977AB"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "WailsLogoWhite.png",
+                       "sha256":  "93ED06E54406DDEEBDFB134DAAF5DE86F557338D0BB0375376A1E8C99CCC1967"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/icons",
+                       "file":  "WailsLogoWhiteTransparent.png",
+                       "sha256":  "6FDDFCFA3BDA11124B749015378408994F63D13204859449C77950B414427DD7"
+                   },
+                   {
+                       "package":  "github.com/wailsapp/wails/v3/pkg/updater",
+                       "file":  "assets/window.html",
+                       "sha256":  "BE94C11E934F68BF2488854ECD400A86451912582F6584F19DEF50A511F7E0AC"
+                   }
+               ]
+}

@@ -1,6 +1,11 @@
 # PRD — CrocStream Desktop (MVP v1, proposed)
 
-**Status:** proposed desktop screen-sharing prototype, pending G0 transport validation and approval of provisional [decisions](ARCHITECTURE.md#decisions-and-blockers). No CrocStream implementation is retained; one CrocStream repository contains pristine upstream source in `croc/`, planning documents in `docs/`, and a reserved future application location `app/` (D-12). Paths here are relative to the repository root.
+> **Cách đọc:** tài liệu này quy định sản phẩm cần làm gì và người dùng sẽ trải
+> nghiệm ra sao. Nếu mới tham gia, đọc [hướng dẫn nhập môn](GETTING_STARTED.md)
+> trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
+> các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
+
+**Status:** proposed desktop screen-sharing prototype; [G0 feasibility PASS](../app/G0_CLOSEOUT.md), not product completion. No screen-sharing application is implemented; the repository contains pristine upstream `croc/`, planning `docs/` and isolated G0 artifacts in `app/` (D-12). Local/remote >600s secure duplex, minimal Windows native build/runtime and dependency-notice review passed. The latest network measured 48–51ms mean application RTT; old-network limits remain documented. Real capture, media/UI, performance and packaging acceptance belong to later gates. Provisional product decisions and C-01/C-02 still need confirmation before affected implementation. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 

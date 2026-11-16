@@ -1,13 +1,97 @@
 # Milestones, dependencies & Go/No-Go gates
 
+> **Cách đọc:** tài liệu này cho biết thứ tự triển khai và điều kiện chuyển bước,
+> áp dụng cho cả thành viên nhóm và coding agent. Người mới nên đọc
+> [GETTING_STARTED](GETTING_STARTED.md) trước. **G0 PASS** cho khả thi prototype
+> đã kiểm chứng; xem [closeout](../app/G0_CLOSEOUT.md). G1 chưa bắt đầu.
+
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
-Current workspace (2026-11-15): one CrocStream repository containing pristine
-upstream source in `croc/` and planning documents in `docs/`. Future implementation
-belongs in `app/` in this same repository; it has not been created. Previous custom
-code and experiment records are not retained. The table is a future development
-plan, not a completion report. Source and workspace paths are relative to the
-repository root.
+Current workspace (2026-11-16): one CrocStream repository containing pristine
+upstream source in `croc/`, planning documents in `docs/`, and initial G0 survey
+artifacts in `app/`, including isolated `app/g0/buildprobe` and `app/g0/poc` Go
+modules. The transport PoC is implemented; the desktop application is not.
+Previous custom code and experiment records are not retained. Source and
+workspace paths are relative to the repository root.
+
+## Current progress
+
+Kết quả hiện hành: **G0 PASS**, ngày 2026-11-16.
+Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
+[bằng chứng local](../app/G0_LOCAL_PROOF.md),
+[toolchain](../app/G0_TOOLCHAIN.md),
+[thiết kế dự thảo](../app/G0_ADAPTER_DESIGN.md) và
+[khảo sát ban đầu](../app/G0_FEASIBILITY.md).
+Tiếp nối cùng ngày: chủ dự án đã tạo EC2 Windows và cho phép SSH.
+[Bằng chứng remote](../app/G0_REMOTE_PROOF.md) ghi nhận smoke hai máy qua relay
+Internet và phiên dài 605s đã đạt kiểm tra dữ liệu/control. RTT trung bình
+10–12s, tối đa 42.8s được giữ như giới hạn của điều kiện mạng cũ.
+[Follow-up mạng mới](../app/G0_LATENCY_FOLLOWUP.md): cùng binary cũ đạt RTT
+48–49ms trong 30s; hai mức tải và phiên 600.1s ở mức tải gốc đều đạt.
+RTT phiên dài mới trung bình 48–51ms, max 191ms, hash/control/cleanup đúng.
+Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác định root cause.
+
+| Task | Trạng thái quan sát | Việc còn lại |
+| --- | --- | --- |
+| G0.1 | PASS: toolchain, combined native probe, 21-module/notice review; lỗi baseline Windows được giữ rõ | Rà lại khi chọn dependency production/đóng gói G6 |
+| G0.2 | PASS G0: hợp đồng adapter, self-review, provenance và negative tests | Không coi là audit production độc lập |
+| G0.3 | PASS: CLI PoC, Host/Accept/Join, secure stream; tests/race/vet/checksums đạt | Giữ tách transport khỏi codec/capture/UI khi tích hợp |
+| G0.4 | LOCAL_PASS; remote 605s trên mạng cũ và 600.1s trên mạng mới; hash/control/cleanup đúng; RTT mạng mới 48–51ms mean | Ghi rõ giới hạn theo mạng, không suy ra FPS/latency chung |
+| G0.5 | PASS: quyết định GO cho G1, bằng chứng native/license/security và giới hạn ở G0_CLOSEOUT | Chốt C-01/C-02 trước validation G1 bị ảnh hưởng |
+| G1–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+
+Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
+transport local/remote, native compile/runtime, tests và notice review.
+Ngày 2026-11-16, chủ dự án xác nhận **chưa có máy thứ hai/relay**. Phần remote
+được ghi BLOCKED tại mốc đó; sau đó đã cung cấp EC2 như cập nhật phía trên.
+Các blocker thiếu môi trường tại mốc đó đã được đóng bằng kết quả thực tế,
+không phải thu hẹp tiêu chí.
+
+### Next focused gate: G1 — not started
+
+G0 đã đóng; chủ dự án chưa yêu cầu triển khai G1 trong lượt closeout này.
+Task kế tiếp là framing/config thuần Go: header 18 byte, CONFIG 11 byte,
+fixtures, bounded parsing, malformed/truncation tests và fuzz.
+Giải quyết C-01/C-02 với chủ dự án trước khi chốt validation khoảng key interval
+và cặp resolution. Chưa scaffold UI/capture hoặc thay đổi media wire format.
+
+## Next work: G0
+
+Checklist lịch sử/tái lập của G0 đã hoàn tất; trạng thái hiện tại ở trên.
+
+### Mục tiêu và cách nhận việc
+
+Trả lời bằng thực nghiệm: **có thể tái sử dụng cơ chế croc đã ghim để tạo một
+luồng byte hai chiều liên tục, có xác thực và mã hóa, phù hợp cho CrocStream hay
+không?** Đây là bước giảm rủi ro trước khi xây dựng các module ứng dụng.
+
+Danh sách dưới đây mô tả đầu ra của từng task; trạng thái thực tế nằm ở bảng
+Current progress phía trên. Chủ dự án đã yêu cầu bắt đầu G0; việc triển khai
+tiếp đang tập trung vào các điều kiện nghiệm thu còn thiếu trong báo cáo.
+
+| Task | Công việc | Đầu ra kiểm chứng được | Phụ thuộc |
+| --- | --- | --- | --- |
+| G0.1 | Khảo sát workspace, revision upstream, công cụ có sẵn, dependency và giấy phép | Inventory có lệnh/kết quả thực tế; ghi rõ công cụ còn thiếu, chưa coi phiên bản đề xuất là đã cài | Bắt đầu tại đây |
+| G0.2 | Lần theo codephrase, PAKE, mutual confirmation, mã hóa, relay và vòng đời file | Sơ đồ luồng kết nối, đường dẫn/hàm/API thật, giả định bảo mật và chi phí tích hợp | G0.1 |
+| G0.3 | Xây PoC CLI nhỏ nhất trong `app/` bằng cơ chế xác thực được hỗ trợ | Hai process chạy độc lập, có lệnh tái lập và hủy/đóng phiên; nếu API không phù hợp thì báo blocker | G0.2; dừng xin quyết định nếu cần đổi transport/crypto |
+| G0.4 | Kiểm chứng truyền hai chiều và điều khiển ngược | Ít nhất 10 MiB mỗi chiều, hash/thứ tự đúng, phiên >=10 phút, kết quả local/LAN và đường relay từ xa mục tiêu | G0.3 và môi trường mạng thử nghiệm |
+| G0.5 | Tổng hợp quyết định Go/No-Go | `app/G0_FEASIBILITY.md`, lệnh tái lập, log đã che bí mật, giới hạn, PASS/FAIL/BLOCKED và bước kế tiếp | G0.1–G0.4 |
+
+Chuẩn bị máy thử và điều kiện sử dụng relay có thể tiến hành trong lúc khảo sát
+mã nguồn. Việc cài công cụ hoặc chọn dịch vụ mới cần tuân thủ quy tắc workspace
+và phê duyệt hiện hành; bảng task không tự cấp phép các thay đổi đó.
+
+### Điều kiện kết thúc
+
+- Tiêu chí chi tiết nằm ở [Test Plan D](TEST_PLAN.md#d-transport-g0-proof-two-processes-no-gui);
+  kiểm tra build/toolchain và bảo mật còn phải đối chiếu [B-01–B-05](ARCHITECTURE.md#g0-blockers).
+- Chỉ có thử nghiệm localhost không đủ nghiệm thu MVP từ xa. Thiếu môi trường
+  relay/hai máy phải ghi rõ NOT RUN/BLOCKED, hoặc xin chủ dự án thu hẹp phạm vi.
+- Nếu cần adapter bổ sung, dùng gate **G0 adapter follow-up** bên dưới sau phê
+  duyệt. Nếu không thể tích hợp an toàn, trình phương án và chi phí để chủ dự án
+  quyết định.
+- Sau G0 đạt, chốt dependency/interface, ước lượng phần còn lại và giao G1.
+  Roadmap hiện là thứ tự phụ thuộc, chưa phải cam kết lịch bàn giao.
 
 ## Codex handoff
 Use this starting task **only when the owner requests continued development**. Scope: **G0 architecture and transport feasibility**, not the whole application.

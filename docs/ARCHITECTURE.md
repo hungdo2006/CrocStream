@@ -1,5 +1,11 @@
 # Architecture — CrocStream Desktop v1 (proposed)
 
+> **Cách đọc:** bắt đầu từ quyết định/blocker, rồi các pipeline để hiểu luồng dữ
+> liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
+> protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
+> [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
+> thực tế; phiên bản công cụ được ghi nhận cần kiểm chứng tại G0.
+
 ## Contents
 - [Reference source](#reference-source)
 - [Decisions and blockers](#decisions-and-blockers)
@@ -11,7 +17,7 @@
 - [Sources and licensing](#sources-and-licensing)
 
 ## Reference source
-The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md). The owner chose one repository containing upstream source, documents and future application code; the former standalone checkout was backed up outside the workspace. No CrocStream implementation or historical experiment evidence is retained.
+The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md). The owner chose one repository containing upstream source, documents and future application code; the former standalone checkout was backed up outside the workspace. No screen-sharing application or old experiment evidence is retained. The initial survey and later local/remote/native/notice evidence culminate in [G0 PASS](../app/G0_CLOSEOUT.md); this does not validate the future media application.
 
 Source inspection, not runtime feasibility evidence:
 - `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
@@ -40,13 +46,32 @@ Updated 2026-11-15. **D-12 is owner-confirmed; other D entries remain provisiona
 | D-12 (owner-confirmed) | Use one CrocStream repository: pristine upstream source in `croc/`, planning documents in `docs/`, future application code in `app/`. Keep one root `.git`; no nested repository or second active checkout. Former custom code and experiments remain removed. | Owner decisions 2026-11-15; supersedes the separate-repository layout. Consolidation does not authorize application implementation or modifying the upstream snapshot. |
 
 ### G0 blockers
+G0 feasibility closed **PASS** on 2026-11-16; see
+[closeout and explicit limits](../app/G0_CLOSEOUT.md).
+The IDs below remain stable; PASS is for the measured prototype scope, not
+production/capture/UI/installer or an independent security audit.
+
 | ID | Status | Required evidence / decision |
 | --- | --- | --- |
-| B-01 | BLOCKED | Verify a secure duplex adapter compatible with `io.ReadWriteCloser`, independent of file-transfer lifecycle. No custom adapter currently exists. |
-| B-02 | BLOCKED | Repeated arbitrary payloads and reverse control over local LAN and a real relay; session longevity, policy, usage and bandwidth limits. |
-| B-03 | BLOCKED | PAKE, transcript binding, mutual confirmation, AEAD and protocol isolation for the actual adapter; wrong-password/protocol-confusion tests. Removed experiments do not validate new code. |
-| B-04 | BLOCKED | Feasible Windows build combining selected Go/Wails/croc/capture dependencies; `go version`, `wails3 doctor`, licenses and minimal compile. |
-| B-05 | BLOCKED / conditional | If croc internals are unsuitable, owner chooses explicit-commit fork, upstream contribution or separate authenticated transport/relay. Never silently substitute plaintext TCP. |
+| B-01 | PASS G0 | Experimental adapter implements `io.ReadWriteCloser`; local and actual two-machine secure duplex proofs and implementation self-review pass. No general production-readiness claim. |
+| B-02 | PASS tested route; network limits retained | Two EC2 remote proofs >600s, hashes/control/cleanup verified. Old network RTT 10.6–11.8s mean; new network at original rate 48–51ms mean, 191ms max. See G0_REMOTE_PROOF and G0_LATENCY_FOLLOWUP; old-path root cause unisolated. |
+| B-03 | PASS G0 self-review/tests | Actual PAKE, transcript, mutual confirmation, directional AEAD and negative isolation tests pass; exact bounds/nonce/admission limitations documented in closeout. Not an independent audit. |
+| B-04 | PASS G0 minimal native feasibility | Go 1.27.4/Wails 3.1.0/croc/x-sys/Win32-GDI combined builds and synthetic native runtime tests pass, including CGO=0; doctor and 21-module notice review pass. Actual display capture remains G3. |
+| B-05 | PASS G0 option A | Owner-approved experimental adapter and small noticed derivative retained; maintenance/regression contract documented. No relay-provider switch, full fork or production deployment approval inferred. |
+
+G0 follow-up, 2026-11-16: the owner approved portable tools and pursuing the
+croc-based adapter design/review (option A). Go/Wails installation and a minimal
+combined native link/runtime probe and license review succeeded; B-04 is closed
+at G0's dependency-feasibility level, not G3 real-capture acceptance.
+The experimental [adapter contract](../app/G0_ADAPTER_DESIGN.md) is now
+implemented in `app/g0/poc` with local B-01/B-03 test evidence; production/security
+review remains distinct from those tests. B-02 has an owner-provided EC2 path
+and >600s proofs on two network conditions; the latest original-load run measured
+48–51ms mean application RTT. The old path's high RTT remains in the
+[remote report](../app/G0_REMOTE_PROOF.md); follow-up in
+[G0_LATENCY_FOLLOWUP](../app/G0_LATENCY_FOLLOWUP.md). Local [runtime report](../app/G0_LOCAL_PROOF.md). Initial survey:
+[G0_FEASIBILITY](../app/G0_FEASIBILITY.md); current checks:
+[G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md). No transport blocker is closed by tool installation.
 
 Deferred owner choices: webcam versus macOS/Linux priority; installer format; self-hosted versus public demo relay; Vietnamese-only versus bilingual UI; named hardware/network before absolute performance acceptance; whether the academic demo requires raw-capture losslessness (`tau=0`) or tolerates skipped changes (`tau=4`). Both tau modes must preserve sender/viewer canonical equality.
 
@@ -66,6 +91,17 @@ These are pre-existing ambiguities, **not new approved behavior**. Resolve the a
 | C-04 | AGENTS validates Origin where available; test plan rejects missing/foreign Origin. | Inspect dev/packaged WebView Origin behavior and specify exact allowlist/missing-Origin policy. No permissive wildcard; mandatory token stays unchanged. |
 | C-05 | Accessibility listed as P2; UI already requires keyboard navigation, labels, focus and screen-reader acceptance. | Keep basic accessibility in MVP, defer enhancements; confirm priority explicitly. |
 
+### When to resolve clarifications
+
+These checkpoints organize the existing open questions; they do not approve the
+proposed resolutions above.
+
+| Before implementing | Items | Evidence / decision needed |
+| --- | --- | --- |
+| G1 configuration validation | C-01, C-02 | Owner confirms supported key intervals and resolution pairs; update PRD, protocol and tests together |
+| G3 local bridge | C-03, C-04 | Confirm listener ownership; observe dev/packaged WebView Origins and define the exact policy before bridge acceptance |
+| G3 preview UI and G5 full UI | C-05 | Confirm basic accessibility scope before implementing affected controls and acceptance cases |
+
 ## Principles
 1. **Transport is replaceable**, but its security cannot be weakened; no hard dependency on undocumented `comm.Comm` layout beyond an experimentally verified adapter.
 2. **Codec is a pure Go library** with no Wails, relay, capture, UI or disk dependency. Input images have deterministic packed RGBA normalization.
@@ -75,18 +111,30 @@ These are pre-existing ambiguities, **not new approved behavior**. Resolve the a
 
 ## Proposed future application layout
 
-The current single repository contains `croc/` (pristine upstream reference snapshot)
-and `docs/` (planning documents). New application code will live in `app/` within
-this same repository. The application tree below does not exist; create it only
-when implementation is requested, beginning with G0. Do not scaffold new code
-inside the upstream snapshot.
+The current single repository contains `croc/` (pristine upstream reference snapshot),
+`docs/` (planning documents), and initial G0 survey artifacts in `app/`.
+The runtime application directories below remain proposed; isolated
+G0 build-probe and transport-PoC modules exist. Continue within G0 until its
+blockers are resolved. Do not scaffold
+new code inside the upstream snapshot.
 
 ```
 AGENTS.md
 README.md
 docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
 croc/                                 # Existing pristine upstream source
-app/                                  # Future CrocStream module; not yet created
+app/                                  # Exists for initial G0 artifacts
+  G0_FEASIBILITY.md                    # Existing survey and BLOCKED decision
+  G0_TOOLCHAIN.md                      # Tool/build/test evidence
+  G0_ADAPTER_DESIGN.md                 # Experimental transport contract
+  G0_LOCAL_PROOF.md                    # Historical local PoC evidence
+  G0_CLOSEOUT.md                       # G0 PASS, notices/native checks and G1 handoff
+  g0/Inspect-Environment.ps1           # Existing read-only inventory script
+  g0/Install-Toolchain.ps1             # Approved portable tool installation
+  g0/Use-Toolchain.ps1                 # Process-local environment
+  g0/buildprobe/                       # Isolated minimal Go/Wails/croc compile probe
+  g0/poc/                              # Experimental transport + CLI harness + tests
+  # Everything below is proposed, not implemented:
   cmd/crocstream/main.go               # Wails v3 bootstrap
   internal/app/                       # Wails service methods + app/session coordinator
   internal/session/                   # role/state machine and lifetime
@@ -170,7 +218,7 @@ Receiver processing validates entire DELTA before touching canonical reference. 
 - Target Wails v3.1.0, toolchain from tested upstream `go.mod` (provisionally Go 1.27.3+), Windows x64 initially. Verify `wails3 doctor`, native screen-capture permission, WebView2, firewall/relay usage and signed/unsigned installer behavior. Tests on actual macOS/Linux and webcam hardware are deferred to subsequent phases.
 
 ## Media protocol v1
-**Normative draft, not deployed.** Application framing runs inside an authenticated/encrypted transport; stock croc clients do not understand it. The transport record envelope remains to be selected at G0. Changing wire bytes requires a protocol revision and tests.
+**Normative draft, not deployed.** Application framing runs inside an authenticated/encrypted transport; stock croc clients do not understand it. G0 tested a separate experimental transport record envelope; the media bytes below are unchanged and not yet implemented. Changing wire bytes requires a protocol revision and tests.
 
 ### Stream and header
 One reliable ordered bidirectional byte stream per session, one receive parser and one serialized writer per endpoint. Reverse keyframe requests share that duplex stream.

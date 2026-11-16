@@ -1,0 +1,41 @@
+{
+  "status": "REMOTE_RELAY_PASS",
+  "run_id": "926bcb28763e4d07af6dc7ec0d7a9a41",
+  "executable_sha256": "C1C304594C68125AD66041F0C5AE1F3CFDD5A60166FC5503F5EF4EC96221EE49",
+  "route": "local-host-public-ec2-relay-ec2-viewer",
+  "results": [
+    {
+      "role": "host",
+      "bytes_sent": 726401024,
+      "bytes_received": 305004544,
+      "sha256_received": "d580d8c97c2871e957e2fff8b11cb6812c9f44cde87ef206a55bd386f3347acd",
+      "pings_sent": 51,
+      "pongs_received": 51,
+      "key_requests_received": 51,
+      "duration_seconds": 605.0188295,
+      "rtt_mean_ms": 11773.123964705883,
+      "rtt_max_ms": 42812.2507,
+      "heap_start": 2238208,
+      "heap_end": 802392,
+      "goroutines_start": 3,
+      "goroutines_end": 3
+    },
+    {
+      "role": "viewer",
+      "bytes_sent": 305004544,
+      "bytes_received": 726401024,
+      "sha256_received": "dbac8b08fcda1fe0d041eb328d1d02e2a831ba78d10a88dc1d28f64f55db5621",
+      "pings_sent": 51,
+      "pongs_received": 51,
+      "key_requests_received": 51,
+      "duration_seconds": 605.0140157,
+      "rtt_mean_ms": 10646.90058235294,
+      "rtt_max_ms": 37624.1409,
+      "heap_start": 1864624,
+      "heap_end": 2691512,
+      "goroutines_start": 3,
+      "goroutines_end": 3
+    }
+  ],
+  "remote_cleanup_complete": true
+}

@@ -1,0 +1,96 @@
+[
+  {
+    "status": "REMOTE_SMOKE_PASS",
+    "run_id": "47403d4347e547c4bae93f23620e31f3",
+    "executable_sha256": "910E291A2BAD00548C852E03FD10044F1D94F6EA870850F5898A4EDE50BC9A27",
+    "route": "local-host-public-ec2-relay-ec2-viewer",
+    "results": [
+      {
+        "role": "host",
+        "bytes_sent": 48791552,
+        "bytes_received": 49152000,
+        "sha256_received": "5da20f2db8f706a2e0bf4d7ade827a2c1a0454926a3a530d5e2bbbabd4f21892",
+        "pings_sent": 494,
+        "pongs_received": 494,
+        "key_requests_received": 445,
+        "duration_seconds": 30.0777962,
+        "rtt_mean_ms": 47.9780487854251,
+        "rtt_max_ms": 199.8271,
+        "heap_start": 2303848,
+        "heap_end": 2669928,
+        "goroutines_start": 3,
+        "goroutines_end": 3,
+        "data_interval_ms": 20,
+        "data_write_mean_ms": 1.033119543317663,
+        "data_write_max_ms": 62.7334
+      },
+      {
+        "role": "viewer",
+        "bytes_sent": 49152000,
+        "bytes_received": 48791552,
+        "sha256_received": "192e241421a44671ae7c82ff69a184cf8b7eb0c513ff4910f3065c5e9553e8a9",
+        "pings_sent": 445,
+        "pongs_received": 445,
+        "key_requests_received": 494,
+        "duration_seconds": 30.0633237,
+        "rtt_mean_ms": 49.01961752808989,
+        "rtt_max_ms": 153.079,
+        "heap_start": 1839208,
+        "heap_end": 3712304,
+        "goroutines_start": 3,
+        "goroutines_end": 3,
+        "data_interval_ms": 20,
+        "data_write_mean_ms": 0.09369426666666668,
+        "data_write_max_ms": 0.8545
+      }
+    ],
+    "remote_cleanup_complete": true
+  },
+  {
+    "status": "REMOTE_SMOKE_PASS",
+    "run_id": "e5f0a2b0cd4a49b98fdb1583bd6d003e",
+    "executable_sha256": "910E291A2BAD00548C852E03FD10044F1D94F6EA870850F5898A4EDE50BC9A27",
+    "route": "local-host-public-ec2-relay-ec2-viewer",
+    "results": [
+      {
+        "role": "host",
+        "bytes_sent": 10485760,
+        "bytes_received": 10485760,
+        "sha256_received": "221269b1cf6431c78536bb9d5e5bb731fe5011025d1c2bbaaad38d8fa58d6c28",
+        "pings_sent": 296,
+        "pongs_received": 296,
+        "key_requests_received": 299,
+        "duration_seconds": 32.14998,
+        "rtt_mean_ms": 58.80520675675675,
+        "rtt_max_ms": 263.2644,
+        "heap_start": 2229744,
+        "heap_end": 3390784,
+        "goroutines_start": 3,
+        "goroutines_end": 3,
+        "data_interval_ms": 100,
+        "data_write_mean_ms": 1.2628996875,
+        "data_write_max_ms": 30.9585
+      },
+      {
+        "role": "viewer",
+        "bytes_sent": 10485760,
+        "bytes_received": 10485760,
+        "sha256_received": "71513e1160e33e8feb2d70ad97009337f26fd965a37b46693746cdec0e65ad11",
+        "pings_sent": 299,
+        "pongs_received": 299,
+        "key_requests_received": 296,
+        "duration_seconds": 32.1488668,
+        "rtt_mean_ms": 60.80070635451504,
+        "rtt_max_ms": 263.7089,
+        "heap_start": 1849248,
+        "heap_end": 3276512,
+        "goroutines_start": 3,
+        "goroutines_end": 3,
+        "data_interval_ms": 100,
+        "data_write_mean_ms": 0.25499218749999997,
+        "data_write_max_ms": 1.0622
+      }
+    ],
+    "remote_cleanup_complete": true
+  }
+]

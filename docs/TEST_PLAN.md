@@ -1,5 +1,10 @@
 # Verification & Test Plan — CrocStream
 
+> **Cách đọc:** đây là danh sách bằng chứng cần thu thập, không phải báo cáo test
+> đã chạy. Thành viên mới xem [hướng dẫn nhập môn](GETTING_STARTED.md); khi nhận
+> task, dùng bảng coverage để tìm đúng nhóm test. G0 bắt đầu ở mục D; D.5 chỉ áp
+> dụng cho công việc adapter tiếp theo khi được phê duyệt.
+
 ## Ground rule
 Tests are acceptance evidence. The existence of this plan is not evidence that any test has passed. Codex must report exact commands, OS, Go/Wails versions, observed values, failures and untested areas after every phase.
 
@@ -51,6 +56,11 @@ Resolve [C-01–C-05](ARCHITECTURE.md#pending-clarifications) before asserting a
 - Confirm Stop closes session media connections/queues, clears canvases and invalidates stale decode work; final listener ownership follows C-03. WS display dropping must close stale ImageBitmaps; image-decode failure must not kill network transport.
 
 ## D. Transport G0 proof (two processes, no GUI)
+Execution status (2026-11-16): **G0 PASS** for the named prototype paths; see
+[closeout](../app/G0_CLOSEOUT.md), including native minimal-build and license
+evidence. The test requirements below remain the verification contract;
+later media/capture/UI tests are not retroactively passed by G0.
+
 - Inventory pinned croc commit `552f40fd2d7593316118370bec0a93478d48e715`, imports, dependency/license details and actual API signatures; build minimal CLI test program that performs **actual upstream-supported authenticated PAKE** and exchange of arbitrary byte streams. Do not use plaintext shortcuts or assume removed toolchains remain installed.
 - Both peers send/receive an arbitrary 10 MiB deterministic byte stream (split into multiple packets) and reverse-control Ping/KeyframeRequest equivalents over the same authenticated session; verify hashes and order.
 - Repeat via localhost/LAN **and** target real relay path if available; run >=10 min without file-completion metadata or idle close; report measured latency/throughput/reconnect behavior and relay policy/availability separately.
@@ -65,7 +75,10 @@ reads/large writes, concurrent writers, partial write progress, relay admission,
 Accept/session cancellation, disconnect and 100 local Host/Join lifecycles.
 Exercise two real processes and compare regression results against the pinned
 upstream baseline. Choose commands from the actual future package layout;
-no custom transport package or test runner is included in the current workspace.
+the current isolated transport package/harness is in `app/g0/poc`.
+The G0 inventory script checks provenance/environment only; its success
+does not count as a transport test. Current runtime results are in
+[G0_LOCAL_PROOF](../app/G0_LOCAL_PROOF.md).
 Local adapter tests do not satisfy G1 media framing or remote acceptance.
 
 ## E. GUI/system manual acceptance
@@ -90,6 +103,15 @@ Local adapter tests do not satisfy G1 media framing or remote acceptance.
 - Measure 1280×720/24 FPS target on named Windows hardware with p50/p95; document deviations and lower-resolution/FPS results. Record queue sizes, goroutine counts and memory growth over >=10 minutes; no zero-allocation guarantee. Report LAN recovery and relay performance separately; no public-relay 24 FPS guarantee.
 
 ## Typical verification commands (only after repository/toolchain exists)
+This is a future application verification reference, not a runnable CrocStream
+quickstart. The repository and `app/` G0 artifacts exist, including an isolated
+`app/g0/buildprobe` and `app/g0/poc` modules, but no desktop application module.
+PoC commands: [README](../app/g0/poc/README.md).
+Toolchain/baseline results: [G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md).
+For documentation-only edits, check the diff and local Markdown links/anchors;
+application tests/builds are not applicable. Record those checks separately from
+gate acceptance evidence.
+
 Run the application checks from `app/` after that module has been implemented.
 Upstream regression checks run separately from `croc/`. Both directories belong
 to the same root Git repository; no second repository is needed.
