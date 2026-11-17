@@ -48,6 +48,7 @@ type Counters struct {
 	Recoveries         uint64  `json:"recoveries"`
 	Pongs              uint64  `json:"pongs"`
 	LastID             uint32  `json:"lastID"`
+	LastKind           string  `json:"lastKind"`
 	RTTMs              float64 `json:"rttMs"`
 	RTTKnown           bool    `json:"rttKnown"`
 	Ended              bool    `json:"ended"`
@@ -258,11 +259,13 @@ func (p *Peer) receive(ctx context.Context, r *protocol.Reader) error {
 				c.Decoded++
 				c.LastID = m.FrameID
 				if m.Kind == protocol.Keyframe {
+					c.LastKind = "KEY"
 					c.Keys++
 					if recovering {
 						c.Recoveries++
 					}
 				} else {
+					c.LastKind = "DELTA"
 					c.Deltas++
 				}
 			})
@@ -439,8 +442,10 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 				}
 				c.LastID = m.FrameID
 				if m.Kind == protocol.Keyframe {
+					c.LastKind = "KEY"
 					c.Keys++
 				} else {
+					c.LastKind = "DELTA"
 					c.Deltas++
 				}
 			})

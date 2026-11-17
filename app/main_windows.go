@@ -17,7 +17,7 @@ func main() {
 	}
 	app := application.New(application.Options{
 		Name:        "CrocStream",
-		Description: "CrocStream local preview",
+		Description: "CrocStream one-to-one screen sharing",
 		Windows:     browserOptions(),
 		Logger:      slog.New(slog.NewTextHandler(io.Discard, nil)),
 		Assets: application.AssetOptions{
@@ -27,7 +27,7 @@ func main() {
 		Services: []application.Service{application.NewService(service)},
 	})
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:            "CrocStream · Local Preview",
+		Title:            "CrocStream · Share / Watch",
 		Width:            1150,
 		Height:           760,
 		MinWidth:         960,

@@ -40,6 +40,7 @@ type Stats struct {
 	BaselineKiB          float64  `json:"baselineKiB"`
 	Savings              float64  `json:"savings"`
 	SavingsKnown         bool     `json:"savingsKnown"`
+	BaselineKnown        bool     `json:"baselineKnown"`
 	MeasurementsComplete bool     `json:"measurementsComplete"`
 	MeasurementOverflow  bool     `json:"measurementOverflow"`
 	MeanKeyKiB           float64  `json:"meanKeyKiB"`
@@ -49,6 +50,15 @@ type Stats struct {
 	Dropped              uint64   `json:"dropped"`
 	BridgeSent           uint64   `json:"bridgeSent"`
 	Uptime               float64  `json:"uptime"`
+	RetryAfterMs         int64    `json:"retryAfterMs"`
+	Captured             uint64   `json:"captured"`
+	CaptureQueue         int      `json:"captureQueue"`
+	ImageQueue           int      `json:"imageQueue"`
+	BridgeDropped        uint64   `json:"bridgeDropped"`
+	MeanEncodeMs         float64  `json:"meanEncodeMs"`
+	MeanDecodeMs         float64  `json:"meanDecodeMs"`
+	MeanBaselineMs       float64  `json:"meanBaselineMs"`
+	MeanJPEGMs           float64  `json:"meanJPEGMs"`
 }
 type activeSession struct {
 	ctx        context.Context
@@ -61,6 +71,11 @@ type activeSession struct {
 	peer       *Peer
 	stopping   bool
 	dropped    uint64
+	captured   uint64
+	frames     chan capture.Frame
+	images     chan capture.Frame
+	jpegTotal  time.Duration
+	jpegCount  uint64
 }
 type Controller struct {
 	mu           sync.Mutex
@@ -200,6 +215,9 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	var workers sync.WaitGroup
 	images := make(chan capture.Frame, 1)
 	frames := make(chan capture.Frame, 1)
+	c.mu.Lock()
+	s.images, s.frames = images, frames
+	c.mu.Unlock()
 	defer func() {
 		s.cancel()
 		if conn != nil {
@@ -215,10 +233,14 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		if s.stopping {
 			s.stats.State = Idle
 		} else if failure != nil && conn == nil {
-			s.stats.State = Failed
 			if s.stats.Error == "" {
-				s.stats.Error = "Không chuẩn bị/xác thực được phiên. Kiểm tra mã và relay rồi tạo phiên mới."
+				if s.stats.State == Authenticating {
+					s.stats.Error = "Xác thực peer thất bại hoặc hết thời gian. Kiểm tra mã với người phát rồi tạo phiên mới."
+				} else {
+					s.stats.Error = "Không thiết lập được phiên. Kiểm tra relay, mật khẩu và mã mời; thử lại sau."
+				}
 			}
+			s.stats.State = Failed
 		} else {
 			s.stats.State = Disconnected
 			if failure != nil && s.stats.Error == "" {
@@ -238,14 +260,20 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 			case <-ctx.Done():
 				return
 			case f := <-images:
+				begin := time.Now()
 				var out bytes.Buffer
 				err := jpeg.Encode(&out, &image.RGBA{Pix: f.RGBA, Stride: f.Width * 4, Rect: image.Rect(0, 0, f.Width, f.Height)}, &jpeg.Options{Quality: 75})
+				elapsed := time.Since(begin)
 				if err == nil && ctx.Err() == nil {
 					err = s.bridge.Publish(out.Bytes())
 				}
 				c.mu.Lock()
+				s.jpegTotal += elapsed
+				s.jpegCount++
 				if err != nil && ctx.Err() == nil {
 					s.stats.PreviewError = "Preview unavailable"
+				} else if err == nil {
+					s.stats.PreviewError = ""
 				}
 				c.mu.Unlock()
 			}
@@ -268,6 +296,9 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		go func() {
 			defer workers.Done()
 			err := c.source.Run(ctx, o, func(f capture.Frame) {
+				c.mu.Lock()
+				s.captured++
+				c.mu.Unlock()
 				s.metrics.Record(telemetry.Event{Kind: telemetry.Captured})
 				latest(images, f) // Capture snapshots are immutable, owned slices.
 				if latest(frames, f) {
@@ -320,6 +351,7 @@ func (c *Controller) snapshotLocked(s *activeSession) Stats {
 	out.CaptureFPS, out.EmittedFPS, out.DecodedFPS, out.ReceivedFPS = m.CapturedFPS, m.EmittedFPS, m.DecodedFPS, m.Received.Frames
 	out.SentKiB, out.ReceivedKiB, out.BaselineKiB = m.Sent.KiBPerSecond, m.Received.KiBPerSecond, m.BaselineKiBPerSecond
 	out.Savings, out.SavingsKnown, out.MeasurementsComplete = m.SavingsPercent, m.SavingsKnown, m.Complete
+	out.BaselineKnown = m.BaselineKnown
 	out.MeasurementOverflow = !m.Complete
 	video := m.Sent
 	if out.Role == "viewer" {
@@ -328,7 +360,13 @@ func (c *Controller) snapshotLocked(s *activeSession) Stats {
 	out.MeanKeyKiB, out.MeanDeltaKiB = video.MeanKeyKiB, video.MeanDeltaKiB
 	out.KeyMeanKnown, out.DeltaMeanKnown = video.KeyMeanKnown, video.DeltaMeanKnown
 	out.Dropped = s.dropped
-	out.BridgeSent, _ = s.bridge.Counts()
+	out.Captured = s.captured
+	out.CaptureQueue, out.ImageQueue = len(s.frames), len(s.images)
+	out.BridgeSent, out.BridgeDropped = s.bridge.Counts()
+	out.MeanEncodeMs, out.MeanDecodeMs, out.MeanBaselineMs = m.MeanEncodeMs, m.MeanDecodeMs, m.MeanBaselineMs
+	if s.jpegCount > 0 {
+		out.MeanJPEGMs = s.jpegTotal.Seconds() * 1000 / float64(s.jpegCount)
+	}
 	out.Uptime = m.Uptime.Seconds()
 	return out
 }
@@ -341,9 +379,33 @@ func (c *Controller) Stats() Stats {
 		out.EmittedFPS = 0
 		out.DecodedFPS = 0
 		out.ReceivedFPS = 0
+		out.RetryAfterMs = c.retryAfterLocked(time.Now())
 		return out
 	}
-	return c.snapshotLocked(c.active)
+	out := c.snapshotLocked(c.active)
+	out.RetryAfterMs = c.retryAfterLocked(time.Now())
+	return out
+}
+
+func (c *Controller) retryAfterLocked(now time.Time) int64 {
+	until := c.lastJoin.Add(c.joinCooldown)
+	count := 0
+	var first time.Time
+	for _, at := range c.joinAttempts {
+		if at.After(now.Add(-c.joinWindow)) {
+			if first.IsZero() {
+				first = at
+			}
+			count++
+		}
+	}
+	if c.joinLimit > 0 && count >= c.joinLimit && first.Add(c.joinWindow).After(until) {
+		until = first.Add(c.joinWindow)
+	}
+	if until.After(now) {
+		return until.Sub(now).Milliseconds() + 1
+	}
+	return 0
 }
 func (c *Controller) Stop(ctx context.Context) error {
 	c.mu.Lock()

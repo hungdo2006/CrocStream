@@ -121,6 +121,13 @@ Local adapter tests do not satisfy G1 media framing or remote acceptance.
 
 ## E. GUI/system manual acceptance
 
+G5 executed evidence: [G5 closeout](../app/G5_CLOSEOUT.md) and
+[reproduction harness](../app/g5/README.md). Actual local two-app 600s stress
+and final 26-check UI suite passed; keyboard/accessibility-tree tests are
+distinct from unexecuted screen-reader speech and physical-device cases.
+The methodology below remains the contract, including explicitly unmeasured
+content/platform cases in the report.
+
 - On actual Windows 10/11 machine with Wails/WebView2: `wails3 doctor` passes, `wails3 dev` runs, packaged `wails3 build` opens and closes cleanly; verify app startup after installation if installer built.
 - Enumerate/select screen, permission handling, preview in broadcaster, code copy, join from another process, viewer canvas first KEY, recovery after injected invalid DELTA, disconnect UI, Stop, room code invalidated.
 - Confirm lock/handle is released: stop streaming then another app can capture the screen/camera; observe no orphan relay connections or processes.

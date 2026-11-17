@@ -5,7 +5,7 @@
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
 
-**Status:** desktop screen-sharing prototype in development. **G0–G4 PASS**: G4 combines local two-desktop-app capture/render tests with a >=600s authenticated remote synthetic media/control/reference proof and cleanup ([G4 report](../app/G4_CLOSEOUT.md), [remote evidence](../app/G4_REMOTE_PROOF.md)). Real remote-screen capture/render performance was not authorized/tested and is not inferred. G5 UX/stress and G6 packaging acceptance remain later gates. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. Paths are repository-root relative.
+**Status:** desktop screen-sharing prototype in development. **G0–G5 PASS**: G4 combines local desktop capture/render and remote synthetic media proof ([G4 report](../app/G4_CLOSEOUT.md)); G5 adds UX/telemetry/resilience and actual local >=600s stress ([G5 report and limits](../app/G5_CLOSEOUT.md)). Real remote-screen capture/render performance was not authorized/tested and is not inferred. G6 packaging remains next. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
@@ -17,7 +17,8 @@ tracked in G3 below; secure app integration remains G4.
 
 **G3 implementation:** a runnable Windows local preview now exists; see
 [G3 evidence](../app/G3_CLOSEOUT.md) and [build/run](../app/README.md#g3-desktop-preview--build-and-run).
-Broadcaster/viewer integration is implemented in G4; full UX acceptance remains G5.
+Broadcaster/viewer integration is implemented in G4; measured Windows UX/telemetry
+and 600s local stress acceptance are in the G5 closeout.
 
 **G4 update (2026-11-17):** Share/Watch integrate authenticated croc duplex with
 CONFIG/KEY/DELTA, PLI, Ping/Pong and EOS; local synthetic and two-process desktop

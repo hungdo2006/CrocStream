@@ -1,0 +1,43 @@
+{
+    "at_utc":  "2026-11-17T14:21:12.3061028Z",
+    "head":  "d31dfb75440b3994f900332493b167869ac3b510",
+    "scope":  "G5 changed runtime and proof scripts; final source",
+    "files":  [
+                  {
+                      "path":  "app/frontend/src/main.tsx",
+                      "sha256":  "F8B98BD1CC79AAC9EB4AF06F9A575070F46BCF67F7B90998B5D5E607AEA5BF8D"
+                  },
+                  {
+                      "path":  "app/frontend/src/stream.tsx",
+                      "sha256":  "A567B6D09B1C1A694ED0E0A4F9B40DBB23D9E3D7DA3E5C2AE0EFC14CD0F93653"
+                  },
+                  {
+                      "path":  "app/frontend/src/style.css",
+                      "sha256":  "00FE0A69A7CF8ED3B0945C3AD43A79ABF6BD2CFC82FAEBED7EA7EA4CDB6FFB59"
+                  },
+                  {
+                      "path":  "app/internal/session/controller.go",
+                      "sha256":  "C231C961EB4DA4969C3713633EEFC68B6FF97D8F64DA70482FFD900C33DF3692"
+                  },
+                  {
+                      "path":  "app/internal/session/peer.go",
+                      "sha256":  "A873E6A570DD78ABED676E01442313506FA0DB4F40BC60575187DCEB77EDF2AB"
+                  },
+                  {
+                      "path":  "app/internal/desktop/diagnostics_windows.go",
+                      "sha256":  "9D7776391D4005BDE009F4DCE4E41523489EA01A427A053E27EAEA62799D585E"
+                  },
+                  {
+                      "path":  "app/main_windows.go",
+                      "sha256":  "E13C9C06C0C7952F62EEB540D4C0FFE27D83D264C8AB3C78FA4ED80380DF3DEC"
+                  },
+                  {
+                      "path":  "app/g5/ui-proof.mjs",
+                      "sha256":  "A3423EC6DB4F0070685B1D979AA13E11F898254801D3B67FA70FD6DC742CFF89"
+                  },
+                  {
+                      "path":  "app/g5/summarize.mjs",
+                      "sha256":  "E24816180DB5090C0990F3F1F2E423901A4485EECC03557C4A84637585FC7E89"
+                  }
+              ]
+}

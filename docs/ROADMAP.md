@@ -8,6 +8,7 @@
 > **G2 PASS** codec/telemetry; [bằng chứng G2](../app/G2_CLOSEOUT.md).
 > **G3 PASS** capture/local preview; [bằng chứng G3](../app/G3_CLOSEOUT.md).
 > **G4 PASS** local desktop + remote synthetic; [bằng chứng G4](../app/G4_CLOSEOUT.md).
+> **G5 PASS** UX/telemetry/resilience Windows, stress 600s; [bằng chứng G5](../app/G5_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
@@ -22,7 +23,7 @@ workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0–G4 PASS**, cập nhật 2026-11-17.
+Kết quả hiện hành: **G0–G5 PASS**, cập nhật 2026-11-17.
 Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
@@ -48,8 +49,9 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G1 | PASS: framing/config, reader/writer, tests/race/vet/Windows build và 4 fuzz targets; xem G1_CLOSEOUT | Bàn giao G2 codec + telemetry |
 | G2 | PASS: codec/telemetry, canonical/oracle, malformed, tests/race/vet/build/fuzz/bench; [G2_CLOSEOUT](../app/G2_CLOSEOUT.md) | Bàn giao G3; theo dõi allocation khi tích hợp |
 | G3 | PASS: capture GDI, session bridge, React/Wails preview; 600.377s ở 720p, render mean 23.956 FPS, Stop 118ms; [G3_CLOSEOUT](../app/G3_CLOSEOUT.md) | G4; ghi rõ giới hạn một màn hình, process-only memory và manual cases |
-| G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](../app/G4_CLOSEOUT.md) | G5 UX/stress; chưa suy ra hiệu năng capture/render remote |
-| G5–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+| G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](../app/G4_CLOSEOUT.md) | G5 đã tiếp nối bên dưới; chưa suy ra hiệu năng capture/render remote |
+| G5 | PASS: UI/dashboard thật, 26 kiểm tra UX cuối, stress 600.331s 720p, render p50 24 FPS / p95 25 FPS, Stop 141ms; [G5_CLOSEOUT](../app/G5_CLOSEOUT.md) | Giới hạn manual/content benchmark được ghi rõ; G6 đóng gói |
+| G6–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
 transport local/remote, native compile/runtime, tests và notice review.
@@ -97,11 +99,20 @@ verification. Smoke 30s và phiên synthetic **600.277/600.282s** qua public rel
 Ping/Pong và END đạt; kiểm tra SSH riêng không còn process/rule/listener test.
 Chi tiết: [G4_REMOTE_PROOF](../app/G4_REMOTE_PROOF.md).
 
-### Next focused gate: G5 — not started
+### G5 — PASS
 
-Full UX/resilience/telemetry acceptance, stress và số đo UI thật. G4 remote
-chỉ dùng ảnh tổng hợp; không mặc nhiên cho phép capture thật qua EC2 và
-không bảo đảm FPS/độ trễ Internet. Chưa triển khai G5 trong lượt đóng G4 này.
+Chủ dự án giao G5 ngày 2026-11-17. Đã bổ sung uptime/loại frame, tooltips,
+empty state, retry countdown, phục hồi kênh hiển thị và Back chờ cleanup.
+Hai app Windows capture thật qua loopback đạt stress >=600s; final suite 26
+checks, full unit/race/vet, frontend và native build PASS.
+Nguồn số đo/giới hạn: [G5_CLOSEOUT](../app/G5_CLOSEOUT.md). Speech screen-reader,
+physical monitor removal và benchmark toàn ma trận nội dung chưa chạy.
+
+### Next focused gate: G6 — not started
+
+Đóng gói Windows và demo handoff. Chưa cài công cụ installer/signing hoặc
+ngầm cho phép truyền capture thật qua EC2. G5 local không bảo đảm FPS/latency
+Internet; production build hiện có không tự đóng gate G6.
 
 ## Next work: G0
 

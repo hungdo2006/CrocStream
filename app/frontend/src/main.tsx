@@ -10,7 +10,7 @@ const names: Record<State, string> = {
   Stopping: 'Đang dừng và giải phóng tài nguyên', Error: 'Preview gặp lỗi',
 }
 
-function App() {
+function App({onHome}:{onHome:()=>void}) {
   const [displays, setDisplays] = useState<Display[]>([])
   const [display, setDisplay] = useState('')
   const [resolution, setResolution] = useState('1280x720')
@@ -135,14 +135,14 @@ function App() {
       // A Stop click during preparation must follow the outstanding Start RPC,
       // otherwise it could stop nothing and allow the late Start to capture.
       await starting.current?.catch(() => {})
-      await api.stop(); active.current = false; setState('Idle')
+      await api.stop(); active.current = false; setState('Idle');setPreviewError('');setError('');return true
     }
-    catch { setError('Dừng quá thời gian; đang chờ Windows giải phóng capture.'); setState('Stopping') }
+    catch { setError('Dừng quá thời gian; đang chờ Windows giải phóng capture.'); setState('Stopping');return false }
     finally { pendingOperation.current = false }
   }
   const locked = state === 'Preparing' || state === 'Previewing' || state === 'Stopping'
-  const measured = stats && stats.captured > 0
-  return <main>
+  const measured = stats && session && stats.generation === session.generation && stats.captured > 0
+  return <><nav><button onClick={()=>void stop().then(done=>{if(done)onHome()})}>← Dừng phiên và về Home</button></nav><main>
     <header><div><span className="eyebrow">CROCSTREAM / G3</span><h1>Màn hình của bạn.<br /><span>Xem trước, ngay tại đây.</span></h1></div>
       <span className={`status ${locked ? 'active' : ''}`} role="status">{names[state]}</span></header>
     <div className="workspace">
@@ -183,28 +183,20 @@ function App() {
       </aside>
     </div>
     <footer>01 / Chọn nguồn <span>02 / Bắt đầu</span><span>03 / Dừng để giải phóng capture</span></footer>
-  </main>
+  </main></>
 }
 function Metric({ label, value }: { label: string; value: string }) {
   return <div><span>{label}</span><strong>{value}</strong></div>
 }
 function Root() {
   const [mode,setMode]=useState<'home'|'local'|'share'|'watch'>('home')
-  const [switching,setSwitching]=useState(false)
-  const home=async()=>{
-    setSwitching(true)
-    try{
-      if(mode==='local')await api.stop()
-      else await api.stopSession()
-      setMode('home')
-    }finally{setSwitching(false)}
-  }
-  if(mode==='home')return <main><header><div><span className="eyebrow">CROCSTREAM / G4</span><h1>Màn hình kết nối bạn.</h1></div></header>
+  const home=()=>setMode('home')
+  if(mode==='home')return <main><header><div><span className="eyebrow">CROCSTREAM / G5</span><h1>Màn hình kết nối bạn.</h1></div></header>
     <div className="home-cards">
       <button onClick={()=>setMode('share')}>Share Screen · Chia sẻ</button>
       <button onClick={()=>setMode('watch')}>Watch Stream · Xem</button>
       <button onClick={()=>setMode('local')}>Local preview · Xem trước</button>
     </div><p className="caption">Một người phát ↔ một người xem. Relay do bạn cấu hình; chưa có kết nối khi mở ứng dụng.</p></main>
-  return <><nav><button disabled={switching} onClick={()=>void home().catch(()=>{})}>← Dừng phiên và về Home</button></nav>{mode==='local'?<App/>:<Stream key={mode} role={mode}/>}</>
+  return mode==='local'?<App onHome={home}/>:<Stream key={mode} role={mode} onHome={home}/>
 }
 createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)

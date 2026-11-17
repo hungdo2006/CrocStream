@@ -9,15 +9,18 @@ import (
 
 // Numeric process measurements only; no images, tokens or endpoint addresses.
 type Diagnostics struct {
-	HeapBytes       uint64 `json:"heapBytes"`
-	AllocatedBytes  uint64 `json:"allocatedBytes"`
-	Allocations     uint64 `json:"allocations"`
-	Goroutines      int    `json:"goroutines"`
-	GDIObjects      uint32 `json:"gdiObjects"`
-	Handles         uint32 `json:"handles"`
-	WorkingSetBytes uint64 `json:"workingSetBytes"`
-	PrivateBytes    uint64 `json:"privateBytes"`
-	ProcessMeasured bool   `json:"processMeasured"`
+	HeapBytes       uint64  `json:"heapBytes"`
+	AllocatedBytes  uint64  `json:"allocatedBytes"`
+	Allocations     uint64  `json:"allocations"`
+	Goroutines      int     `json:"goroutines"`
+	GDIObjects      uint32  `json:"gdiObjects"`
+	Handles         uint32  `json:"handles"`
+	WorkingSetBytes uint64  `json:"workingSetBytes"`
+	PrivateBytes    uint64  `json:"privateBytes"`
+	ProcessMeasured bool    `json:"processMeasured"`
+	CPUMs           float64 `json:"cpuMs"`
+	CPUMeasured     bool    `json:"cpuMeasured"`
+	LogicalCPUs     int     `json:"logicalCPUs"`
 }
 
 var (
@@ -42,5 +45,12 @@ func (*Service) GetDiagnostics() Diagnostics {
 	ok2, _, _ := memoryInfo.Call(uintptr(process), uintptr(unsafe.Pointer(&counters)), uintptr(counters.Size))
 	out.WorkingSetBytes, out.PrivateBytes = uint64(counters.WorkingSet), uint64(counters.Private)
 	out.ProcessMeasured = ok1 != 0 && ok2 != 0
+	var created, exited, kernel, user windows.Filetime
+	if windows.GetProcessTimes(process, &created, &exited, &kernel, &user) == nil {
+		out.CPUMs = float64(uint64(kernel.HighDateTime)<<32|uint64(kernel.LowDateTime))/10000 +
+			float64(uint64(user.HighDateTime)<<32|uint64(user.LowDateTime))/10000
+		out.CPUMeasured = true
+	}
+	out.LogicalCPUs = runtime.NumCPU()
 	return out
 }

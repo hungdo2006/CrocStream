@@ -4,7 +4,7 @@
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
 > [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
-> thực tế; G0–G4 có closeout PASS, gồm local desktop và remote synthetic G4.
+> thực tế; G0–G5 có closeout PASS, gồm remote synthetic G4 và UX/stress local G5.
 
 ## Contents
 - [Reference source](#reference-source)
@@ -118,7 +118,7 @@ proposed resolutions above.
 
 The current single repository contains `croc/` (pristine upstream reference snapshot),
 `docs/` (planning documents), G0 artifacts and the application module in `app/`.
-G0–G4 are closed PASS; local-preview implementation and evidence are
+G0–G5 are closed PASS; local-preview implementation and evidence are
 tracked in [G3_CLOSEOUT](../app/G3_CLOSEOUT.md).
 `internal/protocol`, `internal/frame`, `internal/delta` and
 `internal/telemetry` are implemented; G2 evidence is in
@@ -233,6 +233,17 @@ code, closes all session resources, and a new session authenticates afresh.
 Join is explicitly rate-limited (2s minimum between attempts, 5/minute) with no
 automatic retry loop. Local tests can configure their own private lifecycle
 limits without altering the production limit.
+
+G5 exposes the remaining retry budget via sanitized `retryAfterMs`, plus
+capture totals, current bounded queue depths, bridge drops and existing codec/
+baseline measurements. `meanJPEGMs` is lifetime elapsed JPEG encoding time,
+not process CPU; Windows diagnostics expose measured cumulative process CPU.
+The last frame kind is the last successfully emitted/decoded video, not a
+canvas acknowledgement. No media wire field is added. Back waits for the
+pending Start binding before Stop; display-only reconnect uses the same live
+session endpoint, is user-triggered/rate-limited, and invalidates old canvas
+decode work. Optional LZ4 decode→render stays N/A because JPEG snapshots do not
+carry correlated timestamps. See [G5 report](../app/G5_CLOSEOUT.md).
 
 ## Local WebView media bridge
 - Bind **only** `127.0.0.1:<OS-assigned-port>`; require a cryptographic 256-bit launch/session token on WebSocket upgrade. The listener and upgraded connections belong to the preview session (C-03). Reject absent/null/foreign Origin with an exact mode-specific allowlist (C-04); no wildcard.

@@ -33,4 +33,38 @@ describe('latest-only canvas lifecycle', () => {
     frames.push(new Blob())
     expect(decode).toHaveBeenCalledTimes(2)
   })
+  it('does not let an old session decode overwrite a rejoined canvas', async () => {
+    let complete!: (bitmap: { close: () => void }) => void
+    const drawn: string[] = []
+    const stale = { close: vi.fn() }, fresh = { close: vi.fn() }
+    const failed = vi.fn()
+    const old = new LatestFrames(() => new Promise<{ close: () => void }>(r => { complete = r }), () => drawn.push('old'), failed)
+    old.push(new Blob())
+    old.dispose()
+    const next = new LatestFrames(async () => fresh, () => drawn.push('new'), failed)
+    next.push(new Blob())
+    await Promise.resolve()
+    complete(stale)
+    await Promise.resolve()
+    expect(drawn).toEqual(['new'])
+    expect(stale.close).toHaveBeenCalledOnce()
+    expect(fresh.close).toHaveBeenCalledOnce()
+    expect(failed).not.toHaveBeenCalled()
+    next.dispose()
+  })
+  it('continues after a failed image and suppresses errors after leaving', async () => {
+    let reject!: () => void
+    const failed = vi.fn(), draw = vi.fn(), bitmap = { close: vi.fn() }
+    const decode = vi.fn().mockRejectedValueOnce(new Error('bad'))
+      .mockResolvedValueOnce(bitmap)
+      .mockImplementationOnce(() => new Promise((_, no) => { reject = () => no(new Error('late')) }))
+    const frames = new LatestFrames(decode, draw, failed)
+    frames.push(new Blob()); await Promise.resolve(); await Promise.resolve()
+    frames.push(new Blob()); await Promise.resolve(); await Promise.resolve()
+    expect(draw).toHaveBeenCalledOnce()
+    expect(bitmap.close).toHaveBeenCalledOnce()
+    frames.push(new Blob()); frames.dispose(); reject()
+    await Promise.resolve(); await Promise.resolve()
+    expect(failed).toHaveBeenCalledOnce()
+  })
 })

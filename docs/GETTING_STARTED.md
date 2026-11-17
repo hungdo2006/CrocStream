@@ -30,7 +30,7 @@ Theo cập nhật 2026-11-17:
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
 | `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture/preview Wails, G4 Share/Watch và báo cáo/tooling G0 |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
-| Ứng dụng và benchmark | G3 local preview và G4 Share/Watch PASS; G4 remote synthetic >=600s đã kiểm chứng; UX/stress/full-app benchmark thuộc G5 |
+| Ứng dụng và benchmark | G0–G5 PASS; G4 remote synthetic và G5 local UI stress >=600s đã kiểm chứng; [G5 và giới hạn](../app/G5_CLOSEOUT.md) |
 
 **Có ứng dụng local preview và Share/Watch**. G4 kiểm chứng desktop capture/render
 ở hai process local và media tổng hợp qua EC2 hai máy; chưa đo capture/render
@@ -161,7 +161,7 @@ KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm 
 G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
 framing/config thuần Go; G2 đã triển khai codec delta và telemetry;
 G3 có capture/preview; G4 Share/Watch và remote synthetic proof đã PASS.
-Tiếp theo G5 UX/stress. Xem [tiến độ](ROADMAP.md#current-progress)
+G5 UX/telemetry và stress local đã PASS; tiếp theo G6 đóng gói. Xem [tiến độ](ROADMAP.md#current-progress)
 và [bằng chứng G4](../app/G4_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh

@@ -303,3 +303,18 @@ Real screen capture to EC2 remains outside the local-only capture permission.
 The test does not establish Internet 24 FPS or remote capture-to-render latency.
 For a changed IP on the same trusted instance, `-PinnedHostKeyAlias` selects
 the previously verified known-host entry without accepting an untrusted new key.
+
+## G5 UX and measured dashboard
+
+Share/Watch now show session uptime, last accepted KEY/DELTA kind, waiting
+capture separately from emitted video, explicit empty/incomplete measurements,
+and accessible descriptions for rates, means, baseline and negative savings.
+Retry countdown follows the backend's 2s/5-per-minute budget. Local display
+failure offers a rate-limited manual reconnect without restarting network
+decode. Back-to-Home waits for pending Start and resource cleanup.
+
+Actual Windows local 720p/24-FPS two-app stress ran 600s: viewer render p50
+24 FPS / p95 25 FPS, Stop 141ms. These measurements apply to the named desktop
+dataset, not arbitrary video/Internet conditions. Optional decode→render is
+N/A; true E2E is hidden. See [G5 closeout](G5_CLOSEOUT.md) for exact binaries,
+tests, resource limits and remaining manual cases; [reproduce](g5/README.md).
