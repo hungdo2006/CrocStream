@@ -62,6 +62,7 @@ type Reader struct {
 	state     streamState
 	pending   *Header
 	terminal  error
+	received  Header
 }
 
 func NewReader(input io.Reader, d Direction) (*Reader, error) {
@@ -74,6 +75,11 @@ func NewReader(input io.Reader, d Direction) (*Reader, error) {
 // Config returns a copy of the validated, immutable session configuration.
 func (r *Reader) Config() (Config, bool) { return r.state.config, r.state.configured }
 
+// LastReceived is the complete, structurally bounded packet consumed by the
+// latest ReadPacket, including a discarded sequence-error payload. It is zero
+// on truncated/fatal reads. Callers can account received bytes before decoding.
+func (r *Reader) LastReceived() Header { return r.received }
+
 // ReadPacket validates headers and session state before allocating <=MaxPayload.
 // A video packet must be resolved before the next call, after full codec checks.
 //
@@ -84,6 +90,7 @@ func (r *Reader) Config() (Config, bool) { return r.state.config, r.state.config
 // EOF at a packet boundary is io.EOF; any truncated header/payload is unexpected
 // EOF. No resynchronization scan is attempted. END is returned once, then EOF.
 func (r *Reader) ReadPacket() (Packet, error) {
+	r.received = Header{}
 	if r.terminal != nil {
 		return Packet{}, r.terminal
 	}
@@ -107,6 +114,7 @@ func (r *Reader) ReadPacket() (Packet, error) {
 			return r.fail(err)
 		}
 		r.state.lastSeen = max(r.state.lastSeen, h.FrameID)
+		r.received = h
 		return Packet{}, ErrNeedKeyframe
 	}
 	p := Packet{Header: h}
@@ -126,6 +134,7 @@ func (r *Reader) ReadPacket() (Packet, error) {
 	if h.Type.video() {
 		r.pending = &h
 	}
+	r.received = h
 	if h.Type == End {
 		r.terminal = io.EOF
 	}

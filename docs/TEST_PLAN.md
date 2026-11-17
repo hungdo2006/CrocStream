@@ -78,6 +78,20 @@ image correctness evidence: [G2 closeout](../app/G2_CLOSEOUT.md).
   `/viewer` and query-token rejection, one-client cap, binary ownership,
   latest-only queue, deadline/close and 100 session lifecycles. Native capture
   tests require explicit consent; ordinary tests use synthetic DIB/fake sources.
+- G4 local tests cover the actual secure croc duplex carrying media-v1 packets:
+  100 Host/Join lifecycles, 100-frame canonical equality, corrupt DELTA atomicity,
+  bounded PLI/Pong, correct received-byte counts even on discarded video,
+  slow-UI latest-only snapshots without skipping decode, blocked writer/remote
+  END, auth progress, wrong invitation, canceled preparation and Join limits.
+  Two-desktop-app proof verifies local capture, both canvases, PLI recovery,
+  Stop/disconnect/EOS and closed role-isolated bridges. See
+  [G4 evidence/status](../app/G4_CLOSEOUT.md).
+- Remote G4 acceptance is not waived by local/G0 success. It passed on
+  2026-11-17 with the owner-restarted EC2: synthetic-only two-machine media
+  proof >=600s, expected hashes/bytes/IDs/control and independent run-owned
+  process/firewall cleanup. Evidence:
+  [G4 remote report](../app/G4_REMOTE_PROOF.md). These remain the reproduction
+  criteria; never transmit real screen content under local-only capture permission.
 
 ## D. Transport G0 proof (two processes, no GUI)
 Execution status (2026-11-16): **G0 PASS** for the named prototype paths; see

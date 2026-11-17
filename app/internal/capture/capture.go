@@ -22,15 +22,20 @@ type Display struct {
 }
 
 type Options struct {
-	DisplayID string `json:"displayID"`
-	Width     uint16 `json:"width"`
-	Height    uint16 `json:"height"`
-	FPS       uint8  `json:"fps"`
+	DisplayID   string `json:"displayID"`
+	Width       uint16 `json:"width"`
+	Height      uint16 `json:"height"`
+	FPS         uint8  `json:"fps"`
+	Tau         uint8  `json:"tau"`
+	KeyInterval uint16 `json:"keyInterval"`
 }
 
 func (o Options) Config() (protocol.Config, error) {
 	c := protocol.DefaultConfig()
-	c.Width, c.Height, c.FPS = o.Width, o.Height, o.FPS
+	c.Width, c.Height, c.FPS, c.KeyInterval = o.Width, o.Height, o.FPS, o.KeyInterval
+	if c.KeyInterval == 0 {
+		c.KeyInterval = protocol.DefaultKeyInterval
+	}
 	if o.DisplayID == "" {
 		return c, ErrSource
 	}

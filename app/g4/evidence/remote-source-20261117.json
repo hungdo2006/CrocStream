@@ -1,0 +1,96 @@
+{
+    "recorded_at_utc":  "2026-11-17T12:22:13.8262332Z",
+    "repository_head":  "5322d6a75a9dcc92f380c38ab6190969a938dbf4",
+    "working_tree":  "uncommitted G4 implementation retained",
+    "upstream_commit":  "552f40fd2d7593316118370bec0a93478d48e715",
+    "go_version":  "go version go1.27.4 windows/amd64",
+    "build_command":  "go -C app build -race -buildvcs=false -o \u003cportable-bin\u003e/g4proof-remote-20261117.exe ./g4/proof",
+    "binary_sha256":  "2F2D4A90A4A020B5EB04A8D02F6A93E4EFE68F6D1CDF333594DF8CDDE6162A56",
+    "source_scope":  "G4 proof and media/transport library non-test Go source; not an assertion that every platform file is linked",
+    "files":  [
+                  {
+                      "path":  "app/g0/poc/duplex/duplex.go",
+                      "sha256":  "82F6C154244A6EAF15141D0034E2C6C7B1F23EEA8E89309241EF0EB5DBFA4253"
+                  },
+                  {
+                      "path":  "app/g0/poc/internal/transport/transport.go",
+                      "sha256":  "B2D85583AB6F1F0627361F8FFF3B84ADFD6F41BB657991A191D85F99205AB234"
+                  },
+                  {
+                      "path":  "app/g0/poc/internal/upstreampake/pake.go",
+                      "sha256":  "71356651B3B7657AC3099AB04343B5802AD7B958CA036D0FCA9779F612EBD758"
+                  },
+                  {
+                      "path":  "app/g4/proof/main.go",
+                      "sha256":  "DE1B8F8EF86EB6E82B218AD4A961C91D75CCA948EDB5E0632688E68373C88245"
+                  },
+                  {
+                      "path":  "app/internal/bridge/bridge.go",
+                      "sha256":  "5018E741297BB3B27E528A528B572DACEB478EC8CE55EBCF8BE412E5F65665D9"
+                  },
+                  {
+                      "path":  "app/internal/bridge/listener.go",
+                      "sha256":  "4E1B1D39384D898F5C8D8582505CC2BC3507C94D7CF6627B80C62F0D6A8C32FA"
+                  },
+                  {
+                      "path":  "app/internal/capture/capture.go",
+                      "sha256":  "34D0486EF130D1D6EFEFCEDFD876A9FA2F4EF18781C72B166EB1BA890B91BA19"
+                  },
+                  {
+                      "path":  "app/internal/capture/capture_windows.go",
+                      "sha256":  "C7B376172E0101E82AFD739FD0644AD77E79AA1D75B491E3EF1DBDFB8F262278"
+                  },
+                  {
+                      "path":  "app/internal/delta/codec.go",
+                      "sha256":  "1A1BCC2AEEB5EB08FE7AA4A88683BB0B7C2C81D3A86AE87400DE6913DDB162B7"
+                  },
+                  {
+                      "path":  "app/internal/delta/compression.go",
+                      "sha256":  "35D55114BE241486FAE28400F7C844597E63476A70B1FCF1E11BE019AD7FC758"
+                  },
+                  {
+                      "path":  "app/internal/delta/record.go",
+                      "sha256":  "57A7EC2F6521B58893B8BB26FB31B3FE0DB187B6452046C9A28C3828D0985C1E"
+                  },
+                  {
+                      "path":  "app/internal/frame/normalize.go",
+                      "sha256":  "BA01F272454883DF19C68B948B2B903BF80F8A62F142ECE1E14531DA0B5F29AA"
+                  },
+                  {
+                      "path":  "app/internal/protocol/config.go",
+                      "sha256":  "388E64E37BF9AD31382F432AAD3BDF5EF7B88CA76086F9CB4A8FC493385B11D6"
+                  },
+                  {
+                      "path":  "app/internal/protocol/doc.go",
+                      "sha256":  "0D991C41CEB048E1FC074258F3B93535EAD215C4E4ECA1BB9B38FBB97AF52D13"
+                  },
+                  {
+                      "path":  "app/internal/protocol/header.go",
+                      "sha256":  "BF283A75B41A930D793390793EDB5B843CCD126FA59BC7F52F0F4806E02A011D"
+                  },
+                  {
+                      "path":  "app/internal/protocol/packet.go",
+                      "sha256":  "1AA131E53056097A4D50F5647E09FC042CD3CDA1FEE32D0340FAD60693EE11EE"
+                  },
+                  {
+                      "path":  "app/internal/protocol/stream.go",
+                      "sha256":  "77482EBDC8B8360A367F1DE1205935648E13638C8F691BBF368BBB538736E166"
+                  },
+                  {
+                      "path":  "app/internal/session/controller.go",
+                      "sha256":  "81B23A51B9F69B7792078AD6C6F596B21E94C3B1B9AAABEC4ED41084E4C91882"
+                  },
+                  {
+                      "path":  "app/internal/session/peer.go",
+                      "sha256":  "B905F837275C19EE9E31DD63E44BB4CDCE3B9EF47F6A4D02D37E49805AFC02F2"
+                  },
+                  {
+                      "path":  "app/internal/telemetry/meter.go",
+                      "sha256":  "F01FBDA79E63CDA045838B2C71877F155C148EA6CA4A9DAAC90BE2B8545F9346"
+                  },
+                  {
+                      "path":  "app/internal/transport/factory.go",
+                      "sha256":  "818BA0001F6DB9D2DF9D154483F75B3426889E2FD9D1AAA102DC12C4CA7C244F"
+                  }
+              ]
+}

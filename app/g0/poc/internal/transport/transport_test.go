@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -264,13 +265,13 @@ func TestHandshakeAndWrongPassword(t *testing.T) {
 			pw = "different"
 		}
 		go func() {
-			_, err := handshake(ctx, ob, opts, pw, "room", 1)
+			_, err := handshake(ctx, ob, opts, pw, "room", 1, nil)
 			if err != nil {
 				ob.abort()
 			}
 			done <- err
 		}()
-		_, err := handshake(ctx, oa, opts, "test", "room", 0)
+		_, err := handshake(ctx, oa, opts, "test", "room", 0, nil)
 		if wrong && err == nil {
 			t.Fatal("accepted wrong password")
 		}
@@ -284,6 +285,51 @@ func TestHandshakeAndWrongPassword(t *testing.T) {
 		ob.abort()
 		cancel()
 	}
+}
+
+func TestRelayPasswordNotRetainedAfterAdmission(t *testing.T) {
+	opts := startRelay(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	l, err := Host(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l.opts.RelayPassword != "" {
+		t.Fatal("listener retained relay password")
+	}
+	l.Close()
+}
+
+func TestHandshakeProgressOccursOnlyAtPeerAuthentication(t *testing.T) {
+	opts := startRelay(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	l, err := Host(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close()
+	var hostAuth, joinAuth atomic.Bool
+	type accepted struct {
+		s   *Session
+		err error
+	}
+	done := make(chan accepted, 1)
+	go func() { s, e := l.AcceptWithProgress(ctx, func() { hostAuth.Store(true) }); done <- accepted{s, e} }()
+	joined, err := JoinWithProgress(ctx, l.Invitation(), opts, func() { joinAuth.Store(true) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	host := <-done
+	if host.err != nil {
+		t.Fatal(host.err)
+	}
+	if !hostAuth.Load() || !joinAuth.Load() {
+		t.Fatal("authenticated transition missing")
+	}
+	joined.Close()
+	host.s.Close()
 }
 
 func startRelay(t *testing.T) Options {

@@ -22,17 +22,19 @@ Chi tiết hành vi nằm trong [PRD](PRD.md).
 
 ## 2. Hiện tại đã có gì?
 
-Theo cập nhật 2026-11-16:
+Theo cập nhật 2026-11-17:
 
 | Thành phần | Trạng thái |
 | --- | --- |
 | `croc/` | Snapshot upstream để khảo sát; giữ nguyên mã nguồn và giấy phép |
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
-| `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture + local preview Wails và báo cáo/tooling/PoC G0 |
+| `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture/preview Wails, G4 Share/Watch và báo cáo/tooling G0 |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
-| Ứng dụng và benchmark | Local preview Windows G3 PASS, 720p/≈24 FPS trong 10 phút; remote session/full-app benchmark thuộc G4+ |
+| Ứng dụng và benchmark | G3 local preview và G4 Share/Watch PASS; G4 remote synthetic >=600s đã kiểm chứng; UX/stress/full-app benchmark thuộc G5 |
 
-**Có ứng dụng local preview**, chưa chia sẻ tới máy thứ hai.
+**Có ứng dụng local preview và Share/Watch**. G4 kiểm chứng desktop capture/render
+ở hai process local và media tổng hợp qua EC2 hai máy; chưa đo capture/render
+màn hình thật qua Internet.
 [Lệnh build/chạy G3](../app/README.md#g3-desktop-preview--build-and-run);
 [PoC G0](../app/g0/poc/README.md) dùng riêng để thử transport dữ liệu tổng hợp.
 Các lệnh test/build package G1 nằm trong [app README](../app/README.md).
@@ -55,6 +57,9 @@ gốc với RTT trung bình 48–51ms; kết quả mạng cũ vẫn được gi�
 ảnh tổng hợp; chưa phải benchmark chia sẻ màn hình thật.
 [G3 closeout](../app/G3_CLOSEOUT.md) ghi kiểm chứng capture/preview Windows,
 Origin thực tế và vòng đời tài nguyên.
+G4 tích hợp Share/Watch qua transport xác thực. Sau khi chủ dự án khởi động lại
+EC2, remote synthetic proof >=600s đã PASS với hash/control/counter và cleanup.
+Xem [G4 closeout](../app/G4_CLOSEOUT.md) và [remote proof](../app/G4_REMOTE_PROOF.md).
 
 ## 3. Hình ảnh đi từ máy phát tới máy xem thế nào?
 
@@ -155,8 +160,9 @@ KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm 
 
 G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
 framing/config thuần Go; G2 đã triển khai codec delta và telemetry;
-G3 đã có capture và preview cục bộ. Xem [tiến độ](ROADMAP.md#current-progress)
-và [bằng chứng G3](../app/G3_CLOSEOUT.md).
+G3 có capture/preview; G4 Share/Watch và remote synthetic proof đã PASS.
+Tiếp theo G5 UX/stress. Xem [tiến độ](ROADMAP.md#current-progress)
+và [bằng chứng G4](../app/G4_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh
 → bản Windows bàn giao. Chi tiết và điều kiện chuyển bước ở [bảng gate](ROADMAP.md#gates).

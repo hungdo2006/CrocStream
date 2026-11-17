@@ -5,7 +5,7 @@
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
 
-**Status:** desktop screen-sharing prototype in development. **G0–G3 PASS**: transport feasibility, framing/config, codec/telemetry and Windows local preview ([G3 evidence](../app/G3_CLOSEOUT.md)). Remote sharing/pairing remains G4. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). The G0 network's measured RTT and limits remain historical transport evidence, not screen-sharing latency. C-01/C-02 and G3's C-03/C-05 choices were owner-confirmed; C-04 uses observed WebView Origins. Paths are repository-root relative.
+**Status:** desktop screen-sharing prototype in development. **G0–G4 PASS**: G4 combines local two-desktop-app capture/render tests with a >=600s authenticated remote synthetic media/control/reference proof and cleanup ([G4 report](../app/G4_CLOSEOUT.md), [remote evidence](../app/G4_REMOTE_PROOF.md)). Real remote-screen capture/render performance was not authorized/tested and is not inferred. G5 UX/stress and G6 packaging acceptance remain later gates. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
@@ -17,7 +17,13 @@ tracked in G3 below; secure app integration remains G4.
 
 **G3 implementation:** a runnable Windows local preview now exists; see
 [G3 evidence](../app/G3_CLOSEOUT.md) and [build/run](../app/README.md#g3-desktop-preview--build-and-run).
-Remote broadcaster/viewer behavior below remains the product target for G4/G5.
+Broadcaster/viewer integration is implemented in G4; full UX acceptance remains G5.
+
+**G4 update (2026-11-17):** Share/Watch integrate authenticated croc duplex with
+CONFIG/KEY/DELTA, PLI, Ping/Pong and EOS; local synthetic and two-process desktop
+tests pass. Remote synthetic acceptance also passed at the owner's restarted
+EC2 after 600s, with matching hashes/bytes/control and independent cleanup.
+See [G4_CLOSEOUT](../app/G4_CLOSEOUT.md); no real remote capture was authorized.
 
 ## Product outcome
 Two separate desktop app processes on two Windows 10/11 x64 machines can join a secret-code 1:1 session. Broadcaster shares one screen; Viewer watches live output reconstructed from a lossless Keyframe + selected dirty tiles. Users can start/stop safely and compare bandwidth against a fair whole-frame compressed baseline.

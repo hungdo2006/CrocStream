@@ -1,0 +1,19 @@
+{
+    "status":  "INDEPENDENT_REMOTE_CLEANUP_VERIFIED",
+    "relay_listeners_9009":  0,
+    "observed_at_utc":  "2026-11-17T12:36:00.3777266Z",
+    "runs":  [
+                 {
+                     "run_id":  "fb21f2b869fd47a4988b993e6ddc8de0",
+                     "binary_sha256":  "2F2D4A90A4A020B5EB04A8D02F6A93E4EFE68F6D1CDF333594DF8CDDE6162A56",
+                     "owned_processes":  0,
+                     "owned_firewall_rules":  0
+                 },
+                 {
+                     "run_id":  "3f434ebe75a24f6183f2e298faed3c0f",
+                     "binary_sha256":  "2F2D4A90A4A020B5EB04A8D02F6A93E4EFE68F6D1CDF333594DF8CDDE6162A56",
+                     "owned_processes":  0,
+                     "owned_firewall_rules":  0
+                 }
+             ]
+}

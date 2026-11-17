@@ -4,7 +4,7 @@
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
 > [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
-> thực tế; kết quả toolchain G0, framing G1 và codec G2 nằm trong các closeout.
+> thực tế; G0–G4 có closeout PASS, gồm local desktop và remote synthetic G4.
 
 ## Contents
 - [Reference source](#reference-source)
@@ -118,12 +118,14 @@ proposed resolutions above.
 
 The current single repository contains `croc/` (pristine upstream reference snapshot),
 `docs/` (planning documents), G0 artifacts and the application module in `app/`.
-G0–G3 are closed PASS; local-preview implementation and evidence are
+G0–G4 are closed PASS; local-preview implementation and evidence are
 tracked in [G3_CLOSEOUT](../app/G3_CLOSEOUT.md).
 `internal/protocol`, `internal/frame`, `internal/delta` and
 `internal/telemetry` are implemented; G2 evidence is in
 [G2_CLOSEOUT](../app/G2_CLOSEOUT.md). G3 also implements capture, bridge,
-preview, desktop bindings and frontend. Session/remote integration remains G4.
+preview, desktop bindings and frontend. Session integration is implemented in G4;
+local desktop and remote two-machine synthetic proofs pass. See
+[G4_CLOSEOUT](../app/G4_CLOSEOUT.md).
 
 ```
 AGENTS.md
@@ -155,13 +157,17 @@ app/                                  # Application core and G0 artifacts
   internal/bridge/                    # G3 session-owned binary JPEG WebSocket
   internal/preview/                   # G3 preview lifecycle and bounded sampling
   internal/desktop/                   # G3 Wails service bindings
+  internal/session/                   # G4 authenticated role/media/control lifecycle
+  internal/transport/                 # G4 factory over the existing G0 module
+  g0/poc/duplex/                       # G4 public façade; one crypto source of truth
+  g4/                                # Synthetic/local-desktop proofs and remote helper
+  G4_CLOSEOUT.md                      # Local desktop + remote synthetic G4 PASS
+  G4_REMOTE_PROOF.md                  # >=600s two-machine hashes/control/cleanup
   frontend/src/                       # G3 React/TypeScript canvas preview
   frontend/package.json               # Pinned dependencies + package-lock.json
   g3/                                # Capture-free Origin probe, opt-in verification
   # Everything below is proposed, not implemented:
   internal/app/                       # Wails service methods + app/session coordinator
-  internal/session/                   # role/state machine and lifetime
-  internal/transport/                 # duplex interface; croc adapter only after G0
   build/                             # Wails build assets
 ```
 Adjust the paths to the actual initialized Wails v3 template; app structure is conceptual, not a license to invent outdated framework methods.
@@ -211,6 +217,23 @@ Receiver processing validates entire DELTA before touching canonical reference. 
 - Send config, keyframe, and periodic keys; viewer requests resync when invalid. PLI only signals sender's **next** emitted KEY, not an immediate copy of a stale raw buffer. PLI is rate-limited.
 - Wails service methods: `ListDisplays`, `StartBroadcast`, `StopBroadcast`, `JoinSession`, `LeaveSession`, `GetBridgeEndpoint`, `GetStats`. Their exact signatures derive from v3 app bindings and test doubles; use explicit success/error states. Events carry **only statuses/statistics**, never Base64 frames.
 
+G4's implemented bindings are `ListDisplays`, `StartBroadcast`, `JoinSession`,
+`StopSession`, `GetInvitation`, `GetSessionStats`, and G3's local-preview
+bindings. Start/Join return only the trusted local bridge endpoint/token plus
+generation. Invitation is a separate trusted binding, never included in
+telemetry snapshots. UI polls state/metrics around 500ms, not video-rate events.
+`StopSession` implements both broadcaster Stop and viewer Leave.
+
+`Preparing → WaitingForViewer → Authenticating → Live` and
+`Connecting → Authenticating → AwaitingKeyframe → Watching/Recovering` derive
+from actual admission, PAKE progress and successful first KEY write/decode;
+the same authenticated byte stream remains in use. `Live` is not viewer render
+acknowledgement or one-way latency proof. Pairing is one-shot; Stop clears the
+code, closes all session resources, and a new session authenticates afresh.
+Join is explicitly rate-limited (2s minimum between attempts, 5/minute) with no
+automatic retry loop. Local tests can configure their own private lifecycle
+limits without altering the production limit.
+
 ## Local WebView media bridge
 - Bind **only** `127.0.0.1:<OS-assigned-port>`; require a cryptographic 256-bit launch/session token on WebSocket upgrade. The listener and upgraded connections belong to the preview session (C-03). Reject absent/null/foreign Origin with an exact mode-specific allowlist (C-04); no wildcard.
 - Provide token + ephemeral URL only via trusted app binding to own frontend; do not expose in logs or telemetry. Explicitly close upgrade connections on Stop/exit; bound send queue (1-2), per-client caps and WebSocket write deadline.
@@ -224,8 +247,9 @@ G3 handshake: `/preview` only, one authenticated client, token offered via
 Server negotiates only `crocstream.preview`, never echoes the token. Exact
 Host and Origin are checked before upgrade. JPEG messages are binary and bounded
 to 4 MiB; newest-only one-message queue, one-second write timeout and bounded
-HTTP headers/read timeouts. `/viewer` is rejected until its distinct G4 role
-exists. Stop closes hijacked sockets as well as the HTTP listener.
+HTTP headers/read timeouts. G4 uses a separate immutable role instance for
+`/viewer` with its own token/listener; each instance rejects the other path.
+Stop closes hijacked sockets as well as the HTTP listener.
 
 G3 capture uses Win32 GDI on a locked worker thread: monitor enumeration,
 per-monitor DPI context, bounded top-down 32-bit DIB, aspect-fitted StretchBlt
@@ -250,7 +274,8 @@ monitor behavior must be reported based on actual tests, not inferred.
 
 ## Media protocol v1
 **Normative v1 contract, not deployed.** G1 implements framing/configuration;
-G2 implements codec/telemetry; application integration is a later gate. Framing runs
+G2 implements codec/telemetry; G4 integrates application sessions and passes
+two-machine synthetic media acceptance on the measured EC2 route. Framing runs
 inside an authenticated/encrypted transport; stock croc clients do not
 understand it. G0 tested a separate experimental transport record envelope.
 The media byte layout below is unchanged. Changing wire bytes requires a

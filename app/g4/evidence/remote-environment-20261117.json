@@ -1,0 +1,9 @@
+{
+    "observed_at_utc":  "2026-11-17T12:21:26.3925517Z",
+    "build":  "20348",
+    "cpu":  "Intel(R) Xeon(R) Platinum 8488C",
+    "arch":  "64-bit",
+    "memory_kib":  8224276,
+    "logical_processors":  2,
+    "os":  "Microsoft Windows Server 2022 Datacenter"
+}

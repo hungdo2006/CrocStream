@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { api, type Display, type Started, type State, type Stats } from './api'
 import { LatestFrames } from './latest'
+import { Stream } from './stream'
 import './style.css'
 
 const names: Record<State, string> = {
@@ -110,7 +111,7 @@ function App() {
     setError(''); setPreviewError(''); setState('Preparing')
     const [width, height] = resolution.split('x').map(Number)
     try {
-      const request = api.start({ displayID: display, width, height, fps })
+      const request = api.start({ displayID: display, width, height, fps, tau:4, keyInterval:30 })
       starting.current = request
       const next = await request
       if (current !== generation.current) return // Stop already owns cleanup.
@@ -187,4 +188,23 @@ function App() {
 function Metric({ label, value }: { label: string; value: string }) {
   return <div><span>{label}</span><strong>{value}</strong></div>
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)
+function Root() {
+  const [mode,setMode]=useState<'home'|'local'|'share'|'watch'>('home')
+  const [switching,setSwitching]=useState(false)
+  const home=async()=>{
+    setSwitching(true)
+    try{
+      if(mode==='local')await api.stop()
+      else await api.stopSession()
+      setMode('home')
+    }finally{setSwitching(false)}
+  }
+  if(mode==='home')return <main><header><div><span className="eyebrow">CROCSTREAM / G4</span><h1>Màn hình kết nối bạn.</h1></div></header>
+    <div className="home-cards">
+      <button onClick={()=>setMode('share')}>Share Screen · Chia sẻ</button>
+      <button onClick={()=>setMode('watch')}>Watch Stream · Xem</button>
+      <button onClick={()=>setMode('local')}>Local preview · Xem trước</button>
+    </div><p className="caption">Một người phát ↔ một người xem. Relay do bạn cấu hình; chưa có kết nối khi mở ứng dụng.</p></main>
+  return <><nav><button disabled={switching} onClick={()=>void home().catch(()=>{})}>← Dừng phiên và về Home</button></nav>{mode==='local'?<App/>:<Stream key={mode} role={mode}/>}</>
+}
+createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)

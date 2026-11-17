@@ -33,6 +33,7 @@ type Bridge struct {
 	mu            sync.Mutex
 	endpoint      Endpoint
 	origin        string
+	path          string
 	server        *http.Server
 	listener      net.Listener
 	ctx           context.Context
@@ -47,6 +48,14 @@ type Bridge struct {
 }
 
 func New(parent context.Context, origin string, token [32]byte) (*Bridge, error) {
+	return NewRole(parent, origin, token, "preview")
+}
+
+// Each instance has exactly one immutable role, endpoint and session token.
+func NewRole(parent context.Context, origin string, token [32]byte, role string) (*Bridge, error) {
+	if role != "preview" && role != "viewer" {
+		return nil, errors.New("bridge: invalid role")
+	}
 	u, err := url.Parse(origin)
 	if err != nil || u.Scheme != "http" || u.Hostname() != "wails.localhost" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
 		return nil, errors.New("bridge: invalid trusted origin")
@@ -57,8 +66,8 @@ func New(parent context.Context, origin string, token [32]byte) (*Bridge, error)
 	}
 	ln := &limitedListener{Listener: socket, slots: make(chan struct{}, 8)}
 	ctx, cancel := context.WithCancel(parent)
-	b := &Bridge{origin: origin, listener: ln, ctx: ctx, cancel: cancel, stopped: make(chan struct{}),
-		endpoint: Endpoint{URL: "ws://" + ln.Addr().String() + "/preview", Token: hex.EncodeToString(token[:])}}
+	b := &Bridge{origin: origin, path: "/" + role, listener: ln, ctx: ctx, cancel: cancel, stopped: make(chan struct{}),
+		endpoint: Endpoint{URL: "ws://" + ln.Addr().String() + "/" + role, Token: hex.EncodeToString(token[:])}}
 	b.server = &http.Server{Handler: http.HandlerFunc(b.handle), ReadHeaderTimeout: time.Second, ReadTimeout: 2 * time.Second,
 		WriteTimeout: 2 * time.Second, IdleTimeout: 2 * time.Second, MaxHeaderBytes: 4096, ErrorLog: log.New(io.Discard, "", 0)}
 	b.wg.Add(1)
@@ -72,7 +81,7 @@ func (b *Bridge) Counts() (sent, dropped uint64) { return b.sent.Load(), b.dropp
 
 func (b *Bridge) handle(w http.ResponseWriter, r *http.Request) {
 	deny := func(code int) { http.Error(w, "preview access denied", code) }
-	if r.Method != http.MethodGet || r.URL.Path != "/preview" || r.URL.RawQuery != "" ||
+	if r.Method != http.MethodGet || r.URL.Path != b.path || r.URL.RawQuery != "" ||
 		r.Host != b.listener.Addr().String() || len(r.Header.Values("Origin")) != 1 || r.Header.Get("Origin") != b.origin {
 		deny(http.StatusForbidden)
 		return

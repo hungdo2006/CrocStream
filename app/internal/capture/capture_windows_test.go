@@ -65,7 +65,7 @@ func TestActualCapture100Lifecycles(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		frames := 0
-		err := source.Run(ctx, Options{selected.ID, 1280, 720, 24}, func(f Frame) {
+		err := source.Run(ctx, Options{DisplayID: selected.ID, Width: 1280, Height: 720, FPS: 24}, func(f Frame) {
 			frames++
 			if f.Width != 1280 || f.Height != 720 || len(f.RGBA) != 1280*720*4 {
 				t.Error("invalid captured dimensions")

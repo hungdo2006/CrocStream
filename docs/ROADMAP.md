@@ -7,6 +7,7 @@
 > framing/config; [bằng chứng G1](../app/G1_CLOSEOUT.md).
 > **G2 PASS** codec/telemetry; [bằng chứng G2](../app/G2_CLOSEOUT.md).
 > **G3 PASS** capture/local preview; [bằng chứng G3](../app/G3_CLOSEOUT.md).
+> **G4 PASS** local desktop + remote synthetic; [bằng chứng G4](../app/G4_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
@@ -14,13 +15,14 @@ Current workspace (2026-11-17): one CrocStream repository containing pristine
 upstream source in `croc/`, planning documents in `docs/`, G0 artifacts,
 isolated `app/g0/buildprobe` / `app/g0/poc` modules, and the pure-Go application
 module with protocol/codec/telemetry and G3 capture/bridge/local-preview packages.
-The Windows desktop local preview is runnable; remote app integration is G4.
+Windows Share/Watch integration is runnable; G4 remote two-machine synthetic
+media acceptance passed on the owner-provided EC2 route.
 Previous custom code and experiment records are not retained. Source and
 workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0–G3 PASS**, cập nhật 2026-11-17.
+Kết quả hiện hành: **G0–G4 PASS**, cập nhật 2026-11-17.
 Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
@@ -46,7 +48,8 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G1 | PASS: framing/config, reader/writer, tests/race/vet/Windows build và 4 fuzz targets; xem G1_CLOSEOUT | Bàn giao G2 codec + telemetry |
 | G2 | PASS: codec/telemetry, canonical/oracle, malformed, tests/race/vet/build/fuzz/bench; [G2_CLOSEOUT](../app/G2_CLOSEOUT.md) | Bàn giao G3; theo dõi allocation khi tích hợp |
 | G3 | PASS: capture GDI, session bridge, React/Wails preview; 600.377s ở 720p, render mean 23.956 FPS, Stop 118ms; [G3_CLOSEOUT](../app/G3_CLOSEOUT.md) | G4; ghi rõ giới hạn một màn hình, process-only memory và manual cases |
-| G4–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+| G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](../app/G4_CLOSEOUT.md) | G5 UX/stress; chưa suy ra hiệu năng capture/render remote |
+| G5–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
 transport local/remote, native compile/runtime, tests và notice review.
@@ -78,13 +81,27 @@ cho kiểm thử. Capture GDI, bridge theo phiên/token/Origin và React canvas
 preview đã được triển khai. Native 100-cycle, full unit/race/vet, cold Windows
 build và UI dev/packaged đã PASS. Phiên 600.377s đo 23.956 FPS render, Stop
 118ms, GDI/goroutine về baseline; xem closeout để biết giới hạn và số đo memory.
-G4 vẫn chưa bắt đầu.
+G3 closeout chưa bao gồm G4; tiến độ tích hợp mới nằm ở mục G4 bên dưới.
 
-### Next focused gate: G4 — not started
+### G4 — PASS
 
-Tích hợp transport đã kiểm chứng với CONFIG/KEY/DELTA, PLI, Ping/Pong và EOS;
-vòng đời hai peer/process, kiểm thử remote và cleanup. Local preview G3 chưa
-phải phiên chia sẻ màn hình từ xa.
+G0 adapter được tái sử dụng, không đổi crypto/wire format. CONFIG/KEY/DELTA,
+PLI, Ping/Pong, EOS, UI Share/Watch và local two-process proof đã triển khai.
+Phiên synthetic hai process local đạt 600.4s, 6.863 packet, 2.028.915 byte media,
+hash/counter/control khớp; desktop capture/Watch local cũng đã PASS. Đây không
+phải proof hai máy qua Internet.
+Ban đầu EC2 cũ `54.151.152.78:22` timeout; sau đó chủ dự án khởi động lại
+instance và cung cấp `47.128.220.28`. SSH khớp host key đã ghim, không bỏ
+verification. Smoke 30s và phiên synthetic **600.277/600.282s** qua public relay
+đều PASS: **6.839 packet, 2.021.033 byte media**, hash/counter đúng, PLI/KEY,
+Ping/Pong và END đạt; kiểm tra SSH riêng không còn process/rule/listener test.
+Chi tiết: [G4_REMOTE_PROOF](../app/G4_REMOTE_PROOF.md).
+
+### Next focused gate: G5 — not started
+
+Full UX/resilience/telemetry acceptance, stress và số đo UI thật. G4 remote
+chỉ dùng ảnh tổng hợp; không mặc nhiên cho phép capture thật qua EC2 và
+không bảo đảm FPS/độ trễ Internet. Chưa triển khai G5 trong lượt đóng G4 này.
 
 ## Next work: G0
 

@@ -10,12 +10,14 @@ và hiệu quả gửi các vùng ảnh thay đổi thay vì toàn bộ ảnh.
 | Trạng thái hiện tại | Nội dung |
 | --- | --- |
 | Đã có | G0 transport PoC, G1 protocol, G2 codec/telemetry và [ứng dụng local preview G3](app/README.md#g3-desktop-preview--build-and-run) |
-| Chưa có | Chia sẻ màn hình từ xa; G4–G7 chưa triển khai |
+| Đã có G4 local | Share/Watch hai process qua relay loopback; media/control/canvas đã kiểm thử |
+| Còn lại | G5 UX/stress, G6 đóng gói và G7 mở rộng chưa triển khai |
 | Trạng thái G0 | **PASS** cho khả thi prototype: transport local/remote, native build/runtime và notice review; [quyết định cuối](app/G0_CLOSEOUT.md) |
 | Trạng thái G1 | **PASS** framing/config, tests/race/vet/build/fuzz; [báo cáo](app/G1_CLOSEOUT.md); C-01/C-02 đã chốt |
 | Trạng thái G2 | **PASS** codec/telemetry, tests/race/vet/build/fuzz/bench; [báo cáo](app/G2_CLOSEOUT.md) |
 | Trạng thái G3 | **PASS** local preview 720p/≈24 FPS trong 10 phút, Stop 118ms; [báo cáo kiểm chứng](app/G3_CLOSEOUT.md) |
-| Công việc phát triển kế tiếp | G4 tích hợp ứng dụng hai máy qua transport đã kiểm chứng |
+| Trạng thái G4 | **PASS** local desktop + remote synthetic >=600s, hash/control/cleanup đúng; [báo cáo](app/G4_CLOSEOUT.md) |
+| Công việc phát triển kế tiếp | G5 UX/resilience/telemetry acceptance |
 | Bằng chứng | Remote >600s, [mạng mới](app/G0_LATENCY_FOLLOWUP.md) RTT mean 48–51ms; giữ giới hạn mạng cũ, không hứa latency/FPS chung |
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
@@ -91,6 +93,8 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 | [G1_CLOSEOUT](app/G1_CLOSEOUT.md) | Framing/config, quyết định C-01/C-02, tests/fuzz và bàn giao G2 |
 | [G2_CLOSEOUT](app/G2_CLOSEOUT.md) | Codec delta, canonical reference, telemetry, tests/fuzz và benchmark |
 | [G3_CLOSEOUT](app/G3_CLOSEOUT.md) | Capture GDI, bridge token/Origin, React canvas, bản Windows và bằng chứng thực tế |
+| [G4_CLOSEOUT](app/G4_CLOSEOUT.md) | Share/Watch, secure media/control, lifecycle và local/remote proof |
+| [G4_REMOTE_PROOF](app/G4_REMOTE_PROOF.md) | Hai máy qua EC2 >=600s với ảnh tổng hợp, hash/counters và cleanup |
 
 ## Cách tiếp tục
 
@@ -100,4 +104,4 @@ Giữ `croc/` nguyên gốc để tham chiếu; phát triển phần mới trong
 repo khi được giao triển khai. G0 đã đóng; package protocol G1 hiện có trong
 `app/internal/protocol`. Xem closeout và gate kế tiếp trong Roadmap khi nhận
 task mới. Mọi đường dẫn `docs/`, `croc/` và `app/` tính từ gốc repository;
-remote integration/full UI trong kiến trúc vẫn là các bước tiếp theo.
+G4 integration đã có; full UX/stress và packaging là các bước tiếp theo.

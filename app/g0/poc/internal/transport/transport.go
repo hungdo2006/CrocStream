@@ -138,6 +138,9 @@ func Host(ctx context.Context, opts Options) (*Listener, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Relay admission is complete. Only handshake/record timeouts are needed
+	// afterward; do not retain the relay password in the one-shot listener.
+	opts.RelayPassword = ""
 	return &Listener{own: own, ctx: life, opts: opts, invite: invite, password: password, room: room}, nil
 }
 
@@ -151,6 +154,12 @@ func (l *Listener) Invitation() string {
 }
 
 func (l *Listener) Accept(ctx context.Context) (*Session, error) {
+	return l.AcceptWithProgress(ctx, nil)
+}
+
+// AcceptWithProgress preserves Accept semantics and reports only after an
+// relay-admitted peer has supplied a structurally valid CrocStream PAKE INIT.
+func (l *Listener) AcceptWithProgress(ctx context.Context, authenticating func()) (*Session, error) {
 	if ctx == nil {
 		return nil, errors.New("context required")
 	}
@@ -169,7 +178,7 @@ func (l *Listener) Accept(ctx context.Context) (*Session, error) {
 		l.own.abort()
 		return nil, ctx.Err()
 	}
-	s, err := handshake(l.ctx, l.own, l.opts, password, room, 1)
+	s, err := handshake(l.ctx, l.own, l.opts, password, room, 1, authenticating)
 	if err != nil {
 		stop()
 		l.Close()
@@ -188,6 +197,11 @@ func (l *Listener) Close() error {
 }
 
 func Join(ctx context.Context, invite string, opts Options) (*Session, error) {
+	return JoinWithProgress(ctx, invite, opts, nil)
+}
+
+// JoinWithProgress reports after relay admission, immediately before peer PAKE.
+func JoinWithProgress(ctx context.Context, invite string, opts Options, authenticating func()) (*Session, error) {
 	opts, err := opts.validate()
 	if err != nil {
 		return nil, err
@@ -200,7 +214,8 @@ func Join(ctx context.Context, invite string, opts Options) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := handshake(life, own, opts, password, room, 0)
+	opts.RelayPassword = ""
+	s, err := handshake(life, own, opts, password, room, 0, authenticating)
 	if err != nil {
 		own.abort()
 	}
@@ -313,7 +328,7 @@ func unpackPAKE(b []byte, saltSize int) ([]byte, []byte, error) {
 	return b[2 : 2+n], b[2+n:], nil
 }
 
-func handshake(ctx context.Context, own *owner, opts Options, password, room string, role int) (*Session, error) {
+func handshake(ctx context.Context, own *owner, opts Options, password, room string, role int, authenticating func()) (*Session, error) {
 	c := own.conn
 	d := time.Now().Add(opts.HandshakeTimeout)
 	var a, b, salt []byte
@@ -322,6 +337,9 @@ func handshake(ctx context.Context, own *owner, opts Options, password, room str
 		return nil, errors.New("PAKE initialization failed")
 	}
 	if role == 0 {
+		if authenticating != nil {
+			authenticating()
+		}
 		a = append([]byte(nil), p.Bytes()...)
 		body, err := packPAKE(a, nil)
 		if err != nil {
@@ -350,6 +368,9 @@ func handshake(ctx context.Context, own *owner, opts Options, password, room str
 		a, _, err = unpackPAKE(body, 0)
 		if err != nil {
 			return nil, err
+		}
+		if authenticating != nil {
+			authenticating()
 		}
 		if err := p.Update(a); err != nil {
 			return nil, errors.New("PAKE update failed")

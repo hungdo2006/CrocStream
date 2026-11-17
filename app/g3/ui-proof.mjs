@@ -30,6 +30,9 @@ try {
   if (!browser) throw new Error('WebView CDP did not become available')
   page = browser.contexts()[0].pages()[0]
   if (!page) throw new Error('No WebView page')
+  await page.locator('main').waitFor({ timeout: 15000 })
+  const localChoice = page.getByRole('button', { name: 'Local preview · Xem trước', exact: true })
+  if (await localChoice.count()) await localChoice.click()
   const errors = []
   page.on('pageerror', () => errors.push('page exception'))
   const previewAddresses = new Set()

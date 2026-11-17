@@ -1,5 +1,10 @@
 # Application dependency notices
 
+G4 reuses the owner-approved G0 secure-duplex module and pinned croc source.
+The resolved Go dependency graph and extra notices are documented in
+[G4 notice follow-up](g4/licenses/README.md); it includes the graph-required
+`coder/websocket v1.8.15`. Keep the earlier G0–G3 attribution bundles too.
+
 G3 adds owner-approved Wails 3.1.0, x/sys 0.50.0, coder/websocket 1.8.14
 and locked frontend/build/test dependencies. See
 [G3 notice scope and full bundle](g3/licenses/README.md). Runtime and

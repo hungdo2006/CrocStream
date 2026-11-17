@@ -8,7 +8,8 @@ The isolated G0 modules in `g0/buildprobe` and
 `g0/poc` remain separate from application package checks.
 
 Gate evidence: [G0 closeout](G0_CLOSEOUT.md), [G1 closeout](G1_CLOSEOUT.md),
-[G2 closeout](G2_CLOSEOUT.md). Dependency notice: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md).
+[G2 closeout](G2_CLOSEOUT.md), [G3 closeout](G3_CLOSEOUT.md),
+[G4 closeout](G4_CLOSEOUT.md). Dependency notice: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md).
 Wire contract: [media protocol v1](../docs/ARCHITECTURE.md#media-protocol-v1).
 
 ## Run checks
@@ -32,8 +33,8 @@ foreach ($target in @('FuzzDecodeHeader', 'FuzzDecodeConfig', 'FuzzDecodePacket'
 }
 ```
 
-The G3 executable provides **local preview only**. Remote sharing/pairing starts
-in G4. See the desktop build/run instructions below; `go build ./...` alone
+The executable now provides G3 local preview and G4 Share/Watch; remote G4
+synthetic acceptance passed on the measured EC2 route. See build/run instructions below; `go build ./...` alone
 does not regenerate frontend assets or Wails bindings.
 
 ## Protocol API and ownership
@@ -82,7 +83,7 @@ Closing only one half is not application-level shutdown.
 
 G2 supplies bounded LZ4 decoding, canonical reference bytes, tile validation
 and telemetry (below). G3 supplies Windows capture, local bridge and the
-React/Wails preview; G4 supplies the actual secure transport integration, PLI
+React/Wails preview; G4 implements the actual secure transport integration, PLI
 limiting, Ping/Pong timing, serialized queues and session-wide lifecycle.
 The G1 tests use synthetic opaque payloads and explicit mock codec acceptance;
 they do not claim successful media decoding.
@@ -266,3 +267,39 @@ Actual capture test/probe/UI automation: [g3/README](g3/README.md).
 Evidence, command failures and measured limits: [G3_CLOSEOUT](G3_CLOSEOUT.md).
 No frames are written to disk. Numeric diagnostics exclude WebView2 subprocess
 memory; they must not be presented as total system/application-tree RSS.
+
+## G4 Share/Watch — local desktop and remote synthetic proof
+
+The production UI has three Home choices: local preview (G3), Share and Watch.
+Share requires a configured, owner-authorized relay endpoint/password and
+explicit screen selection/Start; it shows an invitation only after relay
+preparation. Watch accepts the upstream-derived six-word invitation without a
+locally invented regex. Both peers authenticate through the reused G0 adapter;
+only media CONFIG/KEY/DELTA is displayed as authenticated/live. Stop/Leave is
+idempotent and clears code/token, capture and local bridge. UI currently exposes
+the G2 0–255/default-4 tau range and 1–120/default-30 emitted-frame KEY interval.
+
+Build/run with the local app Go module and existing portable tools (see G3
+instructions above). Generated Wails bindings are refreshed during build.
+
+Local two-process synthetic protocol proof:
+
+```powershell
+. .\g0\Use-Toolchain.ps1
+go build -race -buildvcs=false -o "$env:GOBIN\g4proof.exe" ./g4/proof
+& "$env:GOBIN\g4proof.exe" -duration 30s
+```
+
+Desktop local two-process proof is in [`app/g4/README.md`](g4/README.md) and
+uses actual capture only after explicit Start. The peer-process proof uses
+synthetic RGBA through an owned upstream croc relay. Both run only on loopback.
+
+**Remote G4 PASS:** after the owner restarted EC2 and supplied `47.128.220.28`,
+strict SSH matched the previous G0 host key. A >=600s two-machine synthetic
+media/control/reference proof passed, and independent SSH inspection confirmed
+run-owned processes/rules/listener were cleaned. See
+[remote report](G4_REMOTE_PROOF.md) and [SSH helper](g4/Invoke-SshProof.ps1).
+Real screen capture to EC2 remains outside the local-only capture permission.
+The test does not establish Internet 24 FPS or remote capture-to-render latency.
+For a changed IP on the same trusted instance, `-PinnedHostKeyAlias` selects
+the previously verified known-host entry without accepting an untrusted new key.

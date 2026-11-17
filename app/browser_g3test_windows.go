@@ -15,7 +15,7 @@ func browserOptions() application.WindowsOptions {
 	if err != nil || port < 1024 || port > 65535 {
 		return application.WindowsOptions{}
 	}
-	return application.WindowsOptions{AdditionalBrowserArgs: []string{
+	return application.WindowsOptions{WebviewUserDataPath: os.Getenv("CROCSTREAM_TEST_WEBVIEW_PATH"), AdditionalBrowserArgs: []string{
 		"--remote-debugging-port=" + strconv.Itoa(port), "--remote-debugging-address=127.0.0.1",
 	}}
 }
