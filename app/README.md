@@ -263,6 +263,23 @@ npm run test
 npm run build
 ```
 
+Frontend lifecycle and rendering are shared by local preview and Share/Watch:
+`src/hooks/useSession.ts` owns the command/poll coordinator,
+`src/hooks/useFrameStream.ts` owns the binary WebSocket and canvas, and
+`src/hooks/useDisplays.ts` owns display enumeration. Stop coalesces concurrent
+requests and follows pending Start; RPC revisions and backend generations reject
+stale results. The backend state names and the UI labels/selectors are retained.
+The display queue decodes only the newest pending JPEG on a browser animation
+turn, closes every bitmap, and publishes render counts to React every 500 ms.
+Display reconnect never rejoins the authenticated media session.
+
+`npm run test:ui` runs Playwright against the actual React frontend using
+synthetic JPEGs and deferred desktop bindings. It uses an already installed
+Microsoft Edge and starts its own fixed-port Vite server. It does not capture a
+display or contact a relay; screenshots/video/traces are disabled. Unit tests
+run separately under Vitest. Native WebView2/capture acceptance remains in the
+G3–G6 harnesses below.
+
 Actual capture test/probe/UI automation: [g3/README](g3/README.md).
 Evidence, command failures and measured limits: [G3_CLOSEOUT](G3_CLOSEOUT.md).
 No frames are written to disk. Numeric diagnostics exclude WebView2 subprocess

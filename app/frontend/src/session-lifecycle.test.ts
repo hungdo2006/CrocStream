@@ -1,0 +1,132 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Started } from './api'
+import { SessionLifecycle } from './session-lifecycle'
+
+type Status = { state: string; generation: number; error: string }
+const status = (state = 'Idle', generation = 0): Status => ({ state, generation, error: '' })
+const started = (generation = 1): Started => ({ generation, endpoint: { url: 'ws://127.0.0.1:1/viewer', token: 'test' } })
+const messages = { start: 'start failed', stop: 'stop failed', poll: 'poll failed' }
+function deferred<T>() {
+  let resolve!: (value: T) => void, reject!: (error: Error) => void
+  const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no })
+  return { promise, resolve, reject }
+}
+function setup() {
+  const api = { stats: vi.fn(async () => status()), stop: vi.fn(async () => {}), invitation: vi.fn(async () => 'private') }
+  const session = new SessionLifecycle(api, messages)
+  return { api, session }
+}
+
+describe('desktop command and poll ordering', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('coalesces repeated Stop and waits for a late Start before stopping Go', async () => {
+    const { api, session } = setup(), start = deferred<Started>(), close = deferred<void>()
+    api.stop.mockImplementation(() => close.promise)
+    session.connect()
+    const startRPC = vi.fn(() => start.promise)
+    const first = session.start(startRPC, 'Connecting')
+    expect(await session.start(startRPC, 'Connecting')).toBe(false)
+    const stop1 = session.stop(), stop2 = session.stop()
+    expect(stop1).toBe(stop2)
+    await Promise.resolve()
+    expect(api.stop).not.toHaveBeenCalled()
+    start.resolve(started())
+    expect(await first).toBe(false)
+    await Promise.resolve()
+    expect(startRPC).toHaveBeenCalledOnce()
+    expect(api.stop).toHaveBeenCalledOnce()
+    expect(session.getSnapshot().started).toBeUndefined()
+    expect(await session.start(startRPC, 'Connecting')).toBe(false)
+    close.resolve()
+    expect(await stop1).toBe(true)
+    expect(session.getSnapshot().state).toBe('Idle')
+    session.disconnect()
+    expect(api.stop).toHaveBeenCalledOnce()
+  })
+
+  it('ignores poll responses from before Start and from another generation', async () => {
+    const { api, session } = setup(), old = deferred<Status>()
+    api.stats.mockImplementationOnce(() => old.promise)
+    session.connect()
+    expect(await session.start(async () => started(2), 'Connecting')).toBe(true)
+    old.resolve(status())
+    await Promise.resolve()
+    expect(session.getSnapshot().state).toBe('Connecting')
+    api.stats.mockResolvedValue(status('Disconnected', 1))
+    await vi.advanceTimersByTimeAsync(500)
+    expect(session.getSnapshot().started?.generation).toBe(2)
+    api.stats.mockResolvedValue(status('Watching', 2))
+    await vi.advanceTimersByTimeAsync(500)
+    expect(session.getSnapshot().state).toBe('Watching')
+    api.stats.mockResolvedValue(status('Disconnected', 2))
+    await vi.advanceTimersByTimeAsync(500)
+    expect(session.getSnapshot().started).toBeUndefined()
+    session.disconnect()
+  })
+
+  it('cleans up an unmounted pending Start without exposing its endpoint', async () => {
+    const { api, session } = setup(), start = deferred<Started>()
+    session.connect()
+    const request = session.start(() => start.promise, 'Preparing')
+    session.disconnect()
+    start.resolve(started())
+    expect(await request).toBe(false)
+    await Promise.resolve()
+    expect(api.stop).toHaveBeenCalledOnce()
+    expect(session.getSnapshot().started).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(api.stats).toHaveBeenCalledOnce()
+  })
+
+  it('keeps Stopping locked after timeout until backend cleanup is observed', async () => {
+    const { api, session } = setup()
+    session.connect()
+    await session.start(async () => started(), 'Preparing')
+    api.stop.mockRejectedValueOnce(new Error('private native error'))
+    expect(await session.stop()).toBe(false)
+    expect(session.getSnapshot().state).toBe('Stopping')
+    expect(session.getSnapshot().error).toBe(messages.stop)
+    expect(await session.start(async () => started(2), 'Preparing')).toBe(false)
+    api.stats.mockResolvedValue(status('Idle', 1))
+    await vi.advanceTimersByTimeAsync(500)
+    expect(session.getSnapshot().state).toBe('Idle')
+    expect(session.getSnapshot().error).toBe('')
+    expect(await session.start(async () => started(2), 'Preparing')).toBe(true)
+    await session.stop()
+    session.disconnect()
+  })
+
+  it('does not restore an invitation or copy feedback after Stop', async () => {
+    const { api, session } = setup(), invitation = deferred<string>(), copy = deferred<void>()
+    session.connect()
+    await session.start(async () => started(), 'Preparing')
+    api.stats.mockResolvedValue(status('WaitingForViewer', 1))
+    await vi.advanceTimersByTimeAsync(500)
+    expect(session.getSnapshot().invitation).toBe('private')
+    const copied = session.copyInvitation(() => copy.promise)
+    api.invitation.mockImplementationOnce(() => invitation.promise)
+    await vi.advanceTimersByTimeAsync(500)
+    await session.stop()
+    invitation.resolve('stale invitation'); copy.resolve()
+    await copied
+    expect(session.getSnapshot().invitation).toBe('')
+    expect(session.getSnapshot().copyStatus).toBe('')
+    session.disconnect()
+  })
+
+  it('handles StrictMode reconnect and ignores late poll failures', async () => {
+    const { api, session } = setup(), old = deferred<Status>()
+    api.stats.mockImplementationOnce(() => old.promise)
+    session.connect(); session.disconnect(); session.connect()
+    await Promise.resolve()
+    old.reject(new Error('late response'))
+    await Promise.resolve(); await Promise.resolve()
+    expect(session.getSnapshot().error).toBe('')
+    await vi.advanceTimersByTimeAsync(500)
+    expect(api.stats).toHaveBeenCalledTimes(3)
+    expect(api.stop).not.toHaveBeenCalled()
+    session.disconnect()
+  })
+})

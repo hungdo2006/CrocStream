@@ -1,4 +1,8 @@
 import * as Service from '../bindings/crocstream.local/app/internal/desktop/service'
+import type { Stats as SessionStats } from '../bindings/crocstream.local/app/internal/session/models'
+
+export type StreamStats = SessionStats
+export interface Relay { address: string; password: string }
 
 export interface Display { id: string; width: number; height: number; primary: boolean }
 export interface Options { displayID: string; width: number; height: number; fps: number; tau: number; keyInterval: number }
@@ -17,4 +21,14 @@ export const api = {
   stop: (): Promise<void> => Service.StopPreview(),
   stopSession: (): Promise<void> => Service.StopSession(),
   stats: (): Promise<Stats> => Service.GetStats() as Promise<Stats>,
+}
+
+// Bindings carry commands, small state snapshots and the trusted local endpoint.
+// JPEG bytes are received directly over the session's binary WebSocket.
+export const streamAPI = {
+  stats: (): Promise<StreamStats> => Service.GetSessionStats(),
+  stop: (): Promise<void> => Service.StopSession(),
+  invitation: (): Promise<string> => Service.GetInvitation(),
+  host: (options: Options, relay: Relay): Promise<Started> => Service.StartBroadcast(options, relay),
+  join: (code: string, relay: Relay): Promise<Started> => Service.JoinSession(code, relay),
 }

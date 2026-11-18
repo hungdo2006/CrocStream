@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
-import * as Service from '../bindings/crocstream.local/app/internal/desktop/service'
-import type { Stats as StreamStats, Started } from '../bindings/crocstream.local/app/internal/session/models'
-import type { Display } from './api'
-import { LatestFrames } from './latest'
+import { useState } from 'react'
+import { useStreamSession, useLeaveSession } from './hooks/useSession'
+import { useDisplays } from './hooks/useDisplays'
+import { useFrameStream } from './hooks/useFrameStream'
+import { inactive } from './session-lifecycle'
 
 const labels: Record<string,string> = {
   Idle:'Chưa kết nối', Preparing:'Đang chuẩn bị relay', WaitingForViewer:'Đang chờ người xem',
@@ -10,11 +10,13 @@ const labels: Record<string,string> = {
   Live:'Đang chia sẻ', Watching:'Đang xem', Recovering:'Đang phục hồi ảnh',
   Stopping:'Đang đóng phiên', Disconnected:'Đã ngắt kết nối', Error:'Không kết nối được',
 }
-const inactive = (state: string) => ['Idle','Disconnected','Error'].includes(state)
 
 export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void }) {
-  const [displays,setDisplays]=useState<Display[]>([])
-  const [display,setDisplay]=useState('')
+  const session=useStreamSession(role)
+  const {state,error,started,stats,invitation,copyStatus}=session
+  const {displays,display,setDisplay,refresh}=useDisplays(role==='share',session.setError,'Không đọc được danh sách màn hình.')
+  const {canvas,error:frameError,hasImage,renderFPS,reconnect}=useFrameStream(started,'stream')
+  const imageError=frameError||(started?stats?.previewError:'')
   const [resolution,setResolution]=useState('1280x720')
   const [fps,setFPS]=useState(24)
   const [tau,setTau]=useState(4)
@@ -22,115 +24,18 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
   const [address,setAddress]=useState('')
   const [password,setPassword]=useState('')
   const [code,setCode]=useState('')
-  const [invitation,setInvitation]=useState('')
-  const [state,setState]=useState('Idle')
-  const [error,setError]=useState('')
-  const [imageError,setImageError]=useState('')
-  const [started,setStarted]=useState<Started>()
-  const [stats,setStats]=useState<StreamStats>()
-  const [renderFPS,setRenderFPS]=useState(0)
-  const [hasImage,setHasImage]=useState(false)
-  const [imageAttempt,setImageAttempt]=useState(0)
-  const [copyStatus,setCopyStatus]=useState('')
-  const [leaving,setLeaving]=useState(false)
-  const [retryAfter,setRetryAfter]=useState(0)
-  const reconnectAt=useRef(0)
-  const canvas=useRef<HTMLCanvasElement>(null)
-  const epoch=useRef(0), active=useRef(false), busy=useRef(false)
-  const pending=useRef<Promise<Started>|undefined>(undefined)
-  const renders=useRef<number[]>([])
-  useEffect(()=>{
-    let mounted=true
-    let timer:ReturnType<typeof setTimeout>
-    if(role==='share') void Service.ListDisplays().then(list=>{
-      if(!mounted)return
-      setDisplays(list??[]);setDisplay(list?.find(d=>d.primary)?.id??list?.[0]?.id??'')
-    }).catch(()=>{if(mounted)setError('Không đọc được danh sách màn hình.')})
-    const poll=async()=>{
-      const current=epoch.current
-      try {
-        const next=await Service.GetSessionStats()
-        if(!mounted)return
-        if(current===epoch.current&&!busy.current){
-          setStats(next);setState(next.state)
-          setRetryAfter(next.retryAfterMs)
-          if(next.error)setError(next.error)
-          if(next.previewError)setImageError(next.previewError)
-          if(inactive(next.state)){
-            active.current=false;setStarted(undefined);setInvitation('')
-          } else if(role==='share') {
-            const code=await Service.GetInvitation()
-            if(mounted&&current===epoch.current&&!busy.current)setInvitation(code)
-          }
-        }
-        renders.current=renders.current.filter(t=>t>performance.now()-1000)
-        if(mounted)setRenderFPS(renders.current.length)
-      } catch {if(mounted)setError('Không đọc được trạng thái phiên.')}
-      if(mounted)timer=setTimeout(()=>void poll(),500)
-    }
-    void poll()
-    return ()=>{
-      mounted=false;clearTimeout(timer);epoch.current++
-      if(active.current)void (pending.current??Promise.resolve()).catch(()=>{}).then(()=>Service.StopSession()).catch(()=>{})
-    }
-  },[role])
-  useEffect(()=>{
-    const target=canvas.current,ctx=target?.getContext('2d')
-    if(!target||!ctx)return
-    ctx.clearRect(0,0,target.width,target.height);renders.current=[];setHasImage(false)
-    if(!started)return
-    const frames=new LatestFrames(blob=>createImageBitmap(blob),bitmap=>{
-      ctx.clearRect(0,0,target.width,target.height)
-      const scale=Math.min(target.width/bitmap.width,target.height/bitmap.height)
-      const w=bitmap.width*scale,h=bitmap.height*scale
-      ctx.drawImage(bitmap,(target.width-w)/2,(target.height-h)/2,w,h)
-      renders.current.push(performance.now())
-      renders.current=renders.current.filter(t=>t>performance.now()-1000)
-      setImageError('')
-      setHasImage(true)
-    },()=>setImageError('Preview unavailable · Không giải mã được JPEG cục bộ.'))
-    const ws=new WebSocket(started.endpoint.url,['crocstream.preview',`auth.${started.endpoint.token}`])
-    ws.binaryType='blob'
-    ws.onmessage=event=>{if(event.data instanceof Blob&&event.data.size<=4*1024*1024)frames.push(new Blob([event.data],{type:'image/jpeg'}))}
-    ws.onerror=()=>setImageError('Preview unavailable · Lỗi WebSocket cục bộ.')
-    ws.onclose=()=>setImageError('Preview unavailable · Kênh hiển thị đã đóng; có thể thử nối lại.')
-    return ()=>{frames.dispose();ws.onmessage=ws.onerror=ws.onclose=null;ws.close();ctx.clearRect(0,0,target.width,target.height);renders.current=[]}
-  },[started,imageAttempt])
   const start=async()=>{
-    if(active.current)return
-    active.current=true;busy.current=true
-    const current=++epoch.current
-    setState(role==='share'?'Preparing':'Connecting');setError('');setImageError('');setInvitation('');setCopyStatus('');setStats(undefined)
     const [width,height]=resolution.split('x').map(Number)
-    try{
-      const request=role==='share'
-        ? Service.StartBroadcast({displayID:display,width,height,fps,tau,keyInterval},{address,password})
-        : Service.JoinSession(code,{address,password})
-      pending.current=request
-      const result=await request
+    if(await session.start({displayID:display,width,height,fps,tau,keyInterval},{address,password},code)){
       setPassword('');setCode('')
-      if(current===epoch.current)setStarted(result)
-    }catch{
-      if(current===epoch.current){active.current=false;setState('Error');setError('Không bắt đầu được phiên. Kiểm tra relay, mã và nguồn màn hình; nếu vừa thử kết nối, chờ rồi thử lại.')}
-    }finally{pending.current=undefined;if(current===epoch.current)busy.current=false}
+    }
   }
-  const stop=async()=>{
-    epoch.current++;busy.current=true
-    setStarted(undefined);setInvitation('');setCode('');setPassword('');setCopyStatus('');setImageError('');setState('Stopping')
-    try{await pending.current?.catch(()=>{});await Service.StopSession();active.current=false;setState('Idle');setError('');return true}
-    catch{setError('Đang chờ đóng tài nguyên; phiên vẫn ở trạng thái Stopping.');return false}
-    finally{busy.current=false}
+  const stop=()=>{
+    setCode('');setPassword('')
+    return session.stop()
   }
-  const home=async()=>{
-    setLeaving(true)
-    if(await stop())onHome()
-    setLeaving(false)
-  }
-  const reconnect=()=>{
-    if(performance.now()<reconnectAt.current)return
-    reconnectAt.current=performance.now()+2000
-    setImageAttempt(n=>n+1)
-  }
+  const {leaving,home}=useLeaveSession(stop,onHome)
+  const retryAfter=stats?.retryAfterMs??0
   const locked=!inactive(state)
   const validStats=stats?.measurementsComplete===true&&stats.generation===started?.generation&&!inactive(state)&&
     (role==='share'?stats.counters.emitted>0:stats.counters.received>0)
@@ -169,7 +74,7 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
       <aside><h2>{role==='share'?'Thiết lập chia sẻ':'Kết nối'}</h2>
         {invitation&&<div className="invitation"><label htmlFor="invitation">Mã mời</label>
           <input id="invitation" type="password" readOnly value={invitation} autoComplete="off" />
-          <button onClick={()=>void navigator.clipboard.writeText(invitation).then(()=>setCopyStatus('Đã sao chép mã.')).catch(()=>setError('Không sao chép được mã.'))}>Sao chép mã</button>
+          <button onClick={()=>void session.copyInvitation()}>Sao chép mã</button>
           <p role="status" className="caption">{copyStatus}</p>
           <p className="caption">Chỉ gửi cho người xem. Dừng phiên để thu hồi mã.</p></div>}
         <label htmlFor="relay">Địa chỉ relay</label>
@@ -181,7 +86,7 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
           <label htmlFor="stream-display">Màn hình</label><select id="stream-display" value={display} disabled={locked} onChange={e=>setDisplay(e.target.value)}>
             {!displays.length&&<option value="">Không có màn hình</option>}
             {displays.map((d,i)=><option key={d.id} value={d.id}>Màn hình {i+1} · {d.width}×{d.height}</option>)}</select>
-          <button className="secondary" disabled={locked} onClick={()=>void Service.ListDisplays().then(list=>{setDisplays(list??[]);setDisplay(list?.find(d=>d.id===display)?.id??list?.[0]?.id??'')}).catch(()=>setError('Không đọc được danh sách màn hình.'))}>Làm mới danh sách</button>
+          <button className="secondary" disabled={locked} onClick={()=>void refresh()}>Làm mới danh sách</button>
           <label htmlFor="stream-resolution">Độ phân giải</label><select id="stream-resolution" value={resolution} disabled={locked} onChange={e=>setResolution(e.target.value)}>
             <option value="1280x720">1280 × 720</option><option value="640x360">640 × 360</option></select>
           <label htmlFor="stream-fps">FPS mục tiêu</label><select id="stream-fps" value={fps} disabled={locked} onChange={e=>setFPS(Number(e.target.value))}>

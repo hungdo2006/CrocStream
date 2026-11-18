@@ -2,6 +2,26 @@ import { describe, expect, it, vi } from 'vitest'
 import { LatestFrames } from './latest'
 
 describe('latest-only canvas lifecycle', () => {
+  it('decodes only the newest arrival per paint turn and cancels scheduled work', async () => {
+    const turns = new Set<() => void>()
+    const schedule = (run: () => void) => { turns.add(run); return () => { turns.delete(run) } }
+    const bitmap = { close: vi.fn() }, decode = vi.fn(async () => bitmap), draw = vi.fn()
+    const frames = new LatestFrames(decode, draw, vi.fn(), schedule)
+    const newest = new Blob(['newest'])
+    frames.push(new Blob(['old'])); frames.push(newest)
+    expect(turns.size).toBe(1)
+    expect(decode).not.toHaveBeenCalled()
+    const run = [...turns][0]; turns.delete(run); run()
+    await Promise.resolve()
+    expect(decode).toHaveBeenCalledExactlyOnceWith(newest)
+    expect(draw).toHaveBeenCalledOnce()
+    expect(bitmap.close).toHaveBeenCalledOnce()
+    frames.push(new Blob(['canceled']))
+    frames.dispose()
+    expect(turns.size).toBe(0)
+    expect(decode).toHaveBeenCalledOnce()
+  })
+
   it('discards queued old images and closes every decoded bitmap', async () => {
     const pending: ((value: { close: () => void }) => void)[] = []
     const decode = vi.fn(() => new Promise<{ close: () => void }>(resolve => pending.push(resolve)))
