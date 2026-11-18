@@ -46,11 +46,14 @@ try {
     }
 
     Push-Location -LiteralPath app
+    $previousCGO = [Environment]::GetEnvironmentVariable('CGO_ENABLED')
     try {
+        $env:CGO_ENABLED = '0'
         # Wails installs from the lockfile, generates bindings, and builds the frontend.
         Invoke-Check wails3 @('build')
         Invoke-Check go @('version', '-m', '.\bin\crocstream.exe')
     } finally {
+        [Environment]::SetEnvironmentVariable('CGO_ENABLED', $previousCGO, 'Process')
         Pop-Location
     }
 
