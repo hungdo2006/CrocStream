@@ -1,5 +1,12 @@
 # Application dependency notices
 
+G6's exact Windows portable package ships the generated G4/G6 conservative
+notice closure, reviewed G0 nested/inline/embedded attributions and Go LICENSE.
+All 24 linked non-app Go module roots and frontend runtime pins were checked;
+see [G6 closeout](G6_CLOSEOUT.md). No toolchain/installer/WebView2 binary is
+redistributed. Original CrocStream code still has no owner-selected blanket
+license; G6 does not invent one.
+
 G4 reuses the owner-approved G0 secure-duplex module and pinned croc source.
 The resolved Go dependency graph and extra notices are documented in
 [G4 notice follow-up](g4/licenses/README.md); it includes the graph-required

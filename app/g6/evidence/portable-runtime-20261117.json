@@ -1,0 +1,12 @@
+{
+    "status":  "PORTABLE_RUNTIME_SMOKE_PASS",
+    "archive":  "app/release/g6-final-20261117/CrocStream-0.0.1-windows-amd64.zip",
+    "archive_sha256":  "B5CAB7E621A64516FCF15D332032FA325F42FA63C7C31B0D9630C13426165035",
+    "archive_bytes":  8092277,
+    "extracted_directory":  "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\crocstream-g6\\final-eb53d0e2780b48ae835498816bf2192f\\CrocStream-0.0.1-windows-amd64",
+    "observed_at_utc":  "2026-11-17T16:29:58.7031322Z",
+    "app_sha256":  "D7CB11BDA36FB4E8BE78816B1FEB4D127750387A4E1B389AD6C694E1F62E42D0",
+    "relay_sha256":  "729CC73FC240F0D4F1F2AF1A7B2E52B581CB8060850E3AF8AE7CB6B1C2A8E0F8",
+    "signature":  "NotSigned",
+    "scope":  "exact extracted production app startup/normal close and packaged relay; smoke does not capture"
+}

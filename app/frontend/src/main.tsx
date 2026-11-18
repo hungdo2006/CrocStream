@@ -143,15 +143,15 @@ function App({onHome}:{onHome:()=>void}) {
   const locked = state === 'Preparing' || state === 'Previewing' || state === 'Stopping'
   const measured = stats && session && stats.generation === session.generation && stats.captured > 0
   return <><nav><button onClick={()=>void stop().then(done=>{if(done)onHome()})}>← Dừng phiên và về Home</button></nav><main>
-    <header><div><span className="eyebrow">CROCSTREAM / G3</span><h1>Màn hình của bạn.<br /><span>Xem trước, ngay tại đây.</span></h1></div>
+    <header><div><span className="eyebrow">CrocStream</span><h1>Xem trước</h1></div>
       <span className={`status ${locked ? 'active' : ''}`} role="status">{names[state]}</span></header>
     <div className="workspace">
       <section className="viewer" aria-labelledby="preview-title">
-        <div className="section-heading"><h2 id="preview-title">Local preview</h2><span>Chỉ trên máy này</span></div>
+        <div className="section-heading"><h2 id="preview-title">Màn hình của bạn</h2><span>Chỉ trên máy này</span></div>
         <div className="canvas-wrap"><canvas ref={canvas} width={1280} height={720} aria-label="Ảnh xem trước màn hình đã chọn" />
-          {!session && <div className="placeholder"><strong>Sẵn sàng khi bạn muốn.</strong><p>Chọn màn hình, rồi bấm Bắt đầu preview.</p></div>}
+          {!session && <div className="placeholder"><strong>Chưa có hình xem trước</strong><p>Chọn màn hình bên phải để bắt đầu.</p></div>}
         </div>
-        <p className="caption">Ảnh JPEG cục bộ qua WebSocket loopback. Chưa phát tới người xem từ xa.</p>
+        <p className="caption">Xem thử nguồn chụp. Không gửi ảnh tới máy khác.</p>
         {previewError && <p role="status" className="error">{previewError}</p>}
         <div className="metrics" aria-label="Số đo preview">
           <Metric label="Capture FPS" value={measured ? String(stats.captureFPS) : '—'} />
@@ -182,7 +182,6 @@ function App({onHome}:{onHome:()=>void}) {
         {error && <p role="alert" className="error">{error}</p>}
       </aside>
     </div>
-    <footer>01 / Chọn nguồn <span>02 / Bắt đầu</span><span>03 / Dừng để giải phóng capture</span></footer>
   </main></>
 }
 function Metric({ label, value }: { label: string; value: string }) {
@@ -191,12 +190,14 @@ function Metric({ label, value }: { label: string; value: string }) {
 function Root() {
   const [mode,setMode]=useState<'home'|'local'|'share'|'watch'>('home')
   const home=()=>setMode('home')
-  if(mode==='home')return <main><header><div><span className="eyebrow">CROCSTREAM / G5</span><h1>Màn hình kết nối bạn.</h1></div></header>
-    <div className="home-cards">
-      <button onClick={()=>setMode('share')}>Share Screen · Chia sẻ</button>
-      <button onClick={()=>setMode('watch')}>Watch Stream · Xem</button>
-      <button onClick={()=>setMode('local')}>Local preview · Xem trước</button>
-    </div><p className="caption">Một người phát ↔ một người xem. Relay do bạn cấu hình; chưa có kết nối khi mở ứng dụng.</p></main>
+  if(mode==='home')return <main className="home"><header><div><h1>CrocStream</h1><p className="subtitle">Chia sẻ màn hình giữa hai máy Windows.</p></div><span className="version">Bản thử nghiệm 0.0.1</span></header>
+    <section className="home-actions" aria-label="Bắt đầu phiên">
+      <div className="home-action"><h2>Chia sẻ màn hình</h2><p>Chọn màn hình, tạo phiên và gửi mã mời cho người xem.</p><button data-testid="home-share" className="primary" onClick={()=>setMode('share')}>Chia sẻ màn hình</button></div>
+      <div className="home-action"><h2>Xem một phiên</h2><p>Nhập mã mời từ người chia sẻ để xem trên máy này.</p><button data-testid="home-watch" onClick={()=>setMode('watch')}>Tham gia bằng mã</button></div>
+    </section>
+    <section className="home-setup"><h2>Trước khi kết nối</h2><p>Hai máy cần cùng địa chỉ và mật khẩu relay. Mã mời sẽ xuất hiện sau khi tạo phiên.</p><p>Chưa có relay? Xem <strong>DEMO.md</strong> trong thư mục ứng dụng.</p></section>
+    <div className="home-preview"><div><h2>Kiểm tra màn hình</h2><p>Xem thử nguồn chụp, không cần relay.</p></div><button data-testid="home-local" onClick={()=>setMode('local')}>Xem trước trên máy này</button></div>
+    <footer>1 người chia sẻ · 1 người xem<span>Không ghi hình hoặc âm thanh</span></footer></main>
   return mode==='local'?<App onHome={home}/>:<Stream key={mode} role={mode} onHome={home}/>
 }
 createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)

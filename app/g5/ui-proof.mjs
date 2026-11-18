@@ -40,7 +40,7 @@ async function app(role){
   const page=b.contexts()[0].pages()[0]
   page.on('pageerror',()=>errors++)
   page.on('websocket',s=>{const u=new URL(s.url());if(u.hostname==='127.0.0.1'&&['/preview','/viewer'].includes(u.pathname))ports.add(u.port)})
-  await page.getByRole('button',{name:role==='host'?'Share Screen · Chia sẻ':'Watch Stream · Xem',exact:true}).click()
+  await page.getByTestId(role==='host'?'home-share':'home-watch').click()
   await page.evaluate(()=>{
     const Native=window.WebSocket
     window.WebSocket=class extends Native {constructor(...args){super(...args);window.__g5Socket=this}}
@@ -69,7 +69,7 @@ async function sizeChecks(page){
     await page.evaluate(async size=>{const {Window}=await import('/wails/runtime.js');await Window.SetSize(...size)},[width,height])
     await until(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
     const a=await page.locator('main').ariaSnapshot()
-    if(!a.includes('Relay')||!a.includes('FPS'))throw Error('Accessibility tree missing controls')
+    if(!a.includes('relay')||!a.includes('FPS'))throw Error('Accessibility tree missing controls')
     const ratio=await page.locator('canvas').evaluate(c=>c.clientWidth/c.clientHeight)
     if(Math.abs(ratio-16/9)>.03)throw Error('Canvas distorted')
   }
@@ -136,7 +136,7 @@ try{
   await until(async()=>await v.locator('.error').count()===0)
   phase='bridge-reconnect'
   await v.evaluate(()=>window.__g5Socket.close())
-  await v.getByRole('button',{name:'Nối lại kênh hiển thị cục bộ',exact:true}).click()
+  await v.getByRole('button',{name:'Thử lại hình hiển thị',exact:true}).click()
   await until(()=>image(v));await until(async()=>await v.locator('.error').count()===0)
   checks.push('jpeg-failure-does-not-stop-media','manual-local-bridge-reconnect')
   phase='slow-ui'
@@ -148,7 +148,7 @@ try{
   const slowAfter=await call(v,'GetSessionStats')
   if(slowAfter.counters.decoded-slowBefore.counters.decoded<10||slowAfter.state!=='Watching')throw Error('Slow display stalled decoder')
   await v.evaluate(()=>{window.createImageBitmap=window.__g5Decode})
-  await until(async()=>Number((await metrics(v))['Render FPS'])>10)
+  await until(async()=>Number((await metrics(v))['FPS hiển thị'])>10)
   checks.push('slow-ui-independent-decode')
   phase='stress'
   // Warm up separately. No screenshot is taken by the harness.
@@ -162,9 +162,9 @@ try{
     if(hs.state!=='Live'||!['Watching','Recovering'].includes(vs.state))throw Error('Unexpected disconnect')
     if(hs.captureQueue>1||hs.imageQueue>1||vs.imageQueue>1||!hs.measurementsComplete||!vs.measurementsComplete)throw Error('Unbounded or incomplete')
     if(hs.savingsKnown&&Math.abs(hs.savings-100*(1-hs.sentKiB/hs.baselineKiB))>1e-8)throw Error('Savings mismatch')
-    if(!['KEY','DELTA'].includes(vm['Last frame kind']))throw Error('Frame kind missing')
-    samples.push({ms:Date.now()-start,capture:hs.captureFPS,emitted:hs.emittedFPS,decoded:vs.decodedFPS,rendered:Number(vm['Render FPS']),
-      hostRendered:Number(hm['Render FPS']),sentKiB:hs.sentKiB,receivedKiB:vs.receivedKiB,baselineKiB:hs.baselineKiB,savings:hs.savingsKnown?hs.savings:null,
+    if(!['KEY','DELTA'].includes(vm['Khung gần nhất']))throw Error('Frame kind missing')
+    samples.push({ms:Date.now()-start,capture:hs.captureFPS,emitted:hs.emittedFPS,decoded:vs.decodedFPS,rendered:Number(vm['FPS hiển thị']),
+      hostRendered:Number(hm['FPS hiển thị']),sentKiB:hs.sentKiB,receivedKiB:vs.receivedKiB,baselineKiB:hs.baselineKiB,savings:hs.savingsKnown?hs.savings:null,
       hostRTT:hs.counters.rttKnown?hs.counters.rttMs:null,viewerRTT:vs.counters.rttKnown?vs.counters.rttMs:null,
       encodeMs:hs.meanEncodeMs,decodeMs:vs.meanDecodeMs,baselineMs:hs.meanBaselineMs})
     if(!invalidated&&Date.now()-start>2000){await call(v,'InvalidateViewerReference');invalidated=true}
@@ -199,9 +199,9 @@ try{
     await setRelay(h,ready.address)
     await h.getByRole('button',{name:'Bắt đầu chia sẻ',exact:true}).click()
     await h.getByRole('button',{name:'← Dừng phiên và về Home',exact:true}).click()
-    await h.getByRole('button',{name:'Share Screen · Chia sẻ',exact:true}).waitFor()
+    await h.getByTestId('home-share').waitFor()
     if((await call(h,'GetSessionStats')).state!=='Idle')throw Error('Back raced Start')
-    await h.getByRole('button',{name:'Share Screen · Chia sẻ',exact:true}).click()
+    await h.getByTestId('home-share').click()
   }
   checks.push('five-start-back-cleanup-cycles')
   // Rejoin with fresh generation and terminate the actual native window live.

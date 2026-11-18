@@ -128,6 +128,13 @@ distinct from unexecuted screen-reader speech and physical-device cases.
 The methodology below remains the contract, including explicitly unmeasured
 content/platform cases in the report.
 
+G6 portable acceptance: [G6 closeout](../app/G6_CLOSEOUT.md) records exact ZIP/
+binary hashes, the production two-app UIA run, extracted startup/normal close,
+relay cancellation, modified/extra-file rejection and notice audit. The
+instrumented UI suite separately covers malformed/recovery/canvas behavior.
+Installer/signing/SmartScreen download reputation and fresh Windows tests are
+NOT RUN; no success is inferred from the tested unsigned portable package.
+
 - On actual Windows 10/11 machine with Wails/WebView2: `wails3 doctor` passes, `wails3 dev` runs, packaged `wails3 build` opens and closes cleanly; verify app startup after installation if installer built.
 - Enumerate/select screen, permission handling, preview in broadcaster, code copy, join from another process, viewer canvas first KEY, recovery after injected invalid DELTA, disconnect UI, Stop, room code invalidated.
 - Confirm lock/handle is released: stop streaming then another app can capture the screen/camera; observe no orphan relay connections or processes.

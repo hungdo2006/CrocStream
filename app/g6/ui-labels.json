@@ -1,0 +1,14 @@
+{
+  "share": "Chia sẻ màn hình",
+  "watch": "Tham gia bằng mã",
+  "start": "Bắt đầu chia sẻ",
+  "stop": "Dừng chia sẻ",
+  "join": "Tham gia phiên",
+  "copy": "Sao chép mã",
+  "waiting": "Đang chờ người xem",
+  "watching": "Đang xem",
+  "live": "Đang chia sẻ",
+  "idle": "Chưa kết nối",
+  "disconnected": "Đã ngắt kết nối",
+  "render": "FPS hiển thị"
+}

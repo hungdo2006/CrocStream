@@ -27,7 +27,7 @@ func main() {
 		Services: []application.Service{application.NewService(service)},
 	})
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:            "CrocStream · Share / Watch",
+		Title:            "CrocStream",
 		Width:            1150,
 		Height:           760,
 		MinWidth:         960,

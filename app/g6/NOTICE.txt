@@ -1,0 +1,21 @@
+CrocStream 0.0.1, Windows x64 technical prototype.
+
+No blanket license for original CrocStream application code is granted by
+this notice. The repository owner has not selected a project-wide license.
+Do not infer open-source redistribution rights from third-party licenses.
+
+Third-party software and data keep their original terms. Preserve all files
+in licenses/ with copied binaries. The package includes conservative notices
+for croc, the CrocStream-specific modified PAKE schedule, Wails, Go/runtime,
+React/ReactDOM/scheduler, LZ4 and their linked dependencies.
+
+EFF Short Wordlist #1 is credited to Electronic Frontier Foundation under
+CC-BY-4.0. Upstream removed the dice labels; attribution/source/license and
+modification notice are retained in licenses/G0_ATTRIBUTIONS.txt.
+
+This prototype is not endorsed by croc, Wails, Microsoft, EFF or dependency
+authors. It does not make stock croc clients understand the media protocol.
+
+No credentials, screen images or bundled WebView2 runtime. No guarantee of
+fitness, audited security or specific FPS/latency. Review KNOWN_ISSUES.md and
+licenses/NOTICE_SCOPE.md before redistribution or production use.

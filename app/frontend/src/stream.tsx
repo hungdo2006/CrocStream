@@ -136,46 +136,47 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
     (role==='share'?stats.counters.emitted>0:stats.counters.received>0)
   const sessionStats=stats&&started&&stats.generation===started.generation&&!inactive(state)
   return <><nav><button disabled={leaving} onClick={()=>void home()}>← Dừng phiên và về Home</button></nav><main>
-    <header><div><span className="eyebrow">CROCSTREAM / G5</span><h1>{role==='share'?'Chia sẻ màn hình.':'Xem màn hình từ xa.'}</h1></div>
+    <header><div><span className="eyebrow">CrocStream</span><h1>{role==='share'?'Chia sẻ màn hình':'Xem một phiên'}</h1></div>
       <span className={`status state-${state}`} role="status">{labels[state]??state}</span></header>
     <div className="workspace">
       <section className="viewer">
-        <div className="section-heading"><h2>{role==='share'?'Local preview · máy phát':'Remote view · máy xem'}</h2><span>Ảnh hiển thị JPEG cục bộ</span></div>
+        <div className="section-heading"><h2>{role==='share'?'Màn hình của bạn':'Màn hình người chia sẻ'}</h2><span>{role==='share'?'Xem trước tại máy này':'Ảnh nhận từ phiên'}</span></div>
         <div className="canvas-wrap"><canvas ref={canvas} width={1280} height={720} aria-label={role==='share'?'Preview màn hình đang phát':'Ảnh nhận từ người phát'} />
-          {!hasImage&&<div className="placeholder"><strong>{started?labels[state]??'Đang chờ ảnh…':role==='share'?'Chọn nguồn và bắt đầu.':'Nhập mã để tham gia.'}</strong><p>Chỉ hiển thị ảnh hợp lệ của phiên hiện tại.</p></div>}
+          {!hasImage&&<div className="placeholder"><strong>{started?labels[state]??'Đang chờ ảnh…':role==='share'?'Chưa chia sẻ màn hình':'Chưa tham gia phiên'}</strong><p>{role==='share'?'Chọn nguồn và relay ở bên phải.':'Nhập mã mời và relay ở bên phải.'}</p></div>}
           {hasImage&&state==='Recovering'&&<div className="recovery" role="status">Đang phục hồi · giữ ảnh hợp lệ cuối cùng</div>}</div>
-        {imageError&&<><p className="error" role="status">{imageError}</p>{started&&<button onClick={reconnect}>Nối lại kênh hiển thị cục bộ</button>}</>}
+        {imageError&&<><p className="error" role="status">{imageError}</p>{started&&<button onClick={reconnect}>Thử lại hình hiển thị</button>}</>}
         <div className="metrics">
-          <Metric label={role==='share'?'Capture FPS':'Received FPS'} value={sessionStats&&stats.measurementsComplete?String(role==='share'?stats.captureFPS:stats.receivedFPS):'—'} />
-          <Metric label={role==='share'?'Emitted FPS':'Decoded FPS'} value={validStats?String(role==='share'?stats.emittedFPS:stats.decodedFPS):'—'} />
-          <Metric label="Render FPS" value={started?String(renderFPS):'—'} />
-          <Metric label="Video protocol rate (KiB/s)" help="Bytes KEY/DELTA gồm header, trong 1 giây gần nhất; không gồm CONFIG/control, mã hóa, relay hoặc NIC." value={validStats?(role==='share'?stats.sentKiB:stats.receivedKiB).toFixed(1):'—'} />
-          <Metric label="RTT (ms)" help="Ping/Pong gần nhất bằng đồng hồ monotonic; không phải độ trễ một chiều hay end-to-end." value={validStats&&stats.counters.rttKnown?stats.counters.rttMs.toFixed(1):'N/A'} />
+          <Metric label="FPS hiển thị" value={started?String(renderFPS):'—'} />
+          <Metric label="Tốc độ video (KiB/s)" help="Byte KEY/DELTA, gồm header, trong 1 giây gần nhất; không gồm control, mã hóa hay overhead mạng." value={validStats?(role==='share'?stats.sentKiB:stats.receivedKiB).toFixed(1):'—'} />
+          <Metric label="RTT khứ hồi (ms)" help="Ping/Pong gần nhất; không phải độ trễ một chiều hay end-to-end." value={validStats&&stats.counters.rttKnown?stats.counters.rttMs.toFixed(1):'N/A'} />
         </div>
-        <div className="metrics">
-          <Metric label="Keyframe / Delta" value={validStats?`${stats.counters.keys} / ${stats.counters.deltas}`:'—'} />
-          <Metric label="Avg Key (KiB)" value={validStats&&stats.keyMeanKnown?stats.meanKeyKiB.toFixed(2):'—'} />
-          <Metric label="Avg Delta (KiB)" value={validStats&&stats.deltaMeanKnown?stats.meanDeltaKiB.toFixed(2):'—'} />
-          <Metric label="Dropped capture" value={validStats&&role==='share'?String(stats.dropped):'—'} />
-          <Metric label="Full-frame LZ4 baseline (KiB/s)" help="Nén toàn ảnh của chính các mẫu đã phát, cùng LZ4 và header, cùng cửa sổ 1 giây. Không ước lượng." value={validStats&&role==='share'&&stats.baselineKnown?stats.baselineKiB.toFixed(1):'—'} />
-          <Metric label="Delta savings" help="100 × (1 − video bytes / baseline bytes), cùng cửa sổ 1 giây. Có thể âm; — nếu không có baseline." value={validStats&&role==='share'&&stats.savingsKnown?`${stats.savings.toFixed(1)}%`:'—'} />
-          <Metric label="Session uptime (s)" help="Thời gian từ khi chuẩn bị phiên, bao gồm chờ pairing." value={sessionStats?stats.uptime.toFixed(0):'—'} />
-          <Metric label="Last frame kind" help="Loại packet video cuối đã phát hoặc decode thành công; không phải xác nhận canvas đã vẽ packet đó." value={validStats?stats.counters.lastKind||'—':'—'} />
-          <Metric label="Viewer decode→render (ms)" help="N/A: bridge JPEG chưa mang timestamp liên kết với bước decode LZ4. Không suy ra từ đồng hồ máy phát." value="N/A" />
+        <details className="stream-details"><summary>Chi tiết luồng</summary><div className="metrics metrics-detail">
+          <Metric label={role==='share'?'FPS chụp':'FPS nhận'} value={sessionStats&&stats.measurementsComplete?String(role==='share'?stats.captureFPS:stats.receivedFPS):'—'} />
+          <Metric label={role==='share'?'FPS gửi':'FPS giải mã'} value={validStats?String(role==='share'?stats.emittedFPS:stats.decodedFPS):'—'} />
+          <Metric label="KEY / DELTA" value={validStats?`${stats.counters.keys} / ${stats.counters.deltas}`:'—'} />
+          <Metric label="KEY trung bình (KiB)" value={validStats&&stats.keyMeanKnown?stats.meanKeyKiB.toFixed(2):'—'} />
+          <Metric label="DELTA trung bình (KiB)" value={validStats&&stats.deltaMeanKnown?stats.meanDeltaKiB.toFixed(2):'—'} />
+          <Metric label="Mẫu chụp bỏ qua" value={validStats&&role==='share'?String(stats.dropped):'—'} />
+          <Metric label="Nén toàn ảnh (KiB/s)" help="Nén LZ4 toàn ảnh trên cùng mẫu đã gửi, gồm header, trong cùng cửa sổ 1 giây." value={validStats&&role==='share'&&stats.baselineKnown?stats.baselineKiB.toFixed(1):'—'} />
+          <Metric label="Tiết kiệm so với toàn ảnh" help="100 × (1 − byte video / byte nén toàn ảnh), cùng cửa sổ 1 giây. Có thể âm." value={validStats&&role==='share'&&stats.savingsKnown?`${stats.savings.toFixed(1)}%`:'—'} />
+          <Metric label="Thời lượng phiên (giây)" help="Tính từ lúc chuẩn bị, gồm cả thời gian chờ người xem." value={sessionStats?stats.uptime.toFixed(0):'—'} />
+          <Metric label="Khung gần nhất" help="KEY/DELTA cuối được gửi hoặc giải mã; không xác nhận canvas đã hiển thị khung đó." value={validStats?stats.counters.lastKind||'—':'—'} />
+          <Metric label="Giải mã đến hiển thị (ms)" help="Chưa đo: ảnh JPEG cục bộ chưa có dấu thời gian liên kết với bước giải mã LZ4." value="N/A" />
         </div>
-        <details className="metric-help"><summary>Cách đọc số đo</summary><p className="caption">FPS và tốc độ dùng cửa sổ 1 giây; dashboard cập nhật khoảng 500 ms. Avg Key/Delta gồm header trong cùng cửa sổ; số lượng Key/Delta và dropped capture tính cả phiên. Savings có thể bằng 0 hoặc âm. Baseline đo trên chính mẫu phát, không gồm control, mã hóa hoặc overhead mạng. RTT là khứ hồi gần nhất. Luồng mạng RGBA/LZ4; JPEG chỉ dùng để hiển thị cục bộ.</p></details>
+        <p className="caption">Tốc độ tính trong 1 giây gần nhất; cập nhật mỗi 500 ms. KEY/DELTA và mẫu bỏ là số cộng dồn. Mức tiết kiệm so sánh với nén toàn ảnh cùng mẫu, có thể âm. Byte gồm header, không gồm control hoặc overhead mạng. RTT là khứ hồi; JPEG chỉ dùng để hiển thị.</p></details>
         {stats?.measurementOverflow&&<p role="status" className="error">Cửa sổ đo chưa đầy đủ; tạm ẩn tốc độ và savings.</p>}
-        {invitation&&<div className="invitation"><label htmlFor="invitation">Mã mời bí mật</label>
+      </section>
+      <aside><h2>{role==='share'?'Thiết lập chia sẻ':'Kết nối'}</h2>
+        {invitation&&<div className="invitation"><label htmlFor="invitation">Mã mời</label>
           <input id="invitation" type="password" readOnly value={invitation} autoComplete="off" />
           <button onClick={()=>void navigator.clipboard.writeText(invitation).then(()=>setCopyStatus('Đã sao chép mã.')).catch(()=>setError('Không sao chép được mã.'))}>Sao chép mã</button>
           <p role="status" className="caption">{copyStatus}</p>
           <p className="caption">Chỉ gửi cho người xem. Dừng phiên để thu hồi mã.</p></div>}
-      </section>
-      <aside><h2>{role==='share'?'Nguồn và relay':'Kết nối tới người phát'}</h2>
-        <label htmlFor="relay">Relay đã được phép (host:port)</label>
+        <label htmlFor="relay">Địa chỉ relay</label>
         <input id="relay" value={address} disabled={locked} onChange={e=>setAddress(e.target.value)} placeholder="127.0.0.1:9009" autoComplete="off" />
         <label htmlFor="relay-password">Mật khẩu relay</label>
         <input id="relay-password" type="password" value={password} disabled={locked} onChange={e=>setPassword(e.target.value)} autoComplete="off" />
+        <p className="field-help">Dùng cùng relay trên cả hai máy. Mật khẩu chỉ giữ trong phiên.</p>
         {role==='share'?<>
           <label htmlFor="stream-display">Màn hình</label><select id="stream-display" value={display} disabled={locked} onChange={e=>setDisplay(e.target.value)}>
             {!displays.length&&<option value="">Không có màn hình</option>}
@@ -189,7 +190,7 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
             <label htmlFor="stream-tau">Ngưỡng RGB MAE (tau)</label><input id="stream-tau" type="number" min="0" max="255" value={tau} disabled={locked} onChange={e=>setTau(Math.max(0,Math.min(255,Number(e.target.value))))} />
             <label htmlFor="stream-keyinterval">Khoảng KEY (1–120 frame)</label><input id="stream-keyinterval" type="number" min="1" max="120" value={keyInterval} disabled={locked} onChange={e=>setKeyInterval(Math.max(1,Math.min(120,Number(e.target.value))))} />
           </details>
-          <p className="notice">Start chụp màn hình đã chọn và gửi cho một viewer có mã đúng qua relay bạn nhập.</p>
+           <p className="notice">Bắt đầu sẽ chụp màn hình đã chọn. Người có mã mời có thể tham gia xem.</p>
         </>:<><label htmlFor="join-code">Mã phiên</label><input id="join-code" type="password" value={code} disabled={locked} onChange={e=>setCode(e.target.value)} autoComplete="off" /></>}
         <button className="primary" disabled={locked||leaving||!address||!password||(role==='share'?!display:!code||retryAfter>0)} onClick={()=>void start()}>{role==='share'?'Bắt đầu chia sẻ':'Tham gia phiên'}</button>
         {role==='watch'&&retryAfter>0&&!locked&&<p role="status" className="caption">Thử lại sau {Math.ceil(retryAfter/1000)} giây. Không tự động kết nối lại.</p>}

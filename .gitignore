@@ -23,3 +23,5 @@ app/frontend/playwright-report/
 app/bin/
 app/.wails/
 app/frontend/bindings/
+app/release/
+app/release-*/

@@ -4,7 +4,7 @@
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
 > [GETTING_STARTED](GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
-> thực tế; G0–G5 có closeout PASS, gồm remote synthetic G4 và UX/stress local G5.
+> thực tế; G0–G6 có closeout PASS, gồm remote synthetic G4, local stress G5 và portable Windows G6.
 
 ## Contents
 - [Reference source](#reference-source)
@@ -118,7 +118,7 @@ proposed resolutions above.
 
 The current single repository contains `croc/` (pristine upstream reference snapshot),
 `docs/` (planning documents), G0 artifacts and the application module in `app/`.
-G0–G5 are closed PASS; local-preview implementation and evidence are
+G0–G6 are closed PASS; local-preview implementation and evidence are
 tracked in [G3_CLOSEOUT](../app/G3_CLOSEOUT.md).
 `internal/protocol`, `internal/frame`, `internal/delta` and
 `internal/telemetry` are implemented; G2 evidence is in
@@ -282,6 +282,16 @@ monitor behavior must be reported based on actual tests, not inferred.
 
 ## Packaging and deployment
 - Target Wails v3.1.0, toolchain from tested upstream `go.mod` (provisionally Go 1.27.3+), Windows x64 initially. Verify `wails3 doctor`, native screen-capture permission, WebView2, firewall/relay usage and signed/unsigned installer behavior. Tests on actual macOS/Linux and webcam hardware are deferred to subsequent phases.
+
+G6 produces an unsigned, allowlisted portable ZIP using the existing toolchain,
+with SHA-256 checksums, manifest, complete conservative notices and demo docs.
+The optional `cmd/demo-relay` wraps the same pinned upstream TCP relay,
+accepts credentials only over stdin, and permits loopback/private IPv4 binds.
+It changes no transport cryptography or media bytes and is not a Windows service.
+The actual extracted production apps complete a local Share/Watch session via
+Windows UI Automation without test/CDP APIs. WebView2 remains a separately
+installed prerequisite. Installer/signing and fresh-machine startup are not
+passed by the portable result. See [G6 closeout](../app/G6_CLOSEOUT.md).
 
 ## Media protocol v1
 **Normative v1 contract, not deployed.** G1 implements framing/configuration;

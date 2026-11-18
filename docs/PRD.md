@@ -5,7 +5,7 @@
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
 
-**Status:** desktop screen-sharing prototype in development. **G0–G5 PASS**: G4 combines local desktop capture/render and remote synthetic media proof ([G4 report](../app/G4_CLOSEOUT.md)); G5 adds UX/telemetry/resilience and actual local >=600s stress ([G5 report and limits](../app/G5_CLOSEOUT.md)). Real remote-screen capture/render performance was not authorized/tested and is not inferred. G6 packaging remains next. The repository contains pristine upstream `croc/`, planning `docs/`, historical G0 artifacts and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. Paths are repository-root relative.
+**Status:** **G0–G6 PASS** for the measured prototype: G4 local desktop/remote synthetic media, G5 UX/local stress, and G6 unsigned Windows portable/demo handoff ([G6 report and limits](../app/G6_CLOSEOUT.md)). Real remote-screen capture/render performance, installer/signing and fresh-machine tests are not inferred. The repository contains pristine upstream `croc/`, planning `docs/` and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. G7 remains deferred. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
@@ -90,7 +90,7 @@ Croc's persistent duplex stream viability, relay usage/capacity, security handsh
 ## UI and interaction
 
 ### Design and screens
-Desktop-first dark layout: default ~1150×760, minimum ~960×640, scrolling at smaller sizes. Palette: `slate-950` background, `slate-900` cards, `indigo-500` primary, `emerald-500` connected, `amber-400` waiting/recovering, `rose-500` error/stop. System font; `font-mono tabular-nums` for metrics/code. Preserve 16:9 canvas with letterboxing, never stretch.
+Desktop-first dark layout: default ~1150×760, minimum ~960×640, scrolling at smaller sizes. G6 owner requested a restrained desktop-tool UI: neutral dark surfaces, compact borders/radii, system font, a muted indigo primary action, green connected, amber waiting/recovering and rose error/stop. No promotional slogan, gradient hero or oversized metric tiles. Monospaced/tabular numbers for metrics/code. Preserve 16:9 letterboxing, never stretch. This presentation refinement changes no state, wire or telemetry meaning.
 
 High-contrast focus rings, keyboard navigation, accessible labels and status
 announcements are MVP requirements (C-05, owner-confirmed for G3).
@@ -103,9 +103,9 @@ measured capture/JPEG/render metrics. Broadcaster/viewer pairing belongs to G4.
 
 | Screen | Layout and controls |
 | --- | --- |
-| Home | Accessible `Share Screen` / `Watch Stream` cards; optional relay configuration/status link. No green “relay connected” until probed. |
-| Broadcaster | Left: labeled local preview, selected screen, Start/Stop, dashboard. Right: screen/resolution/FPS selectors, advanced keyframe interval and tau, code + Copy only after session preparation, pairing status, actual route only if observable. Dashboard includes video/baseline KiB/s, savings, emitted FPS, key/delta counts and sizes, dropped captures, uptime. |
-| Viewer | Code input, explicit connection progress, placeholder until valid KEY, large viewing canvas, Leave. Show bandwidth, decoded/rendered FPS, optional RTT/local decode→render delay and last frame kind. |
+| Home | Clear `Chia sẻ màn hình` / `Tham gia bằng mã` actions; local preview is secondary. Short relay prerequisite/demo guidance. No connected indicator before connection. |
+| Broadcaster | Left: labeled local preview and three main measurements (render FPS, video KiB/s, RTT). Right: source/resolution/FPS, advanced settings, invitation + Copy after preparation, Start/Stop and honest status. `Chi tiết luồng` reveals baseline/savings, emitted FPS, key/delta sizes/counts, dropped captures and uptime. |
+| Viewer | Code/relay input, explicit connection progress, placeholder until KEY, large canvas and Leave. Main render/rate/RTT plus expandable decoded/received FPS, last accepted frame kind, optional local decode→render (N/A if unmeasured). |
 
 ### State machine
 ```text

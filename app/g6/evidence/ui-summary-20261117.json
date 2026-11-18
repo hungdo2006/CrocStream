@@ -1,0 +1,131 @@
+﻿{
+  "status": "G5_EVIDENCE_VERIFIED",
+  "seconds": 15.462,
+  "stopMs": 148,
+  "checks": 26,
+  "closedListeners": 11,
+  "summary": {
+    "capture": {
+      "n": 29,
+      "p50": 24,
+      "p95": 24,
+      "max": 25
+    },
+    "emitted": {
+      "n": 29,
+      "p50": 24,
+      "p95": 24,
+      "max": 24
+    },
+    "decoded": {
+      "n": 29,
+      "p50": 24,
+      "p95": 24,
+      "max": 24
+    },
+    "rendered": {
+      "n": 29,
+      "p50": 24,
+      "p95": 25,
+      "max": 25
+    },
+    "hostRendered": {
+      "n": 29,
+      "p50": 24,
+      "p95": 24,
+      "max": 25
+    },
+    "hostRTT": {
+      "n": 29,
+      "p50": 0.5189,
+      "p95": 3.7157,
+      "max": 5.2644
+    },
+    "viewerRTT": {
+      "n": 29,
+      "p50": 0.7506,
+      "p95": 14.0552,
+      "max": 15.349
+    },
+    "encodeMs": {
+      "n": 29,
+      "p50": 11.297229166666668,
+      "p95": 11.99297916666667,
+      "max": 12.023979166666669
+    },
+    "decodeMs": {
+      "n": 29,
+      "p50": 1.5158333333333331,
+      "p95": 1.7031086956521737,
+      "max": 1.772783333333333
+    },
+    "baselineMs": {
+      "n": 29,
+      "p50": 3.062091304347826,
+      "p95": 3.366225,
+      "max": 3.4733625
+    }
+  },
+  "firstTwoMinuteWindow": {
+    "capture": {
+      "samples": 29,
+      "p50": 24,
+      "p95": 24,
+      "mean": 24
+    },
+    "emitted": {
+      "samples": 29,
+      "p50": 24,
+      "p95": 24,
+      "mean": 23.93103448275862
+    },
+    "decoded": {
+      "samples": 29,
+      "p50": 24,
+      "p95": 24,
+      "mean": 23.896551724137932
+    },
+    "rendered": {
+      "samples": 29,
+      "p50": 24,
+      "p95": 25,
+      "mean": 23.96551724137931
+    }
+  },
+  "resources": {
+    "host": {
+      "samples": 2,
+      "firstWorkingSetMiB": 117.4296875,
+      "lastWorkingSetMiB": 122.5078125,
+      "maxSampledWorkingSetMiB": 122.5078125,
+      "maxSampledHeapMiB": 16.624832153320312,
+      "minHandles": 464,
+      "maxHandles": 474,
+      "handlesBefore": 397,
+      "handlesAfter": 470,
+      "goroutinesBefore": 12,
+      "goroutinesAfter": 12,
+      "cpuOneCorePercent": 113.25079410915392,
+      "cpuMachineCapacityPercent": 5.662539705457696,
+      "approximateProcessAllocsPerVideo": 257.2030360531309,
+      "approximateProcessAllocatedMiBPerVideo": 11.82753241175266
+    },
+    "viewer": {
+      "samples": 2,
+      "firstWorkingSetMiB": 53.7265625,
+      "lastWorkingSetMiB": 52.53125,
+      "maxSampledWorkingSetMiB": 53.7265625,
+      "maxSampledHeapMiB": 8.640518188476562,
+      "minHandles": 441,
+      "maxHandles": 443,
+      "handlesBefore": 397,
+      "handlesAfter": 440,
+      "goroutinesBefore": 12,
+      "goroutinesAfter": 12,
+      "cpuOneCorePercent": 61.663778997016074,
+      "cpuMachineCapacityPercent": 3.0831889498508036,
+      "approximateProcessAllocsPerVideo": 194.37262357414448,
+      "approximateProcessAllocatedMiBPerVideo": 10.911921584560844
+    }
+  }
+}

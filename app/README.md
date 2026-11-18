@@ -318,3 +318,43 @@ Actual Windows local 720p/24-FPS two-app stress ran 600s: viewer render p50
 dataset, not arbitrary video/Internet conditions. Optional decode→render is
 N/A; true E2E is hidden. See [G5 closeout](G5_CLOSEOUT.md) for exact binaries,
 tests, resource limits and remaining manual cases; [reproduce](g5/README.md).
+
+## G6 Windows portable and demo
+
+The final local artifact is
+`release/g6-final-20261117/CrocStream-0.0.1-windows-amd64.zip`
+(approximately 7.72 MiB) with adjacent SHA-256. Extract the entire ZIP and run
+`crocstream.exe`; Go/Node/Wails are not required on the target PC. Microsoft
+Edge WebView2 Evergreen Runtime is required separately. This prototype is
+unsigned; no installer, signing certificate or automatic updates are bundled.
+
+Share/Watch use a compact UI with Vietnamese main labels; three primary
+measurements sit under the canvas, and codec metrics remain in **Chi tiết
+luồng**. The optional `crocstream-relay.exe`/`Start-DemoRelay.ps1` run a manual
+loopback/private-LAN relay using the same pinned upstream implementation.
+No credentials are accepted on command-line arguments or saved in the package.
+
+Build the ZIP with existing approved tools (from `app/`):
+
+```powershell
+. .\g0\Use-Toolchain.ps1
+.\g6\Build-Portable.ps1 -OutputDirectory release/new-build
+```
+
+The destination must be fresh. The build installs nothing, checks production
+tags, gathers conservative attribution, creates an allowlisted manifest and
+checksums, then packages the files. Do not distribute partial build folders.
+Use [DEMO](g6/DEMO.md) for operator instructions,
+[KNOWN_ISSUES](g6/KNOWN_ISSUES.md) for limits, and
+[G6 closeout](G6_CLOSEOUT.md) for actual commands, artifact hashes, production
+two-app UI proof and license scope. Engineering-only production acceptance
+requires an empty clipboard and local capture consent:
+
+```powershell
+.\g6\Smoke-Package.ps1 -Directory <freshly-extracted-package>
+.\g6\Test-ProductionUI.ps1 -Directory <freshly-extracted-package>
+```
+
+The latter uses Windows UI Automation with the exact shipped binaries,
+temporarily copies the invitation in memory/clipboard and sends screen media
+only over loopback. No screenshots, traces or frames are saved.

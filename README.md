@@ -1,9 +1,8 @@
 # CrocStream
 
-CrocStream là ứng dụng desktop **đang phát triển phần lõi**, hướng tới chia sẻ
-màn hình **1 người phát ↔ 1 người xem** trên Windows bằng mã bí mật. Điểm cần
-kiểm chứng là khả năng dùng transport croc cho luồng dữ liệu hai chiều liên tục
-và hiệu quả gửi các vùng ảnh thay đổi thay vì toàn bộ ảnh.
+CrocStream là prototype desktop chia sẻ màn hình **1 người phát ↔ 1 người xem**
+trên Windows bằng mã bí mật. Đã có bản ZIP portable và hướng dẫn demo;
+hiệu năng/giới hạn được ghi từ kiểm thử thực tế, không bảo đảm trên mọi mạng.
 
 **Người mới bắt đầu tại [Hướng dẫn nhập môn](docs/GETTING_STARTED.md).**
 
@@ -11,14 +10,15 @@ và hiệu quả gửi các vùng ảnh thay đổi thay vì toàn bộ ảnh.
 | --- | --- |
 | Đã có | G0 transport PoC, G1 protocol, G2 codec/telemetry và [ứng dụng local preview G3](app/README.md#g3-desktop-preview--build-and-run) |
 | Đã có G4 local | Share/Watch hai process qua relay loopback; media/control/canvas đã kiểm thử |
-| Còn lại | G6 đóng gói và G7 mở rộng chưa triển khai |
+| Còn lại | Owner demo; G7 webcam/cross-platform chưa triển khai |
 | Trạng thái G0 | **PASS** cho khả thi prototype: transport local/remote, native build/runtime và notice review; [quyết định cuối](app/G0_CLOSEOUT.md) |
 | Trạng thái G1 | **PASS** framing/config, tests/race/vet/build/fuzz; [báo cáo](app/G1_CLOSEOUT.md); C-01/C-02 đã chốt |
 | Trạng thái G2 | **PASS** codec/telemetry, tests/race/vet/build/fuzz/bench; [báo cáo](app/G2_CLOSEOUT.md) |
 | Trạng thái G3 | **PASS** local preview 720p/≈24 FPS trong 10 phút, Stop 118ms; [báo cáo kiểm chứng](app/G3_CLOSEOUT.md) |
 | Trạng thái G4 | **PASS** local desktop + remote synthetic >=600s, hash/control/cleanup đúng; [báo cáo](app/G4_CLOSEOUT.md) |
 | Trạng thái G5 | **PASS** UX/telemetry, 600s stress local 720p, render p50 24 FPS, Stop 141ms; [báo cáo và giới hạn](app/G5_CLOSEOUT.md) |
-| Công việc phát triển kế tiếp | G6 đóng gói Windows và demo handoff |
+| Trạng thái G6 | **PASS** ZIP Windows unsigned, exe production giải nén chạy hai process, Stop 535ms; [báo cáo](app/G6_CLOSEOUT.md) |
+| Bản chạy local | `app/release/g6-final-20261117/CrocStream-0.0.1-windows-amd64.zip`; [hướng dẫn demo](app/g6/DEMO.md) |
 | Bằng chứng | Remote >600s, [mạng mới](app/G0_LATENCY_FOLLOWUP.md) RTT mean 48–51ms; giữ giới hạn mạng cũ, không hứa latency/FPS chung |
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
@@ -96,6 +96,8 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 | [G3_CLOSEOUT](app/G3_CLOSEOUT.md) | Capture GDI, bridge token/Origin, React canvas, bản Windows và bằng chứng thực tế |
 | [G4_CLOSEOUT](app/G4_CLOSEOUT.md) | Share/Watch, secure media/control, lifecycle và local/remote proof |
 | [G4_REMOTE_PROOF](app/G4_REMOTE_PROOF.md) | Hai máy qua EC2 >=600s với ảnh tổng hợp, hash/counters và cleanup |
+| [G5_CLOSEOUT](app/G5_CLOSEOUT.md) | UX/telemetry, stress local và giới hạn resource/benchmark |
+| [G6_CLOSEOUT](app/G6_CLOSEOUT.md) | Portable Windows, checksum/notices, production UI proof và demo handoff |
 
 ## Cách tiếp tục
 
@@ -105,4 +107,4 @@ Giữ `croc/` nguyên gốc để tham chiếu; phát triển phần mới trong
 repo khi được giao triển khai. G0 đã đóng; package protocol G1 hiện có trong
 `app/internal/protocol`. Xem closeout và gate kế tiếp trong Roadmap khi nhận
 task mới. Mọi đường dẫn `docs/`, `croc/` và `app/` tính từ gốc repository;
-G4 integration và G5 UX/stress đã có; packaging là bước tiếp theo.
+G0–G6 đã có bằng chứng; demo bản portable trước khi nhận các phần mở rộng G7.

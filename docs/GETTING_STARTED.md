@@ -30,11 +30,14 @@ Theo cập nhật 2026-11-17:
 | `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
 | `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture/preview Wails, G4 Share/Watch và báo cáo/tooling G0 |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
-| Ứng dụng và benchmark | G0–G5 PASS; G4 remote synthetic và G5 local UI stress >=600s đã kiểm chứng; [G5 và giới hạn](../app/G5_CLOSEOUT.md) |
+| Ứng dụng và benchmark | G0–G6 PASS; Windows portable/demo đã kiểm chứng; [G6 và giới hạn](../app/G6_CLOSEOUT.md) |
 
 **Có ứng dụng local preview và Share/Watch**. G4 kiểm chứng desktop capture/render
 ở hai process local và media tổng hợp qua EC2 hai máy; chưa đo capture/render
 màn hình thật qua Internet.
+G6 có ZIP portable unsigned trong `app/release/g6-final-20261117/`;
+giải nén rồi chạy `crocstream.exe`. Cần WebView2; xem
+[hướng dẫn demo](../app/g6/DEMO.md). Chưa có installer/chữ ký số.
 [Lệnh build/chạy G3](../app/README.md#g3-desktop-preview--build-and-run);
 [PoC G0](../app/g0/poc/README.md) dùng riêng để thử transport dữ liệu tổng hợp.
 Các lệnh test/build package G1 nằm trong [app README](../app/README.md).
@@ -161,7 +164,8 @@ KEY1, DELTA tuần tự và việc chỉ xác nhận frame sau khi codec kiểm 
 G0 đã đóng bằng PoC local/remote và native/license evidence. G1 đã triển khai
 framing/config thuần Go; G2 đã triển khai codec delta và telemetry;
 G3 có capture/preview; G4 Share/Watch và remote synthetic proof đã PASS.
-G5 UX/telemetry và stress local đã PASS; tiếp theo G6 đóng gói. Xem [tiến độ](ROADMAP.md#current-progress)
+G6 portable Windows và demo handoff đã PASS; thử bản portable trước khi làm
+webcam/cross-platform G7. Xem [tiến độ](ROADMAP.md#current-progress)
 và [bằng chứng G4](../app/G4_CLOSEOUT.md).
 
 Sau G0: giao thức → codec → capture/preview → tích hợp hai máy → UI hoàn chỉnh

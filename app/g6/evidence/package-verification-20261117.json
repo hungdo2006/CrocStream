@@ -1,0 +1,11 @@
+{
+    "status":  "PACKAGE_NEGATIVE_AND_NOTICE_PASS",
+    "at_utc":  "2026-11-17T16:34:43.0190358Z",
+    "modified_file_rejected":  true,
+    "extra_file_rejected":  true,
+    "overwrite_guard_preserved_archive":  true,
+    "files":  16,
+    "notice_records":  178,
+    "linked_module_notices":  24,
+    "archive_sha256":  "B5CAB7E621A64516FCF15D332032FA325F42FA63C7C31B0D9630C13426165035"
+}

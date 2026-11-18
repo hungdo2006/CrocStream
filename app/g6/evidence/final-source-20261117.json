@@ -1,0 +1,142 @@
+{
+    "status":  "G6_FINAL_SOURCES_RECORDED",
+    "at_utc":  "2026-11-17T16:43:58.4717132Z",
+    "head":  "886f86611462f84b97c1b8644ca5cd43a0f23d00",
+    "archive_sha256":  "B5CAB7E621A64516FCF15D332032FA325F42FA63C7C31B0D9630C13426165035",
+    "source_scope":  "changed runtime, relay tests and G6 build/acceptance scripts",
+    "files":  [
+                  {
+                      "path":  "app/frontend/index.html",
+                      "sha256":  "1DE20CE60C69C47BB504CD4B8A16CB66E20664BF7761FAF54DD4DAAAFB7FE875"
+                  },
+                  {
+                      "path":  "app/frontend/src/main.tsx",
+                      "sha256":  "55AE421866C46B6F0C1735A6209D155313246B5865BA7E8EEE6D3EB62450C379"
+                  },
+                  {
+                      "path":  "app/frontend/src/stream.tsx",
+                      "sha256":  "DC19964C38F70BE82405DC22A638E99D3A82D434BD544C05BF6487CFD07B36E1"
+                  },
+                  {
+                      "path":  "app/frontend/src/style.css",
+                      "sha256":  "8578844E360AA08F99895755C8DCAC8CF4E309BE7D16385175773098DF2EE8B9"
+                  },
+                  {
+                      "path":  "app/main_windows.go",
+                      "sha256":  "E7CC567F2213D063CDBD033C3210B84195D141869646675A35600F24C2B3E126"
+                  },
+                  {
+                      "path":  "app/cmd/demo-relay/main.go",
+                      "sha256":  "5FE53A457F0149F29ACC4069F3CEF9DF2CF76CB48705B5C2C6A3C08496459422"
+                  },
+                  {
+                      "path":  "app/cmd/demo-relay/main_test.go",
+                      "sha256":  "D1D76D8654E1F70D60EDAC12B54F7FEE6C42CF5623E3E775A74DBD5799B19124"
+                  },
+                  {
+                      "path":  "app/g6/Build-Portable.ps1",
+                      "sha256":  "B910F63C131A2BE9F1EBDD10121A8C191F0A0458B56A908ED3AEDEC5242B8D6E"
+                  },
+                  {
+                      "path":  "app/g6/Verify-Package.ps1",
+                      "sha256":  "019244443120B76649F22BE7099C2179D50302B6DCB31785AF2C79F6B84BBA53"
+                  },
+                  {
+                      "path":  "app/g6/Smoke-Package.ps1",
+                      "sha256":  "9E750EB8C35D0A6ABE4C089C60C538AB59E8AAC01C382653E6A62890184989E1"
+                  },
+                  {
+                      "path":  "app/g6/Test-ProductionUI.ps1",
+                      "sha256":  "27A0657524859B7C95BB84BDC082E301D131F500021008BE9393495A62A630FA"
+                  },
+                  {
+                      "path":  "app/g6/runtime-deps.mjs",
+                      "sha256":  "FAB343A682E90D8EB5430F440716D769C1CD2F0BE4C760412E999E8D6EB872B3"
+                  },
+                  {
+                      "path":  "app/g6/Start-DemoRelay.ps1",
+                      "sha256":  "B1498FFDD6CE4CB45D221DD8CEBCA1157675BC3390CECED0F4BCEC7DF5D1C47E"
+                  },
+                  {
+                      "path":  "app/g6/ui-labels.json",
+                      "sha256":  "0121DBF7379127D4343C2A8E7F3689FA6BC9906FF1294DA8757FA6B849EF9F92"
+                  }
+              ],
+    "package_files":  [
+                          {
+                              "path":  "build-info.txt",
+                              "bytes":  4389,
+                              "sha256":  "9C20E431C09A0FCB9D69D50BC9FEE127DE1A8C94C077F7EAB900854D2913A0F6"
+                          },
+                          {
+                              "path":  "crocstream.exe",
+                              "bytes":  13873152,
+                              "sha256":  "D7CB11BDA36FB4E8BE78816B1FEB4D127750387A4E1B389AD6C694E1F62E42D0"
+                          },
+                          {
+                              "path":  "crocstream-relay.exe",
+                              "bytes":  5842944,
+                              "sha256":  "729CC73FC240F0D4F1F2AF1A7B2E52B581CB8060850E3AF8AE7CB6B1C2A8E0F8"
+                          },
+                          {
+                              "path":  "DEMO.md",
+                              "bytes":  3414,
+                              "sha256":  "E21D8139866D8E31636A8C683CFA4CC0DFA2869E7C40895992AFAB2EB75AA1D1"
+                          },
+                          {
+                              "path":  "dependencies.json",
+                              "bytes":  5729,
+                              "sha256":  "0C7D068531682F8E08988F19810EBCB43344F1FAE5F8C13F80F507C7762C4987"
+                          },
+                          {
+                              "path":  "KNOWN_ISSUES.md",
+                              "bytes":  1677,
+                              "sha256":  "264FF4A7F1986A535A4FD481FAF19F5A60D0DA345C26D30F97FBB045E234AEE4"
+                          },
+                          {
+                              "path":  "licenses/G0_ATTRIBUTIONS.txt",
+                              "bytes":  160416,
+                              "sha256":  "0996E3672FDFE890833087181C2D2B234B2D6C7F53654EB99BE7F07BB4EB9106"
+                          },
+                          {
+                              "path":  "licenses/GO_LICENSE.txt",
+                              "bytes":  1453,
+                              "sha256":  "911F8F5782931320F5B8D1160A76365B83AEA6447EE6C04FA6D5591467DB9DAD"
+                          },
+                          {
+                              "path":  "licenses/NOTICE_SCOPE.md",
+                              "bytes":  882,
+                              "sha256":  "1FCCB31C5FBC9F67F3EB337A65324F6594BC30CD95A522EB58A234969458F2F8"
+                          },
+                          {
+                              "path":  "licenses/notice-inventory.json",
+                              "bytes":  41962,
+                              "sha256":  "326EDBED4F04546E0B7822B9FE73A04BC9D58DF273C50519AAADEF7F10C0ED02"
+                          },
+                          {
+                              "path":  "licenses/THIRD_PARTY_NOTICES.txt",
+                              "bytes":  653856,
+                              "sha256":  "9276C527A116A75B4CCCEFFBB4C0237CF33C23D2F1718198E58D0A7764D03585"
+                          },
+                          {
+                              "path":  "NOTICE.txt",
+                              "bytes":  1157,
+                              "sha256":  "AF52443D68A0F11112C5DFA8BF491556B9A3A306F784F2A4D25CF00B1D6FC2C6"
+                          },
+                          {
+                              "path":  "README.md",
+                              "bytes":  2460,
+                              "sha256":  "89402AEBFA74DBE28A5FFB8D6F7A3FF3A31764FD2B35791EA7FAFAD984185E0C"
+                          },
+                          {
+                              "path":  "Start-DemoRelay.ps1",
+                              "bytes":  1474,
+                              "sha256":  "B1498FFDD6CE4CB45D221DD8CEBCA1157675BC3390CECED0F4BCEC7DF5D1C47E"
+                          },
+                          {
+                              "path":  "Verify-Package.ps1",
+                              "bytes":  1667,
+                              "sha256":  "019244443120B76649F22BE7099C2179D50302B6DCB31785AF2C79F6B84BBA53"
+                          }
+                      ]
+}

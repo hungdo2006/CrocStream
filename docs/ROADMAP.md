@@ -9,6 +9,7 @@
 > **G3 PASS** capture/local preview; [bằng chứng G3](../app/G3_CLOSEOUT.md).
 > **G4 PASS** local desktop + remote synthetic; [bằng chứng G4](../app/G4_CLOSEOUT.md).
 > **G5 PASS** UX/telemetry/resilience Windows, stress 600s; [bằng chứng G5](../app/G5_CLOSEOUT.md).
+> **G6 PASS** Windows x64 portable và demo handoff; [bằng chứng G6](../app/G6_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
@@ -23,7 +24,7 @@ workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0–G5 PASS**, cập nhật 2026-11-17.
+Kết quả hiện hành: **G0–G6 PASS**, cập nhật 2026-11-17.
 Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
@@ -51,7 +52,8 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G3 | PASS: capture GDI, session bridge, React/Wails preview; 600.377s ở 720p, render mean 23.956 FPS, Stop 118ms; [G3_CLOSEOUT](../app/G3_CLOSEOUT.md) | G4; ghi rõ giới hạn một màn hình, process-only memory và manual cases |
 | G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](../app/G4_CLOSEOUT.md) | G5 đã tiếp nối bên dưới; chưa suy ra hiệu năng capture/render remote |
 | G5 | PASS: UI/dashboard thật, 26 kiểm tra UX cuối, stress 600.331s 720p, render p50 24 FPS / p95 25 FPS, Stop 141ms; [G5_CLOSEOUT](../app/G5_CLOSEOUT.md) | Giới hạn manual/content benchmark được ghi rõ; G6 đóng gói |
-| G6–G7 | Chưa bắt đầu | Phụ thuộc gate trước theo bảng bên dưới |
+| G6 | PASS: ZIP portable unsigned, checksum/notices/demo; chạy hai exe production từ ZIP giải nén qua loopback, Stop 535ms; [G6_CLOSEOUT](../app/G6_CLOSEOUT.md) | Owner demo; installer/signing và fresh-machine test chưa có |
+| G7 | Chưa bắt đầu | Webcam/cross-platform cần yêu cầu và môi trường riêng |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
 transport local/remote, native compile/runtime, tests và notice review.
@@ -108,11 +110,23 @@ checks, full unit/race/vet, frontend và native build PASS.
 Nguồn số đo/giới hạn: [G5_CLOSEOUT](../app/G5_CLOSEOUT.md). Speech screen-reader,
 physical monitor removal và benchmark toàn ma trận nội dung chưa chạy.
 
-### Next focused gate: G6 — not started
+### G6 — PASS, portable Windows
 
-Đóng gói Windows và demo handoff. Chưa cài công cụ installer/signing hoặc
-ngầm cho phép truyền capture thật qua EC2. G5 local không bảo đảm FPS/latency
-Internet; production build hiện có không tự đóng gate G6.
+Đã tạo ZIP portable 0.0.1, gồm exe production, relay demo tùy chọn, checksum,
+manifest, notices, README/DEMO/known issues. Kiểm tra chạy đúng exe giải nén:
+Share → Copy → Join → render → Stop → đóng cửa sổ/relay PASS, không CDP/test API.
+UI chỉnh gọn theo yêu cầu owner: bỏ khẩu hiệu/gradient, chỉ số kỹ thuật thu gọn,
+mã mời cạnh điều khiển phiên. Không đổi crypto/media wire/dependency.
+
+Đây là gate portable **unsigned**, không phải installer hay public release.
+Không cài công cụ signing/installer, không publish, không thử màn hình thật qua
+EC2. Bằng chứng và giới hạn: [G6_CLOSEOUT](../app/G6_CLOSEOUT.md).
+
+### Next: owner demo; G7 deferred
+
+Chạy bản portable theo [DEMO](../app/g6/DEMO.md), ghi lỗi trên máy đích nếu có.
+Webcam/cross-platform chưa triển khai. Fresh Windows/installer/signing, spoken
+screen-reader và hiệu năng capture/render Internet vẫn cần kiểm thử riêng.
 
 ## Next work: G0
 

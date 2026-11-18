@@ -46,7 +46,7 @@ async function startApp(role){
     const u=new URL(ws.url())
     if(u.hostname==='127.0.0.1'&&['/preview','/viewer'].includes(u.pathname))ports.add(u.port)
   })
-  await page.getByRole('button',{name:role==='host'?'Share Screen · Chia sẻ':'Watch Stream · Xem',exact:true}).click()
+  await page.getByTestId(role==='host'?'home-share':'home-watch').click()
   await page.locator('#relay').fill(ready.address)
   await page.locator('#relay-password').fill(password)
   return {page,child}
