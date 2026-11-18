@@ -19,7 +19,6 @@ export const api = {
   displays: async (): Promise<Display[]> => (await Service.ListDisplays()) ?? [],
   start: (options: Options): Promise<Started> => Service.StartPreview(options),
   stop: (): Promise<void> => Service.StopPreview(),
-  stopSession: (): Promise<void> => Service.StopSession(),
   stats: (): Promise<Stats> => Service.GetStats() as Promise<Stats>,
 }
 
@@ -28,7 +27,7 @@ export const api = {
 export const streamAPI = {
   stats: (): Promise<StreamStats> => Service.GetSessionStats(),
   stop: (): Promise<void> => Service.StopSession(),
-  invitation: (): Promise<string> => Service.GetInvitation(),
+  invitation: () => Service.GetInvitation(),
   host: (options: Options, relay: Relay): Promise<Started> => Service.StartBroadcast(options, relay),
   join: (code: string, relay: Relay): Promise<Started> => Service.JoinSession(code, relay),
 }

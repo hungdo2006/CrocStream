@@ -138,6 +138,30 @@ func TestConfigRejectedWithoutCapture(t *testing.T) {
 	}
 }
 
+func TestBridgeClosureEndsLocalPreview(t *testing.T) {
+	source := &fakeSource{}
+	c, err := New(source, "http://wails.localhost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Shutdown()
+	if _, err := c.Start(capture.Options{DisplayID: "test", Width: 640, Height: 360, FPS: 24}); err != nil {
+		t.Fatal(err)
+	}
+	c.mu.Lock()
+	s := c.active
+	c.mu.Unlock()
+	s.bridge.Close()
+	select {
+	case <-s.done:
+	case <-time.After(time.Second):
+		t.Fatal("capture did not stop when its bridge closed")
+	}
+	if c.Stats().State != Idle || source.closes.Load() != 1 {
+		t.Fatal("normal bridge closure did not release capture cleanly")
+	}
+}
+
 func TestShutdownActiveSessionAndCleanupError(t *testing.T) {
 	for _, cleanupError := range []error{nil, capture.ErrCapture} {
 		source := &fakeSource{cleanupError: cleanupError}

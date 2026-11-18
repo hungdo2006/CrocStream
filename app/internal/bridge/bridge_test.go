@@ -218,6 +218,29 @@ func TestListenerAdmissionBound(t *testing.T) {
 	}
 }
 
+func TestUnexpectedListenerCloseStopsBridge(t *testing.T) {
+	b, err := New(context.Background(), "http://wails.localhost", [32]byte{1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+	// Simulate a terminal Accept error independently of intentional shutdown.
+	if err := b.listener.Close(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-b.stopped:
+	case <-time.After(2 * time.Second):
+		t.Fatal("bridge did not shut down after Serve failed")
+	}
+	if b.Endpoint() != (Endpoint{}) {
+		t.Fatal("bridge exposed the token after shutdown")
+	}
+	if err := b.Err(); err != ErrUnavailable {
+		t.Fatalf("bridge error = %v, want sanitized server failure", err)
+	}
+}
+
 func TestSlowClientWriteDeadline(t *testing.T) {
 	b := testBridge(t)
 	e := b.Endpoint()

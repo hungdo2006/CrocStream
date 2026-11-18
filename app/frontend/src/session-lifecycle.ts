@@ -1,10 +1,12 @@
 import type { Started } from './api'
 
 interface Status { state: string; generation: number; error: string }
+type InvitationRequest = Promise<string> & { cancel?: () => void | PromiseLike<void> }
+interface InvitationLookup { request?: InvitationRequest }
 interface SessionAPI<T extends Status> {
   stats(): Promise<T>
   stop(): Promise<void>
-  invitation?(): Promise<string>
+  invitation?(): InvitationRequest
 }
 interface Messages { start: string; stop: string; poll: string }
 export interface SessionView<T> {
@@ -30,6 +32,7 @@ export class SessionLifecycle<T extends Status> {
   private starting?: Promise<Started>
   private stopping?: Promise<boolean>
   private timer?: ReturnType<typeof setTimeout>
+  private invitationLookup?: InvitationLookup
 
   constructor(private readonly api: SessionAPI<T>, private readonly messages: Messages) {}
 
@@ -53,6 +56,7 @@ export class SessionLifecycle<T extends Status> {
     this.connected = false
     this.connection++
     clearTimeout(this.timer)
+    this.clearInvitationLookup()
     if (this.active || this.starting || this.stopping) void this.stop()
   }
   private current(revision: number, connection = this.connection) {
@@ -69,6 +73,7 @@ export class SessionLifecycle<T extends Status> {
       if (this.generation !== undefined && next.generation !== this.generation) return
       this.active = !inactive(next.state)
       const mayInvite = next.state === 'WaitingForViewer' || next.state === 'Authenticating'
+      if (!mayInvite) this.clearInvitationLookup()
       this.update({
         stats: next, state: next.state,
         error: next.error || (this.view.error === this.messages.poll ||
@@ -77,9 +82,9 @@ export class SessionLifecycle<T extends Status> {
         invitation: mayInvite ? this.view.invitation : '',
         copyStatus: mayInvite ? this.view.copyStatus : '',
       })
-      if (mayInvite && this.api.invitation) {
-        const invitation = await this.api.invitation()
-        if (this.current(revision, connection)) this.update({ invitation })
+      if (mayInvite && this.api.invitation && this.current(revision, connection)) {
+        const lookup = this.invitationLookup ??= {}
+        if (!lookup.request) void this.pollInvitation(lookup, revision, connection)
       }
     } catch {
       if (this.current(revision, connection)) this.setError(this.messages.poll)
@@ -90,9 +95,29 @@ export class SessionLifecycle<T extends Status> {
     }
   }
 
+  private clearInvitationLookup() {
+    const request = this.invitationLookup?.request
+    this.invitationLookup = undefined
+    if (request?.cancel) void Promise.resolve(request.cancel()).catch(() => {})
+  }
+
+  private async pollInvitation(lookup: InvitationLookup, revision: number, connection: number) {
+    const current = () => this.invitationLookup === lookup && this.current(revision, connection)
+    try {
+      lookup.request = this.api.invitation?.()
+      const invitation = await lookup.request
+      if (invitation !== undefined && current()) this.update({ invitation })
+    } catch {
+      if (current()) this.setError(this.messages.poll)
+    } finally {
+      lookup.request = undefined
+    }
+  }
+
   async start(request: () => Promise<Started>, state: string): Promise<boolean> {
     if (!this.connected || this.active || this.starting || this.stopping) return false
     const revision = ++this.revision
+    this.clearInvitationLookup()
     this.active = true
     this.update({ state, error: '', invitation: '', copyStatus: '', stats: undefined, started: undefined })
     const starting = Promise.resolve().then(request)
@@ -120,6 +145,7 @@ export class SessionLifecycle<T extends Status> {
   stop = (): Promise<boolean> => {
     if (this.stopping) return this.stopping
     this.revision++
+    this.clearInvitationLookup()
     this.update({ state: 'Stopping', started: undefined, stats: undefined, invitation: '', copyStatus: '' })
     const starting = this.starting
     const stopping = (async () => {
@@ -144,12 +170,14 @@ export class SessionLifecycle<T extends Status> {
 
   async copyInvitation(write: (value: string) => Promise<void>) {
     const revision = this.revision, invitation = this.view.invitation
+    const lookup = this.invitationLookup
     if (!invitation) return
+    const current = () => this.current(revision) && this.invitationLookup === lookup && this.view.invitation === invitation
     try {
       await write(invitation)
-      if (this.current(revision) && this.view.invitation === invitation) this.update({ copyStatus: 'Đã sao chép mã.' })
+      if (current()) this.update({ copyStatus: 'Đã sao chép mã.' })
     } catch {
-      if (this.current(revision) && this.view.invitation === invitation) this.setError('Không sao chép được mã.')
+      if (current()) this.setError('Không sao chép được mã.')
     }
   }
 }

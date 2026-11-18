@@ -300,25 +300,26 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 	r, _ := protocol.NewReader(p.conn, reverse)
 	life, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	closeConn := sync.OnceFunc(func() { _ = p.conn.Close() })
 	// Cancellation closes blocked I/O after a short chance for best-effort END.
-	stop := context.AfterFunc(ctx, func() { time.AfterFunc(200*time.Millisecond, func() { _ = p.conn.Close() }) })
+	stop := context.AfterFunc(ctx, func() { time.AfterFunc(200*time.Millisecond, closeConn) })
 	defer stop()
-	readDone := make(chan error, 1)
+	readResult := make(chan error, 1)
 	readStopped := make(chan struct{})
+	var readCloser *time.Timer
 	go func() {
+		defer close(readStopped)
 		err := p.receive(life, r)
-		readDone <- err
-		close(readStopped)
+		readResult <- err
 		// A failed reader must also unblock a writer stuck in the same duplex.
 		if err != nil && !errors.Is(err, io.EOF) {
-			_ = p.conn.Close()
+			closeConn()
 		} else {
 			// Even clean END/EOF must interrupt an already blocked video write.
 			// Give the sole writer a bounded opportunity to reply with END.
-			time.AfterFunc(200*time.Millisecond, func() { _ = p.conn.Close() })
+			readCloser = time.AfterFunc(200*time.Millisecond, closeConn)
 		}
 	}()
-	readFinished := false
 	defer func() {
 		// Validated END can race with a Ping/Pong or an in-flight video write.
 		// Socket closure following that END is normal peer shutdown, not media
@@ -327,12 +328,13 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 			result = nil
 		}
 		cancel()
-		closer := time.AfterFunc(200*time.Millisecond, func() { _ = p.conn.Close() })
+		closer := time.AfterFunc(200*time.Millisecond, closeConn)
 		_ = w.WritePacket(controlPacket(protocol.End, nil))
-		_ = p.conn.Close()
+		closeConn()
 		closer.Stop()
-		if !readFinished {
-			<-readDone
+		<-readStopped
+		if readCloser != nil {
+			readCloser.Stop()
 		}
 	}()
 	var encoder *delta.Encoder
@@ -356,9 +358,7 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 	defer ticker.Stop()
 	first := true
 	var lastSentPLI time.Time
-	receivedResult := func() error {
-		readFinished = true
-		err := <-readDone
+	receivedResult := func(err error) error {
 		if errors.Is(err, io.EOF) {
 			return nil
 		}
@@ -369,8 +369,8 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 			return err
 		}
 		select {
-		case <-readStopped:
-			return receivedResult()
+		case err := <-readResult:
+			return receivedResult(err)
 		default:
 		}
 		// Replies have bounded priority at packet boundaries. Encoder work already
@@ -396,8 +396,8 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-p.wake:
-		case <-readStopped:
-			return receivedResult()
+		case err := <-readResult:
+			return receivedResult(err)
 		case nonce := <-p.pong:
 			if err := w.WritePacket(controlPacket(protocol.Pong, nonce[:])); err != nil {
 				return err
@@ -420,8 +420,8 @@ func (p *Peer) Run(ctx context.Context, cfg protocol.Config, frames <-chan captu
 				return errors.New("session: viewer cannot capture")
 			}
 			select {
-			case <-readStopped:
-				return receivedResult()
+			case err := <-readResult:
+				return receivedResult(err)
 			default:
 			}
 			if p.pli.Swap(false) {

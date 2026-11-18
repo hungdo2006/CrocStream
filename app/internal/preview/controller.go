@@ -148,6 +148,8 @@ loop:
 		select {
 		case <-ctx.Done():
 			break loop
+		case <-s.bridge.Done():
+			break loop
 		case err := <-captureDone:
 			failure = err
 			captureDone = nil
@@ -164,9 +166,8 @@ loop:
 				break loop
 			}
 			if err := s.bridge.Publish(buffer.Bytes()); err != nil {
-				failure = err
-				if ctx.Err() != nil && errors.Is(err, bridge.ErrClosed) {
-					failure = ctx.Err() // Stop may close the bridge after the check above.
+				if !errors.Is(err, bridge.ErrClosed) {
+					failure = err
 				}
 				break loop
 			}
@@ -185,7 +186,10 @@ loop:
 	}
 	c.mu.Lock()
 	s.stats.Sent, s.stats.BridgeDropped = s.bridge.Counts()
-	if failure != nil && (!errors.Is(failure, context.Canceled) || errors.Is(failure, capture.ErrCapture)) {
+	if s.bridge.Err() != nil {
+		s.stats.State = Failed
+		s.stats.Error = "Kênh xem trước cục bộ không khả dụng."
+	} else if failure != nil && (!errors.Is(failure, context.Canceled) || errors.Is(failure, capture.ErrCapture)) {
 		s.stats.State = Failed
 		s.stats.Error = "Nguồn preview không khả dụng. Dừng và chọn lại màn hình."
 	} else {

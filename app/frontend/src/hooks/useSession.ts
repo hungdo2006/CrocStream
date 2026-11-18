@@ -9,7 +9,7 @@ const previewMessages = {
 }
 const streamMessages = {
   start: 'Không bắt đầu được phiên. Kiểm tra relay, mã và nguồn màn hình; nếu vừa thử kết nối, chờ rồi thử lại.',
-  stop: 'Đang chờ đóng tài nguyên; phiên vẫn ở trạng thái Stopping.',
+  stop: 'Không hoàn tất thao tác dừng. Đang kiểm tra trạng thái phiên.',
   poll: 'Không đọc được trạng thái phiên.',
 }
 

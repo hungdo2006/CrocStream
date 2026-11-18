@@ -15,6 +15,7 @@ import (
 type syntheticSource struct {
 	opened, closed atomic.Int32
 	fail           bool
+	cleanupErr     error
 }
 
 func (s *syntheticSource) Displays(context.Context) ([]capture.Display, error) {
@@ -31,7 +32,7 @@ func (s *syntheticSource) Run(ctx context.Context, _ capture.Options, deliver fu
 	for i := 0; ; i++ {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return errors.Join(ctx.Err(), s.cleanupErr)
 		case <-ticker.C:
 			deliver(testFrame(i))
 		}
@@ -154,6 +155,31 @@ func TestPreparationCancellationAndSourceFailure(t *testing.T) {
 	if c.Stats().Error != "Nguồn màn hình đã mất hoặc capture thất bại." || source.closed.Load() != 1 {
 		t.Fatal("source failure hidden")
 	}
+}
+
+func TestStopReportsCaptureCleanupFailure(t *testing.T) {
+	opts := transport.Options{Address: "127.0.0.1:1234", Password: "private"}
+	source := &syntheticSource{cleanupErr: errors.Join(capture.ErrCapture, errors.New("private native details"))}
+	factory := &progressFactory{authenticated: make(chan struct{}, 1), begin: make(chan struct{})}
+	c := NewController(source, factory, "http://wails.localhost")
+	defer c.Shutdown()
+	if _, err := c.Host(capture.Options{DisplayID: "synthetic", Width: 640, Height: 360, FPS: 24}, opts); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, func() bool { return source.opened.Load() == 1 })
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	const sanitized = "Không giải phóng được tài nguyên chụp màn hình."
+	if err := c.Stop(ctx); err == nil || err.Error() != sanitized {
+		t.Fatalf("Stop returned %v, want the sanitized capture cleanup error", err)
+	}
+	if got := c.Stats(); got.State != Failed || got.Error != sanitized {
+		t.Fatalf("final state = %s, error = %q", got.State, got.Error)
+	}
+	if c.Active() || c.Invitation() != "" || source.closed.Load() != 1 {
+		t.Fatal("Stop did not finish session teardown")
+	}
+	stopController(t, c)
 }
 func TestWrongInvitationFailsWithoutCapture(t *testing.T) {
 	c := NewController(nil, transport.Croc{}, "http://wails.localhost")

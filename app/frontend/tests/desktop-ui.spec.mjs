@@ -16,6 +16,7 @@ test.beforeEach(async ({ page }) => {
       measurementsComplete: true, samplesComplete: true })
     const fake = window.__desktopTest = {
       session: idle(0), preview: idle(0), starts: 0, stops: 0, delay: 0, stopDelay: 0,
+      pendingInvitations: [], holdInvitation: false, captureCleanupFails: false,
       sockets: [], pendingDecodes: [], holdDecode: false, decodeFails: false, closedBitmaps: 0,
       published: 0, drawCalls: 0, decodeCalls: 0,
       async start(preview, role) {
@@ -33,6 +34,14 @@ test.beforeEach(async ({ page }) => {
         await new Promise(resolve => setTimeout(resolve, fake.stopDelay))
         const key = preview ? 'preview' : 'session'
         fake[key] = idle(fake[key].generation)
+        if (!preview && fake.captureCleanupFails) {
+          fake.session = { ...fake.session, state: 'Error', error: 'Không giải phóng được tài nguyên chụp màn hình.' }
+          throw new Error(fake.session.error)
+        }
+      },
+      async invitation() {
+        if (fake.holdInvitation) return new Promise(resolve => fake.pendingInvitations.push(resolve))
+        return fake.session.state === 'WaitingForViewer' ? 'synthetic-invitation' : ''
       },
       publish() {
         for (const socket of fake.sockets) if (!socket.closed) socket.onmessage?.({ data: fake.jpeg })
@@ -76,7 +85,7 @@ test.beforeEach(async ({ page }) => {
       export const ListDisplays = async () => [{id:'synthetic',width:1920,height:1080,primary:true}];
       export const GetStats = async () => structuredClone(t.preview);
       export const GetSessionStats = async () => structuredClone(t.session);
-      export const GetInvitation = async () => t.session.state === 'WaitingForViewer' ? 'synthetic-invitation' : '';
+      export const GetInvitation = () => t.invitation();
       export const StartPreview = () => t.start(true);
       export const StopPreview = () => t.stop(true);
       export const StartBroadcast = () => t.start(false,'share');
@@ -96,6 +105,35 @@ async function enterViewer(page) {
   await expect(page.locator('.status')).toHaveText(labels.watching)
   await expect.poll(() => page.evaluate(() => window.__desktopTest.drawCalls)).toBeGreaterThan(0)
 }
+
+async function startShare(page) {
+  await page.getByTestId('home-share').click()
+  await page.locator('#relay').fill('127.0.0.1:9009')
+  await page.locator('#relay-password').fill('synthetic-password')
+  await page.getByRole('button', { name: labels.start, exact: true }).click()
+}
+
+test('a stalled invitation does not hide disconnect or restore a stale code', async ({ page }) => {
+  await page.evaluate(() => { window.__desktopTest.holdInvitation = true })
+  await startShare(page)
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.pendingInvitations.length)).toBe(1)
+  await page.evaluate(() => { window.__desktopTest.session.state = 'Disconnected' })
+  await expect(page.locator('.status')).toHaveText(labels.disconnected)
+  await page.evaluate(() => window.__desktopTest.pendingInvitations.shift()('stale-synthetic-invitation'))
+  await expect(page.locator('#invitation')).toHaveCount(0)
+  await expect(page.locator('#relay')).toBeEnabled()
+})
+
+test('Stop shows a sanitized terminal capture cleanup error', async ({ page }) => {
+  await startShare(page)
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  await page.evaluate(() => { window.__desktopTest.captureCleanupFails = true })
+  await page.getByRole('button', { name: labels.stop, exact: true }).click()
+  await expect(page.locator('.status')).toHaveClass(/state-Error/)
+  await expect(page.getByRole('alert')).toHaveText('Không giải phóng được tài nguyên chụp màn hình.')
+  await expect(page.locator('#relay')).toBeEnabled()
+  await expect(page.locator('#invitation')).toHaveCount(0)
+})
 
 test('Start/Stop/Home are ordered even when bindings resolve late', async ({ page }) => {
   await page.getByTestId('home-share').click()

@@ -20,6 +20,8 @@ import (
 
 var ErrActive = errors.New("Một phiên khác đang hoạt động; hãy dừng phiên đó trước.")
 
+var errCaptureCleanup = errors.New("Không giải phóng được tài nguyên chụp màn hình.")
+
 type Started struct {
 	Endpoint   bridge.Endpoint `json:"endpoint"`
 	Generation uint64          `json:"generation"`
@@ -70,6 +72,7 @@ type activeSession struct {
 	invitation string // Returned separately by trusted binding, never in Stats.
 	peer       *Peer
 	stopping   bool
+	stopErr    error // Published before done closes.
 	dropped    uint64
 	captured   uint64
 	frames     chan capture.Frame
@@ -213,6 +216,7 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	var conn io.ReadWriteCloser
 	var listener transport.Listener
 	var workers sync.WaitGroup
+	var captureCleanupErr error // Written by the capture worker, read after workers.Wait.
 	images := make(chan capture.Frame, 1)
 	frames := make(chan capture.Frame, 1)
 	c.mu.Lock()
@@ -230,7 +234,13 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		workers.Wait()
 		c.mu.Lock()
 		s.invitation = ""
-		if s.stopping {
+		if captureCleanupErr != nil && s.stats.Error == "" {
+			s.stats.Error = captureCleanupErr.Error()
+		}
+		if s.stopping && captureCleanupErr != nil {
+			s.stopErr = captureCleanupErr
+			s.stats.State = Failed
+		} else if s.stopping {
 			s.stats.State = Idle
 		} else if failure != nil && conn == nil {
 			if s.stats.Error == "" {
@@ -313,8 +323,10 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 				s.stats.Error = "Nguồn màn hình đã mất hoặc capture thất bại."
 				c.mu.Unlock()
 				s.cancel()
+			} else if err != nil && (!errors.Is(err, context.Canceled) || errors.Is(err, capture.ErrCapture)) {
+				// The Windows source can join cancellation and a failed GDI release.
+				captureCleanupErr = errCaptureCleanup
 			}
-			_ = err // UI uses a fixed actionable error, never raw native/log data.
 		}()
 		conn, failure = listener.Accept(network)
 		c.mu.Lock()
@@ -363,6 +375,9 @@ func (c *Controller) snapshotLocked(s *activeSession) Stats {
 	out.Captured = s.captured
 	out.CaptureQueue, out.ImageQueue = len(s.frames), len(s.images)
 	out.BridgeSent, out.BridgeDropped = s.bridge.Counts()
+	if s.bridge.Err() != nil {
+		out.PreviewError = "Preview unavailable · Kênh hiển thị cục bộ đã đóng."
+	}
 	out.MeanEncodeMs, out.MeanDecodeMs, out.MeanBaselineMs = m.MeanEncodeMs, m.MeanDecodeMs, m.MeanBaselineMs
 	if s.jpegCount > 0 {
 		out.MeanJPEGMs = s.jpegTotal.Seconds() * 1000 / float64(s.jpegCount)
@@ -421,7 +436,7 @@ func (c *Controller) Stop(ctx context.Context) error {
 	c.mu.Unlock()
 	select {
 	case <-s.done:
-		return nil
+		return s.stopErr
 	case <-ctx.Done():
 		return errors.New("Đang chờ giải phóng phiên; Stop quá thời gian.")
 	}

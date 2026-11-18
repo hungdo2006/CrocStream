@@ -201,12 +201,74 @@ func TestRemoteEndUnblocksInFlightWriteAndPreservesSingleWriter(t *testing.T) {
 		t.Fatal(err)
 	}
 	select {
-	case <-done:
+	case err := <-done:
+		if err != nil {
+			t.Fatal("remote END did not finish cleanly", err)
+		}
 	case <-ctx.Done():
 		t.Fatal("remote END did not cancel blocked video")
 	}
 	if c.interleaved.Load() {
 		t.Fatal("more than one writer used the stream")
+	}
+}
+
+type failingReaderConn struct {
+	readErr      error
+	closeStarted chan struct{}
+	allowClose   chan struct{}
+	writeStarted chan struct{}
+	closeCount   atomic.Int32
+	writeOnce    sync.Once
+}
+
+func (c *failingReaderConn) Read([]byte) (int, error) { return 0, c.readErr }
+func (c *failingReaderConn) Write(p []byte) (int, error) {
+	c.writeOnce.Do(func() { close(c.writeStarted) })
+	return len(p), nil
+}
+func (c *failingReaderConn) Close() error {
+	if c.closeCount.Add(1) == 1 {
+		close(c.closeStarted)
+		<-c.allowClose
+	}
+	return nil
+}
+
+func TestPeerWaitsForReceiveCleanup(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	conn := &failingReaderConn{readErr: errors.New("receive failed"), closeStarted: make(chan struct{}),
+		allowClose: make(chan struct{}), writeStarted: make(chan struct{})}
+	release := sync.OnceFunc(func() { close(conn.allowClose) })
+	defer release()
+	p := NewPeer(conn, false, NewMetrics(), Hooks{State: func(State) {
+		// Ensure the receive worker starts transport cleanup before the writer exits.
+		select {
+		case <-conn.closeStarted:
+		case <-ctx.Done():
+		}
+	}})
+	done := make(chan error, 1)
+	go func() { done <- p.Run(ctx, protocol.Config{}, nil) }()
+	select {
+	case <-conn.writeStarted:
+	case <-ctx.Done():
+		t.Fatal("writer did not attempt END")
+	}
+	select {
+	case err := <-done:
+		t.Fatalf("Run returned before transport cleanup finished: %v", err)
+	case <-time.After(75 * time.Millisecond):
+	}
+	release()
+	select {
+	case err := <-done:
+		if !errors.Is(err, conn.readErr) || conn.closeCount.Load() != 1 {
+			t.Fatalf("Run returned %v, Close called %d times", err, conn.closeCount.Load())
+		}
+	case <-ctx.Done():
+		t.Fatal("Run did not join the receiver")
 	}
 }
 

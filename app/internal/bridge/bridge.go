@@ -23,6 +23,7 @@ const MaxJPEG = 4 * 1024 * 1024
 const Subprotocol = "crocstream.preview"
 
 var ErrClosed = errors.New("bridge: session closed")
+var ErrUnavailable = errors.New("bridge: local server unavailable")
 
 type Endpoint struct {
 	URL   string `json:"url"`
@@ -41,6 +42,7 @@ type Bridge struct {
 	conn          *websocket.Conn
 	queue         chan []byte
 	busy, closed  bool
+	serveErr      error
 	wg            sync.WaitGroup
 	stopped       chan struct{}
 	once          sync.Once
@@ -71,13 +73,33 @@ func NewRole(parent context.Context, origin string, token [32]byte, role string)
 	b.server = &http.Server{Handler: http.HandlerFunc(b.handle), ReadHeaderTimeout: time.Second, ReadTimeout: 2 * time.Second,
 		WriteTimeout: 2 * time.Second, IdleTimeout: 2 * time.Second, MaxHeaderBytes: 4096, ErrorLog: log.New(io.Discard, "", 0)}
 	b.wg.Add(1)
-	go func() { defer b.wg.Done(); _ = b.server.Serve(ln) }()
+	go func() {
+		defer b.wg.Done()
+		if err := b.server.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			b.mu.Lock()
+			if !b.closed && ctx.Err() == nil {
+				b.serveErr = ErrUnavailable
+				b.cancel() // The cancellation watcher owns Close and joins Serve.
+			}
+			b.mu.Unlock()
+		}
+	}()
 	go func() { <-ctx.Done(); b.Close() }()
 	return b, nil
 }
 
 func (b *Bridge) Endpoint() Endpoint             { b.mu.Lock(); defer b.mu.Unlock(); return b.endpoint }
 func (b *Bridge) Counts() (sent, dropped uint64) { return b.sent.Load(), b.dropped.Load() }
+
+// Done closes after the listener and all bridge workers have stopped.
+func (b *Bridge) Done() <-chan struct{} { return b.stopped }
+
+// Err reports a terminal local server failure, if one occurred.
+func (b *Bridge) Err() error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.serveErr
+}
 
 func (b *Bridge) handle(w http.ResponseWriter, r *http.Request) {
 	deny := func(code int) { http.Error(w, "preview access denied", code) }
