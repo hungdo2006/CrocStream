@@ -6,25 +6,16 @@ hiệu năng/giới hạn được ghi từ kiểm thử thực tế, không b�
 
 **Người mới bắt đầu tại [Hướng dẫn nhập môn](docs/GETTING_STARTED.md).**
 
-| Trạng thái hiện tại | Nội dung |
-| --- | --- |
-| Đã có | G0 transport PoC, G1 protocol, G2 codec/telemetry và [ứng dụng local preview G3](app/README.md#g3-desktop-preview--build-and-run) |
-| Đã có G4 local | Share/Watch hai process qua relay loopback; media/control/canvas đã kiểm thử |
-| Còn lại | Owner demo; G7 webcam/cross-platform chưa triển khai |
-| Trạng thái G0 | **PASS** cho khả thi prototype: transport local/remote, native build/runtime và notice review; [quyết định cuối](app/G0_CLOSEOUT.md) |
-| Trạng thái G1 | **PASS** framing/config, tests/race/vet/build/fuzz; [báo cáo](app/G1_CLOSEOUT.md); C-01/C-02 đã chốt |
-| Trạng thái G2 | **PASS** codec/telemetry, tests/race/vet/build/fuzz/bench; [báo cáo](app/G2_CLOSEOUT.md) |
-| Trạng thái G3 | **PASS** local preview 720p/≈24 FPS trong 10 phút, Stop 118ms; [báo cáo kiểm chứng](app/G3_CLOSEOUT.md) |
-| Trạng thái G4 | **PASS** local desktop + remote synthetic >=600s, hash/control/cleanup đúng; [báo cáo](app/G4_CLOSEOUT.md) |
-| Trạng thái G5 | **PASS** UX/telemetry, 600s stress local 720p, render p50 24 FPS, Stop 141ms; [báo cáo và giới hạn](app/G5_CLOSEOUT.md) |
-| Trạng thái G6 | **PASS** ZIP Windows unsigned, exe production giải nén chạy hai process, Stop 535ms; [báo cáo](app/G6_CLOSEOUT.md) |
-| Bản chạy local | `app/release/g6-final-20261117/CrocStream-0.0.1-windows-amd64.zip`; [hướng dẫn demo](app/g6/DEMO.md) |
-| Bằng chứng | Remote >600s, [mạng mới](app/G0_LATENCY_FOLLOWUP.md) RTT mean 48–51ms; giữ giới hạn mạng cũ, không hứa latency/FPS chung |
+G0–G6 đã nghiệm thu trong phạm vi prototype Windows. G4 kiểm chứng desktop cục
+bộ và truyền media tổng hợp qua hai máy. G6 bàn giao bản portable unsigned.
+[Chỉ mục bằng chứng](docs/gates/README.md) ghi điều kiện và giới hạn từng gate.
+Xem [hướng dẫn demo](app/g6/DEMO.md) để chạy bản đóng gói. Webcam và hỗ trợ hệ
+điều hành khác thuộc G7 đang hoãn.
 
 Repository: [hungdo2006/CrocStream](https://github.com/hungdo2006/CrocStream).
 
-Một repository duy nhất chứa mã nguồn croc gốc, tài liệu thiết kế và phần ứng dụng
-CrocStream sẽ phát triển. Local `D:\CrocStream` nối với repository GitHub ở trên;
+Một repository duy nhất chứa mã nguồn croc gốc, tài liệu dự án và ứng dụng
+CrocStream. Local `D:\CrocStream` nối với repository GitHub ở trên;
 nhánh hiện dùng là `main`.
 
 [`croc/`](croc/README.md) chứa snapshot mã nguồn upstream đầy đủ, giữ nguyên nội
@@ -43,8 +34,9 @@ Theo lựa chọn của chủ dự án ngày 2026-11-15:
 D:\CrocStream\
 ├── .git\                 # Git của duy nhất repo CrocStream
 ├── croc\                 # Mã nguồn croc gốc, không có .git riêng
-├── docs\                 # PRD, kiến trúc, kế hoạch kiểm thử, roadmap
-├── app\                  # Module Go G1 và các báo cáo/tooling/PoC G0
+├── docs\                 # Đặc tả, kiểm thử, roadmap và chỉ mục bằng chứng
+├── app\                  # Mã desktop, transport, harness và báo cáo gate
+├── scripts\              # Kiểm tra trên Windows
 ├── README.md
 ├── AGENTS.md
 └── UPSTREAM.md
@@ -57,24 +49,20 @@ Nguồn croc: https://github.com/schollz/croc
 Commit giữ lại: `552f40fd2d7593316118370bec0a93478d48e715`.
 Đây là commit đã clone, không phải cam kết đồng bộ với phiên bản GitHub mới nhất.
 
-Mã transport CrocStream tùy chỉnh, chương trình thử nghiệm, toolchain/cache cục bộ,
-script, log và hồ sơ thử nghiệm cũ đã được loại bỏ theo yêu cầu. Khảo sát G0 mới
-được lưu tại `app/G0_FEASIBILITY.md`; bằng chứng runtime mới ở
-`app/G0_LOCAL_PROOF.md`. Các giai đoạn G0–G7 là lộ trình, không phải báo cáo đã
-hoàn thành toàn bộ.
+Lịch sử hợp nhất repo và nguồn gốc của snapshot được ghi trong [UPSTREAM](UPSTREAM.md).
 
 ## Mục tiêu sản phẩm
 
-CrocStream dự kiến là ứng dụng desktop chia sẻ màn hình **1 người phát ↔ 1 người xem**:
+CrocStream hỗ trợ chia sẻ màn hình **1 người phát ↔ 1 người xem**:
 
 - Kết nối bằng mã bí mật, truyền dữ liệu được xác thực và mã hóa đầu-cuối.
-- Khảo sát khả năng tái sử dụng lõi/relay croc trước khi chọn transport.
+- Dùng adapter duplex đã kiểm chứng tại G0 trên snapshot croc đã ghim.
 - Dựng hình từ keyframe đầy đủ và các ô ảnh thay đổi (dirty tiles).
 - Đo FPS, băng thông, RTT và hiệu quả delta bằng số liệu thực tế.
 - Ưu tiên Windows 10/11 x64; webcam và macOS/Linux là hướng mở rộng.
 
-Stack đề xuất: Go + Wails v3, React/TypeScript/Tailwind, codec RGBA + LZ4,
-canvas và WebSocket loopback cho hiển thị. Đây là lựa chọn thiết kế cần kiểm chứng.
+Ứng dụng dùng Go, Wails v3, React, TypeScript và CSS thuần. Media v1 dùng RGBA
+và LZ4. Canvas nhận ảnh hiển thị qua WebSocket loopback.
 `web/` trong croc là website truyền file của upstream, không phải UI CrocStream.
 Client croc thông thường không hiểu giao thức media CrocStream.
 
@@ -87,6 +75,7 @@ Client croc thông thường không hiểu giao thức media CrocStream.
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | Quyết định, blocker, module, giao thức media và nguồn tham khảo |
 | [TEST_PLAN](docs/TEST_PLAN.md) | Kế hoạch kiểm thử và phương pháp đo |
 | [ROADMAP](docs/ROADMAP.md) | Trình tự phát triển, cổng nghiệm thu và hướng dẫn giao việc Codex |
+| [CONTRIBUTING](CONTRIBUTING.md) | Thiết lập, kiểm tra và review thay đổi |
 | [G0_FEASIBILITY](app/G0_FEASIBILITY.md) | Kết quả khảo sát thực tế, blocker, lệnh đã chạy và quyết định cần xác nhận |
 | [G0_TOOLCHAIN](app/G0_TOOLCHAIN.md) | Cài công cụ portable, kết quả build/test và hướng dẫn tái lập |
 | [G0_ADAPTER_DESIGN](app/G0_ADAPTER_DESIGN.md) | Thiết kế transport thử nghiệm để review trước triển khai |

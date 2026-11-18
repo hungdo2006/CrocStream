@@ -24,7 +24,7 @@ workspace paths are relative to the repository root.
 
 ## Current progress
 
-Kết quả hiện hành: **G0–G6 PASS**, cập nhật 2026-11-17.
+Kết quả nghiệm thu lịch sử **G0–G6 PASS**, tính đến 2026-11-17. [Chỉ mục gate](gates/README.md) liên kết báo cáo, môi trường, hướng dẫn tái lập và giới hạn.
 Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
 Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
 [bằng chứng local](../app/G0_LOCAL_PROOF.md),
@@ -128,7 +128,7 @@ Chạy bản portable theo [DEMO](../app/g6/DEMO.md), ghi lỗi trên máy đíc
 Webcam/cross-platform chưa triển khai. Fresh Windows/installer/signing, spoken
 screen-reader và hiệu năng capture/render Internet vẫn cần kiểm thử riêng.
 
-## Next work: G0
+## Historical G0 work plan
 
 Checklist lịch sử/tái lập của G0 đã hoàn tất; trạng thái hiện tại ở trên.
 
@@ -138,9 +138,8 @@ Trả lời bằng thực nghiệm: **có thể tái sử dụng cơ chế croc 
 luồng byte hai chiều liên tục, có xác thực và mã hóa, phù hợp cho CrocStream hay
 không?** Đây là bước giảm rủi ro trước khi xây dựng các module ứng dụng.
 
-Danh sách dưới đây mô tả đầu ra của từng task; trạng thái thực tế nằm ở bảng
-Current progress phía trên. Chủ dự án đã yêu cầu bắt đầu G0; việc triển khai
-tiếp đang tập trung vào các điều kiện nghiệm thu còn thiếu trong báo cáo.
+Danh sách dưới đây ghi đầu ra đã đặt ra khi giao G0. Bảng Current progress ghi
+kết quả thực tế và giới hạn còn hiệu lực cho các gate đã đóng.
 
 | Task | Công việc | Đầu ra kiểm chứng được | Phụ thuộc |
 | --- | --- | --- | --- |
@@ -167,9 +166,8 @@ và phê duyệt hiện hành; bảng task không tự cấp phép các thay đ�
   Roadmap hiện là thứ tự phụ thuộc, chưa phải cam kết lịch bàn giao.
 
 ## Codex handoff
-The checklist below is the **historical initial G0 handoff**, now completed.
-For current development use the latest closeout and next focused gate above;
-do not repeat G0 or treat this checklist as authorization for the whole app.
+The checklist below records the completed initial G0 handoff. As of 2026-11-18,
+use the latest closeout and the task authorized by the owner. G7 remains deferred.
 
 1. Read [AGENTS.md](../AGENTS.md), then [PRD](PRD.md), [ARCHITECTURE](ARCHITECTURE.md) (decisions, blockers, protocol), [TEST_PLAN](TEST_PLAN.md) and this roadmap. Inspect Git status, source, dependencies and available tools; old experimental toolchains are no longer assumed installed. Use `app/` for the CrocStream module within this same repository and keep `croc/` pristine; do not create another Git repository.
 2. Verify `github.com/schollz/croc/v11` at **552f40fd2d7593316118370bec0a93478d48e715**, which reports 11.6.5 but is not the tag itself. Check proposed Wails v3 APIs/toolchain; identify actual codephrase, PAKE, mutual confirmation, E2E encryption, relay/P2P and file-lifecycle code paths. Do not assume v9/v10 APIs.

@@ -1,4 +1,4 @@
-# Architecture — CrocStream Desktop v1 (proposed)
+# Architecture — CrocStream Desktop v1
 
 > **Cách đọc:** bắt đầu từ quyết định/blocker, rồi các pipeline để hiểu luồng dữ
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
@@ -17,7 +17,7 @@
 - [Sources and licensing](#sources-and-licensing)
 
 ## Reference source
-The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5; `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The source snapshot is included with provenance in [UPSTREAM.md](../UPSTREAM.md). The owner chose one repository containing upstream source, documents and future application code; the former standalone checkout was backed up outside the workspace. No screen-sharing application or old experiment evidence is retained. The initial survey and later local/remote/native/notice evidence culminate in [G0 PASS](../app/G0_CLOSEOUT.md); this does not validate the future media application.
+The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5. `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The owner consolidated the workspace on 2026-11-15 and backed up the former standalone checkout. [Provenance](../UPSTREAM.md) records that decision. [G0](../app/G0_CLOSEOUT.md) records transport feasibility, and [G4](../app/G4_CLOSEOUT.md) records the subsequent media integration.
 
 Source inspection, not runtime feasibility evidence:
 - `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
@@ -28,15 +28,15 @@ Source inspection, not runtime feasibility evidence:
 - `web/`: upstream browser file-transfer/SSH client, not Wails or CrocStream.
 
 ## Decisions and blockers
-Updated 2026-11-16. **D-12 and D-07's C-01/C-02 choices are owner-confirmed;
-G2 LZ4 dependency is approved; other D entries remain provisional.** Keep IDs stable and distinguish design
-requirements from verified implementation.
+The owner confirmed D-12, C-01/C-02 in D-07, and the G2 LZ4 dependency on
+2026-11-16. The table records design decisions. The [gate index](gates/README.md)
+links to verification for the implemented Windows prototype.
 
 | ID | Decision | Reason / tradeoff |
 | --- | --- | --- |
 | D-01 | Separate CrocStream desktop app; preserve upstream file-transfer behavior. | Custom media protocol is not interoperable with stock croc send/receive. |
 | D-02 | Windows 10/11 x64 first; macOS/Linux later. | One testable platform before cross-platform claims. |
-| D-03 | Proposed Wails v3 stable line, target v3.1.0; Go 1.27.3+ pending toolchain checks; React/TypeScript/Tailwind. Pin exact transitive dependencies after G0. | Recheck versions; v2 event/binding APIs cannot be copied into v3. |
+| D-03 | Wails v3.1.0, Go 1.27.3 minimum declared by `go.mod` and Go 1.27.4 verified on Windows, React/TypeScript and plain CSS. Go sums and the npm lockfile record dependency resolution. | Review toolchain changes with a Windows build and frontend tests. |
 | D-04 | Pin the exact reference commit above, not merely the version string or v11.6.5 tag. | Reproducibility; v9/v10 APIs cannot be assumed. |
 | D-05 | Exactly one broadcaster and one viewer per session. | One coherent canonical-reference/PLI sequence. |
 | D-06 | RGBA8888 alpha=255, 32×32 tiles, LZ4 frame format, lossless network KEY. G2 pins owner-approved `pierrec/lz4/v4 v4.1.33` (2026-11-16). JPEG only for local UI. | Deterministic sender/viewer reference equality; dependency provenance/notice in `app/THIRD_PARTY_NOTICES.md`. |
@@ -45,7 +45,7 @@ requirements from verified implementation.
 | D-09 | Do not apply UDP loss management to a reliable TCP byte stream by default. UI may skip display snapshots, never delta decode state. | Gaps imply application drop/corruption or reconnect. |
 | D-10 | Optional measured RTT and viewer-local decode→render; no one-way E2E claim without tested clock synchronization. | Unsynchronized host timestamps cannot establish E2E latency. |
 | D-11 | Full-frame LZ4 baseline on each emitted sample versus actual video packet bytes in the same window; transport overhead separate. | Fair and honestly labeled comparison. |
-| D-12 (owner-confirmed) | Use one CrocStream repository: pristine upstream source in `croc/`, planning documents in `docs/`, future application code in `app/`. Keep one root `.git`; no nested repository or second active checkout. Former custom code and experiments remain removed. | Owner decisions 2026-11-15; supersedes the separate-repository layout. Consolidation does not authorize application implementation or modifying the upstream snapshot. |
+| D-12 (owner-confirmed) | Use one CrocStream repository with pristine upstream source in `croc/`, project documents in `docs/` and the application in `app/`. Keep Git metadata at the root. | Owner decision from 2026-11-15 supersedes the separate-repository layout. |
 
 ### G0 blockers
 G0 feasibility closed **PASS** on 2026-11-16; see
@@ -114,18 +114,9 @@ proposed resolutions above.
 4. **Real-time over backpressure**: bounded latest-only capture before encoder, sequential codec and network write; decode all deltas, optionally skip UI display snapshots.
 5. **Wails v3 not v2**: v3 services/events/app/window APIs only. Do not blindly port `runtime.EventsEmit`/v2 `app.go` examples.
 
-## Application layout and future modules
+## Application layout
 
-The current single repository contains `croc/` (pristine upstream reference snapshot),
-`docs/` (planning documents), G0 artifacts and the application module in `app/`.
-G0–G6 are closed PASS; local-preview implementation and evidence are
-tracked in [G3_CLOSEOUT](../app/G3_CLOSEOUT.md).
-`internal/protocol`, `internal/frame`, `internal/delta` and
-`internal/telemetry` are implemented; G2 evidence is in
-[G2_CLOSEOUT](../app/G2_CLOSEOUT.md). G3 also implements capture, bridge,
-preview, desktop bindings and frontend. Session integration is implemented in G4;
-local desktop and remote two-machine synthetic proofs pass. See
-[G4_CLOSEOUT](../app/G4_CLOSEOUT.md).
+The [gate evidence index](gates/README.md) records reports, proof harnesses and acceptance conditions. The Windows prototype uses this layout.
 
 ```
 AGENTS.md
@@ -163,14 +154,12 @@ app/                                  # Application core and G0 artifacts
   g4/                                # Synthetic/local-desktop proofs and remote helper
   G4_CLOSEOUT.md                      # Local desktop + remote synthetic G4 PASS
   G4_REMOTE_PROOF.md                  # >=600s two-machine hashes/control/cleanup
-  frontend/src/                       # G3 React/TypeScript canvas preview
+  frontend/src/                       # React/TypeScript preview, Share/Watch and metrics
   frontend/package.json               # Pinned dependencies + package-lock.json
   g3/                                # Capture-free Origin probe, opt-in verification
-  # Everything below is proposed, not implemented:
-  internal/app/                       # Wails service methods + app/session coordinator
-  build/                             # Wails build assets
+  g5/                                # UX and local stress harnesses
+  g6/                                # Portable package recipe, verifier and demo
 ```
-Adjust the paths to the actual initialized Wails v3 template; app structure is conceptual, not a license to invent outdated framework methods.
 
 ## Suggested Go boundaries
 ```
@@ -294,9 +283,11 @@ installed prerequisite. Installer/signing and fresh-machine startup are not
 passed by the portable result. See [G6 closeout](../app/G6_CLOSEOUT.md).
 
 ## Media protocol v1
-**Normative v1 contract, not deployed.** G1 implements framing/configuration;
-G2 implements codec/telemetry; G4 integrates application sessions and passes
-two-machine synthetic media acceptance on the measured EC2 route. Framing runs
+**Normative v1 contract implemented in the Windows prototype.** G1 implements
+framing/configuration, G2 implements codec/telemetry and G4 integrates Share/Watch.
+[G4 evidence](../app/G4_CLOSEOUT.md) covers local desktop and two-machine synthetic
+media on the measured EC2 route. Real-screen performance over that route remains
+unmeasured. Framing runs
 inside an authenticated/encrypted transport; stock croc clients do not
 understand it. G0 tested a separate experimental transport record envelope.
 The media byte layout below is unchanged. Changing wire bytes requires a

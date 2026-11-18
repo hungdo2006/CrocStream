@@ -1,11 +1,11 @@
-# PRD — CrocStream Desktop (MVP v1, proposed)
+# PRD — CrocStream Desktop (MVP v1)
 
 > **Cách đọc:** tài liệu này quy định sản phẩm cần làm gì và người dùng sẽ trải
 > nghiệm ra sao. Nếu mới tham gia, đọc [hướng dẫn nhập môn](GETTING_STARTED.md)
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
-> các hành vi bên dưới là yêu cầu dự kiến, chưa phải tính năng đã triển khai.
+> các mục bên dưới mô tả yêu cầu sản phẩm. Báo cáo nghiệm thu ghi phần đã kiểm chứng.
 
-**Status:** **G0–G6 PASS** for the measured prototype: G4 local desktop/remote synthetic media, G5 UX/local stress, and G6 unsigned Windows portable/demo handoff ([G6 report and limits](../app/G6_CLOSEOUT.md)). Real remote-screen capture/render performance, installer/signing and fresh-machine tests are not inferred. The repository contains pristine upstream `croc/`, planning `docs/` and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. G7 remains deferred. Paths are repository-root relative.
+**Status.** The Windows prototype passed G0–G6 under the conditions recorded in the [gate evidence index](gates/README.md). Real remote-screen capture/render performance, installer/signing and fresh-machine tests remain open. The repository contains pristine upstream `croc/`, project documentation in `docs/` and the application in `app/` (D-12). C-01–C-05 are resolved for current Windows policy. G7 remains deferred. Paths are repository-root relative.
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 

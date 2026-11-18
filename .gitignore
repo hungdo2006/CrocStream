@@ -13,15 +13,15 @@ Thumbs.db
 Desktop.ini
 
 # Local browser artifacts
-.playwright-mcp/
+/.playwright-mcp/
 
 # Application build/dependency output
-app/frontend/node_modules/
-app/frontend/dist/
-app/frontend/test-results/
-app/frontend/playwright-report/
-app/bin/
-app/.wails/
-app/frontend/bindings/
-app/release/
-app/release-*/
+/app/frontend/node_modules/
+/app/frontend/dist/
+/app/frontend/test-results/
+/app/frontend/playwright-report/
+/app/bin/
+/app/.wails/
+/app/frontend/bindings/
+/app/release/
+/app/release-*/

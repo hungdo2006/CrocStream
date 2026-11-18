@@ -7,14 +7,19 @@ LZ4-frame dependency pinned in `go.mod` / `go.sum`.
 The isolated G0 modules in `g0/buildprobe` and
 `g0/poc` remain separate from application package checks.
 
-Gate evidence: [G0 closeout](G0_CLOSEOUT.md), [G1 closeout](G1_CLOSEOUT.md),
-[G2 closeout](G2_CLOSEOUT.md), [G3 closeout](G3_CLOSEOUT.md),
-[G4 closeout](G4_CLOSEOUT.md). Dependency notice: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md).
+The [gate evidence index](../docs/gates/README.md) covers G0–G6 and links to the
+[dependency notice index](../docs/gates/notices.md).
 Wire contract: [media protocol v1](../docs/ARCHITECTURE.md#media-protocol-v1).
 
 ## Run checks
 
 From the repository root, using the existing portable toolchain:
+
+```powershell
+powershell -NoProfile -File .\scripts\verify.ps1 -Race
+```
+
+For Go app checks only:
 
 ```powershell
 . .\app\g0\Use-Toolchain.ps1
@@ -295,6 +300,12 @@ locally invented regex. Both peers authenticate through the reused G0 adapter;
 only media CONFIG/KEY/DELTA is displayed as authenticated/live. Stop/Leave is
 idempotent and clears code/token, capture and local bridge. UI currently exposes
 the G2 0–255/default-4 tau range and 1–120/default-30 emitted-frame KEY interval.
+
+Session status continues polling while an invitation lookup is pending. If Windows
+reports a failed capture release, Stop returns a sanitized error after the worker
+exits, and the session reports `Error`. A Stop timeout leaves `Stopping` until
+cleanup finishes. The [controller regression](internal/session/controller_test.go)
+uses synthetic capture to exercise failed release and normal cancellation.
 
 Build/run with the local app Go module and existing portable tools (see G3
 instructions above). Generated Wails bindings are refreshed during build.

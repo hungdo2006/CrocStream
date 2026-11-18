@@ -104,7 +104,7 @@ later media/capture/UI tests are not retroactively passed by G0.
 - Repeat via localhost/LAN **and** target real relay path if available; run >=10 min without file-completion metadata or idle close; report measured latency/throughput/reconnect behavior and relay policy/availability separately.
 - Evidence: exact code path/function signatures, pinned upstream SHA/tag, relay settings, terminal commands, stdout/stderr redacted, pass/fail and security assumptions. **Failure or ambiguity = G0 No-Go**.
 
-## D.5. Future transport adapter acceptance
+## D.5. Transport adapter acceptance
 
 After an adapter design and implementation workspace are approved, test PAKE
 purpose isolation, both handshake directions, wrong passwords, record corruption,
@@ -112,11 +112,11 @@ reflection/replay/session isolation, bounded lengths, truncation, duplex tiny
 reads/large writes, concurrent writers, partial write progress, relay admission,
 Accept/session cancellation, disconnect and 100 local Host/Join lifecycles.
 Exercise two real processes and compare regression results against the pinned
-upstream baseline. Choose commands from the actual future package layout;
-the current isolated transport package/harness is in `app/g0/poc`.
-The G0 inventory script checks provenance/environment only; its success
-does not count as a transport test. Current runtime results are in
-[G0_LOCAL_PROOF](../app/G0_LOCAL_PROOF.md).
+upstream baseline. The isolated transport package and harness are in `app/g0/poc`.
+Use the [PoC README](../app/g0/poc/README.md) for commands and reporting limits.
+The G0 inventory script records source provenance and environment metadata.
+Historical runtime results are in
+[G0_CLOSEOUT](../app/G0_CLOSEOUT.md).
 Local adapter tests do not satisfy G1 media framing or remote acceptance.
 
 ## E. GUI/system manual acceptance
@@ -158,35 +158,41 @@ NOT RUN; no success is inferred from the tested unsigned portable package.
 - Validate the [telemetry contract](ARCHITECTURE.md#telemetry-contract): aligned same-emitted-sample full-frame LZ4 baseline including header, video-only actual bytes, zero-denominator empty state, negative savings and separate transport overhead. Include baseline compute cost; profile local JPEG encoding separately.
 - Measure 1280×720/24 FPS target on named Windows hardware with p50/p95; document deviations and lower-resolution/FPS results. Record queue sizes, goroutine counts and memory growth over >=10 minutes; no zero-allocation guarantee. Report LAN recovery and relay performance separately; no public-relay 24 FPS guarantee.
 
-## Typical verification commands (only after repository/toolchain exists)
-The pure-Go `app/` application module now supports the Go checks below; see its
-[README](../app/README.md). The isolated `app/g0/buildprobe` and `app/g0/poc`
-modules are checked separately. Desktop/frontend commands remain future
-verification requirements, not a runnable screen-sharing quickstart.
-PoC commands: [README](../app/g0/poc/README.md).
-Toolchain/baseline results: [G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md).
-For documentation-only edits, check the diff and local Markdown links/anchors;
-application tests/builds are not applicable. Record those checks separately from
-gate acceptance evidence.
+### Synthetic codec baseline
 
-Run the application Go checks from `app/`.
-Upstream regression checks run separately from `croc/`. Both directories belong
-to the same root Git repository; no second repository is needed.
+On 2026-11-18, Go 1.27.4 on Windows/amd64 with an Intel Core i7-13650HX measured
+one short run at 1280×720. Each operation encoded an input, computed the full-frame
+LZ4 baseline and decoded the emitted packet. Capture, JPEG, network, rendering
+and process RSS require separate measurements.
 
-```sh
-go version
-go test ./...
-go test -race ./...
-go vet ./...
-# Run fuzz targets individually with bounded duration as supported:
-# go test ./internal/protocol -fuzz=FuzzDecodePacket -fuzztime=30s
-# From frontend/ (choose package manager from lockfile):
-npm ci
-# Run actual typecheck and test scripts if provided by the initialized project.
-npm run lint
-npm run build
-# Actual command names/scripts must be inspected, not invented.
-wails3 doctor
-wails3 build
+| Synthetic input | ms/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Static | 4.83 | 14,630,461 | 34 |
+| Moving | 4.87 | 14,623,981 | 37 |
+| Noise | 7.19 | 16,828,488 | 25 |
+
+```powershell
+go -C app test -run '^$' -bench '^BenchmarkCodec$' -benchtime=1s -benchmem ./internal/delta
 ```
-If a command cannot run, log `NOT RUN: reason`, not PASS.
+
+## Typical verification commands
+
+Run from the repository root with the [Windows toolchain](../CONTRIBUTING.md#môi-trường-windows).
+The verifier runs Go tests, vet and module integrity checks in `app/`, `app/g0/poc`
+and `app/g0/buildprobe`. `-Race` adds the race suite for each module. Wails regenerates
+bindings from Go and runs the frontend build. The browser suite uses synthetic
+bindings and images in Edge.
+
+```powershell
+powershell -NoProfile -File .\scripts\verify.ps1 -Race
+```
+
+For focused checks after the first Wails build, use `npm run typecheck`, `npm run lint`,
+`npm run test`, `npm run test:ui` and `npm run build` from `app/frontend`. Run individual
+Go fuzz targets using the commands in the [app README](../app/README.md#run-checks).
+Record fuzz durations and retain the distinction between seed coverage and a timed run.
+For documentation-only edits, check the Git diff and local Markdown links/anchors.
+
+Real screen capture requires `CROCSTREAM_CAPTURE_CONSENT=1` and owner consent.
+Record native WebView2, real capture, remote relay, fresh-machine and spoken screen-reader
+tests separately. For skipped checks, record the reason and mark them `NOT RUN`.

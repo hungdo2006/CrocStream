@@ -27,8 +27,8 @@ Theo cập nhật 2026-11-17:
 | Thành phần | Trạng thái |
 | --- | --- |
 | `croc/` | Snapshot upstream để khảo sát; giữ nguyên mã nguồn và giấy phép |
-| `docs/` | Đặc tả đề xuất, kế hoạch kiểm thử và roadmap |
-| `app/` | Có G1 framing/config, G2 codec/telemetry, G3 capture/preview Wails, G4 Share/Watch và báo cáo/tooling G0 |
+| `docs/` | Đặc tả, kế hoạch kiểm thử, roadmap và [chỉ mục bằng chứng](gates/README.md) |
+| `app/` | Mã desktop, giao thức/codec, transport, dashboard và công cụ kiểm chứng đến G6 |
 | Transport dùng cho CrocStream | G0 khả thi đã PASS; local/remote >600s, RTT mạng mới mean 48–51ms, không bảo đảm cho mọi mạng |
 | Ứng dụng và benchmark | G0–G6 PASS; Windows portable/demo đã kiểm chứng; [G6 và giới hạn](../app/G6_CLOSEOUT.md) |
 
@@ -40,13 +40,10 @@ giải nén rồi chạy `crocstream.exe`. Cần WebView2; xem
 [hướng dẫn demo](../app/g6/DEMO.md). Chưa có installer/chữ ký số.
 [Lệnh build/chạy G3](../app/README.md#g3-desktop-preview--build-and-run);
 [PoC G0](../app/g0/poc/README.md) dùng riêng để thử transport dữ liệu tổng hợp.
-Các lệnh test/build package G1 nằm trong [app README](../app/README.md).
-Chạy được croc upstream cũng không chứng minh ứng dụng chia sẻ màn hình đã
-hoạt động. Các lệnh desktop/frontend trong Test Plan dành cho những gate sau.
+Các lệnh build, Go test và frontend test nằm trong [Test Plan](TEST_PLAN.md#typical-verification-commands).
 
-Các quyết định kiến trúc phần lớn còn đề xuất; D-12 về một repository và
-C-01/C-02 về key interval/độ phân giải đã được chủ dự án xác nhận.
-Xem [quyết định và blocker](ARCHITECTURE.md#decisions-and-blockers).
+D-12 về một repository và C-01–C-05 về thiết kế Windows đã được chủ dự án xác nhận.
+Xem [quyết định và blocker](ARCHITECTURE.md#decisions-and-blockers) để biết phạm vi và tình trạng từng mục.
 Khảo sát ban đầu nằm trong [G0_FEASIBILITY](../app/G0_FEASIBILITY.md);
 kết quả cài toolchain/build/test tiếp theo ở [G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md).
 Kết quả adapter ở [G0_LOCAL_PROOF](../app/G0_LOCAL_PROOF.md) và
@@ -66,14 +63,14 @@ Xem [G4 closeout](../app/G4_CLOSEOUT.md) và [remote proof](../app/G4_REMOTE_PRO
 
 ## 3. Hình ảnh đi từ máy phát tới máy xem thế nào?
 
-Sơ đồ dưới đây là thiết kế dự kiến, chưa phải hệ thống đã chạy:
+Sơ đồ tóm tắt luồng media v1 được kiểm chứng trong [G4](../app/G4_CLOSEOUT.md).
 
 ```text
 MÁY PHÁT
 Chụp màn hình → Chuẩn hóa RGBA → Chọn KEY hoặc DELTA → Nén LZ4
                                                         │
                       Kênh truyền xác thực, mã hóa       │
-                      PoC đã đạt khả thi G0              ▼
+                      Adapter duplex từ G0              ▼
 MÁY XEM
 Canvas ← Ảnh JPEG hiển thị cục bộ ← Dựng ảnh ← Kiểm tra và giải nén
 
@@ -150,7 +147,7 @@ Architecture; không suy ra “đã duyệt” chỉ từ việc một mục có
 ## 6. Ngày đầu của thành viên mới
 
 - [ ] Đọc theo thứ tự trên và giải thích lại luồng Share → Watch → Stop.
-- [ ] Phân biệt code upstream `croc/` với vị trí code ứng dụng tương lai `app/`.
+- [ ] Xác định snapshot upstream `croc/` và mã ứng dụng `app/`.
 - [ ] Xác định gate hiện tại và đọc test tương ứng; không coi kế hoạch là kết quả.
 - [ ] Ghi lại những giả định ảnh hưởng tới task, đối chiếu bảng `B-` và `C-`.
 - [ ] Nhận một task có đầu ra kiểm chứng được từ [gate hiện tại](ROADMAP.md#current-progress).
