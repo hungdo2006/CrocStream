@@ -3,18 +3,16 @@
 package preview
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"errors"
-	"image"
-	"image/jpeg"
 	"sort"
 	"sync"
 	"time"
 
 	"crocstream.local/app/internal/bridge"
 	"crocstream.local/app/internal/capture"
+	"crocstream.local/app/internal/latest"
 	"crocstream.local/app/internal/telemetry"
 )
 
@@ -75,6 +73,14 @@ func New(source capture.System, origin string) (*Controller, error) {
 	}
 	return c, nil
 }
+
+// Active reports whether a preview still owns session resources.
+func (c *Controller) Active() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.active != nil
+}
+
 func (c *Controller) Displays(ctx context.Context) ([]capture.Display, error) {
 	return c.source.Displays(ctx)
 }
@@ -121,23 +127,10 @@ func (c *Controller) run(ctx context.Context, s *session, o capture.Options) {
 			appendSample(&s.captureTimes, f.Duration, &s.stats.SamplesComplete)
 			_ = s.captureMeter.Record(telemetry.Event{Kind: telemetry.Captured})
 			c.mu.Unlock()
-			select {
-			case q <- f:
-			default:
-				select {
-				case <-q:
-					c.mu.Lock()
-					s.stats.Dropped++
-					c.mu.Unlock()
-				default:
-				}
-				select {
-				case q <- f:
-				default:
-					c.mu.Lock()
-					s.stats.Dropped++
-					c.mu.Unlock()
-				}
+			if latest.Offer(q, f) {
+				c.mu.Lock()
+				s.stats.Dropped++
+				c.mu.Unlock()
 			}
 		})
 		captureDone <- err
@@ -156,16 +149,15 @@ loop:
 			break loop
 		case f := <-q:
 			start := time.Now()
-			var buffer bytes.Buffer
-			err := jpeg.Encode(&buffer, &image.RGBA{Pix: f.RGBA, Stride: f.Width * 4, Rect: image.Rect(0, 0, f.Width, f.Height)}, &jpeg.Options{Quality: 75})
-			if err != nil || buffer.Len() > bridge.MaxJPEG {
+			encoded, err := bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
+			if err != nil || len(encoded) > bridge.MaxJPEG {
 				failure = errors.New("Không mã hóa được preview.")
 				break loop
 			}
 			if ctx.Err() != nil {
 				break loop
 			}
-			if err := s.bridge.Publish(buffer.Bytes()); err != nil {
+			if err := s.bridge.Publish(encoded); err != nil {
 				if !errors.Is(err, bridge.ErrClosed) {
 					failure = err
 				}

@@ -195,18 +195,6 @@ func TestWrongInvitationFailsWithoutCapture(t *testing.T) {
 		t.Fatal("invalid relay accepted")
 	}
 }
-func TestLatestOnlyCaptureAdmission(t *testing.T) {
-	q := make(chan capture.Frame, 1)
-	for i := 0; i < 100; i++ {
-		dropped := latest(q, capture.Frame{Width: i})
-		if dropped != (i > 0) {
-			t.Fatal("drop accounting")
-		}
-	}
-	if len(q) != 1 || (<-q).Width != 99 {
-		t.Fatal("unbounded or stale queue")
-	}
-}
 
 type failedFactory struct{}
 

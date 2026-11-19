@@ -99,8 +99,8 @@ func TestMissingSourceAndStopTimeout(t *testing.T) {
 			t.Fatal("failure did not clean up")
 		}
 	}
-	if c.Stats().State != Failed {
-		t.Fatal("false preview state")
+	if c.Active() || c.Stats().State != Failed {
+		t.Fatal("failed preview did not release session resources")
 	}
 	c.Shutdown()
 	source = &fakeSource{gate: make(chan struct{})}
@@ -114,14 +114,17 @@ func TestMissingSourceAndStopTimeout(t *testing.T) {
 	if err = c.Stop(ctx); err == nil {
 		t.Fatal("hung native falsely stopped")
 	}
-	if c.Stats().State != Stopping {
-		t.Fatal("timeout state")
+	if !c.Active() || c.Stats().State != Stopping {
+		t.Fatal("timed-out stop must retain active session ownership")
 	}
 	close(source.gate)
 	ctx, cancel = context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	if err = c.Stop(ctx); err != nil {
 		t.Fatal(err)
+	}
+	if c.Active() {
+		t.Fatal("stopped preview still owns the session")
 	}
 }
 func TestConfigRejectedWithoutCapture(t *testing.T) {

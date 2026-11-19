@@ -59,8 +59,7 @@ func (s *Service) GetStats() preview.Stats { return s.controller.Stats() }
 func (s *Service) StartBroadcast(o capture.Options, relay transport.Options) (session.Started, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	state := s.controller.Stats().State
-	if state != preview.Idle && state != preview.Failed {
+	if s.controller.Active() {
 		return session.Started{}, session.ErrActive
 	}
 	return s.stream.Host(o, relay)
@@ -68,8 +67,7 @@ func (s *Service) StartBroadcast(o capture.Options, relay transport.Options) (se
 func (s *Service) JoinSession(code string, relay transport.Options) (session.Started, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	state := s.controller.Stats().State
-	if state != preview.Idle && state != preview.Failed {
+	if s.controller.Active() {
 		return session.Started{}, session.ErrActive
 	}
 	return s.stream.Join(code, relay)

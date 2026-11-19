@@ -13,6 +13,7 @@ import (
 
 	"crocstream.local/app/internal/capture"
 	"crocstream.local/app/internal/delta"
+	"crocstream.local/app/internal/latest"
 	"crocstream.local/app/internal/protocol"
 )
 
@@ -281,7 +282,7 @@ func TestSlowUIStillDecodesAllDeltas(t *testing.T) {
 	frames := make(chan capture.Frame, 1)
 	images := make(chan capture.Frame, 1)
 	metrics := NewMetrics()
-	viewer := NewPeer(b, false, metrics, Hooks{Image: func(f capture.Frame) { latest(images, f) }})
+	viewer := NewPeer(b, false, metrics, Hooks{Image: func(f capture.Frame) { latest.Offer(images, f) }})
 	host := NewPeer(a, true, NewMetrics(), Hooks{})
 	done := make(chan error, 2)
 	cfg := protocol.DefaultConfig()
@@ -296,7 +297,7 @@ func TestSlowUIStillDecodesAllDeltas(t *testing.T) {
 			t.Fatal("sender timed out")
 		case <-ticker.C:
 		}
-		latest(frames, testFrame(i)) // Source admission may drop only before encoding.
+		latest.Offer(frames, testFrame(i)) // Source admission may drop only before encoding.
 	}
 	close(frames)
 	for i := 0; i < 2; i++ {

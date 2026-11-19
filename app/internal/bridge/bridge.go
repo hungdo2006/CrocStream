@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"crocstream.local/app/internal/latest"
 	"github.com/coder/websocket"
 )
 
@@ -208,19 +209,8 @@ func (b *Bridge) Publish(jpeg []byte) error {
 		return nil
 	}
 	copyJPEG := append([]byte(nil), jpeg...)
-	select {
-	case b.queue <- copyJPEG:
-	default:
-		select {
-		case <-b.queue:
-			b.dropped.Add(1)
-		default:
-		}
-		select {
-		case b.queue <- copyJPEG:
-		default:
-			b.dropped.Add(1)
-		}
+	if latest.Offer(b.queue, copyJPEG) {
+		b.dropped.Add(1)
 	}
 	return nil
 }

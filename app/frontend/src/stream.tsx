@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStreamSession, useLeaveSession } from './hooks/useSession'
-import { useDisplays } from './hooks/useDisplays'
+import { CaptureSettings, useCaptureSettings } from './capture-settings'
 import { useFrameStream } from './hooks/useFrameStream'
 import { inactive } from './session-lifecycle'
 
@@ -14,19 +14,16 @@ const labels: Record<string,string> = {
 export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void }) {
   const session=useStreamSession(role)
   const {state,error,started,stats,invitation,copyStatus}=session
-  const {displays,display,setDisplay,refresh}=useDisplays(role==='share',session.setError,'Không đọc được danh sách màn hình.')
+  const settings=useCaptureSettings(role==='share',session.setError,'Không đọc được danh sách màn hình.')
   const {canvas,error:frameError,hasImage,renderFPS,reconnect}=useFrameStream(started,'stream')
   const imageError=frameError||(started?stats?.previewError:'')
-  const [resolution,setResolution]=useState('1280x720')
-  const [fps,setFPS]=useState(24)
   const [tau,setTau]=useState(4)
   const [keyInterval,setKeyInterval]=useState(30)
   const [address,setAddress]=useState('')
   const [password,setPassword]=useState('')
   const [code,setCode]=useState('')
   const start=async()=>{
-    const [width,height]=resolution.split('x').map(Number)
-    if(await session.start({displayID:display,width,height,fps,tau,keyInterval},{address,password},code)){
+    if(await session.start(settings.options(tau,keyInterval),{address,password},code)){
       setPassword('');setCode('')
     }
   }
@@ -83,21 +80,14 @@ export function Stream({ role, onHome }: { role:'share'|'watch'; onHome:()=>void
         <input id="relay-password" type="password" value={password} disabled={locked} onChange={e=>setPassword(e.target.value)} autoComplete="off" />
         <p className="field-help">Dùng cùng relay trên cả hai máy. Mật khẩu chỉ giữ trong phiên.</p>
         {role==='share'?<>
-          <label htmlFor="stream-display">Màn hình</label><select id="stream-display" value={display} disabled={locked} onChange={e=>setDisplay(e.target.value)}>
-            {!displays.length&&<option value="">Không có màn hình</option>}
-            {displays.map((d,i)=><option key={d.id} value={d.id}>Màn hình {i+1} · {d.width}×{d.height}</option>)}</select>
-          <button className="secondary" disabled={locked} onClick={()=>void refresh()}>Làm mới danh sách</button>
-          <label htmlFor="stream-resolution">Độ phân giải</label><select id="stream-resolution" value={resolution} disabled={locked} onChange={e=>setResolution(e.target.value)}>
-            <option value="1280x720">1280 × 720</option><option value="640x360">640 × 360</option></select>
-          <label htmlFor="stream-fps">FPS mục tiêu</label><select id="stream-fps" value={fps} disabled={locked} onChange={e=>setFPS(Number(e.target.value))}>
-            {[15,24,30].map(n=><option key={n} value={n}>{n} FPS</option>)}</select>
+          <CaptureSettings settings={settings} mode="share" locked={locked} />
           <details><summary>Nén ảnh nâng cao</summary>
             <label htmlFor="stream-tau">Ngưỡng RGB MAE (tau)</label><input id="stream-tau" type="number" min="0" max="255" value={tau} disabled={locked} onChange={e=>setTau(Math.max(0,Math.min(255,Number(e.target.value))))} />
             <label htmlFor="stream-keyinterval">Khoảng KEY (1–120 frame)</label><input id="stream-keyinterval" type="number" min="1" max="120" value={keyInterval} disabled={locked} onChange={e=>setKeyInterval(Math.max(1,Math.min(120,Number(e.target.value))))} />
           </details>
            <p className="notice">Bắt đầu sẽ chụp màn hình đã chọn. Người có mã mời có thể tham gia xem.</p>
         </>:<><label htmlFor="join-code">Mã phiên</label><input id="join-code" type="password" value={code} disabled={locked} onChange={e=>setCode(e.target.value)} autoComplete="off" /></>}
-        <button className="primary" disabled={locked||leaving||!address||!password||(role==='share'?!display:!code||retryAfter>0)} onClick={()=>void start()}>{role==='share'?'Bắt đầu chia sẻ':'Tham gia phiên'}</button>
+        <button className="primary" disabled={locked||leaving||!address||!password||(role==='share'?!settings.display:!code||retryAfter>0)} onClick={()=>void start()}>{role==='share'?'Bắt đầu chia sẻ':'Tham gia phiên'}</button>
         {role==='watch'&&retryAfter>0&&!locked&&<p role="status" className="caption">Thử lại sau {Math.ceil(retryAfter/1000)} giây. Không tự động kết nối lại.</p>}
         <button className="stop" disabled={!locked} onClick={()=>void stop()}>{role==='share'?'Dừng chia sẻ':'Rời phiên'}</button>
         {error&&<p className="error" role="alert">{error}</p>}

@@ -146,6 +146,7 @@ app/                                  # Application core and G0 artifacts
   wails.yaml                          # Wails v3.1 manifest (Wake opt-in)
   internal/capture/                   # G3 Win32 GDI display capture, consent at Start
   internal/bridge/                    # G3 session-owned binary JPEG WebSocket
+  internal/latest/                    # Capacity-one handoff for replaceable capture and display snapshots
   internal/preview/                   # G3 preview lifecycle and bounded sampling
   internal/desktop/                   # G3 Wails service bindings
   internal/session/                   # G4 authenticated role/media/control lifecycle

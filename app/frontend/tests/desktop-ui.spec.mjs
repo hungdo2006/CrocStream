@@ -19,8 +19,9 @@ test.beforeEach(async ({ page }) => {
       pendingInvitations: [], holdInvitation: false, captureCleanupFails: false,
       sockets: [], pendingDecodes: [], holdDecode: false, decodeFails: false, closedBitmaps: 0,
       published: 0, drawCalls: 0, decodeCalls: 0,
-      async start(preview, role) {
+      async start(preview, role, options) {
         fake.starts++
+        fake.captureOptions = options
         await new Promise(resolve => setTimeout(resolve, fake.delay))
         const key = preview ? 'preview' : 'session'
         const generation = fake[key].generation + 1
@@ -86,9 +87,9 @@ test.beforeEach(async ({ page }) => {
       export const GetStats = async () => structuredClone(t.preview);
       export const GetSessionStats = async () => structuredClone(t.session);
       export const GetInvitation = () => t.invitation();
-      export const StartPreview = () => t.start(true);
+      export const StartPreview = options => t.start(true, 'local', options);
       export const StopPreview = () => t.stop(true);
-      export const StartBroadcast = () => t.start(false,'share');
+      export const StartBroadcast = options => t.start(false, 'share', options);
       export const JoinSession = () => t.start(false,'watch');
       export const StopSession = () => t.stop(false);
     `,
@@ -186,14 +187,37 @@ test('bounded display decode, failure/retry and disconnect preserve media state'
 test('local preview uses the same cleanup and preserves existing controls', async ({ page }) => {
   await page.getByTestId('home-local').click()
   await expect(page.locator('#display')).toHaveValue('synthetic')
+  await page.locator('#resolution').selectOption('640x360')
+  await page.locator('#fps').selectOption('15')
   await page.getByRole('button', { name: 'Bắt đầu preview', exact: true }).click()
   await expect(page.locator('.status')).toHaveText('Đang xem trước cục bộ')
   await expect.poll(() => page.evaluate(() => window.__desktopTest.drawCalls)).toBeGreaterThan(0)
   await expect(page.locator('#resolution')).toBeDisabled()
+  expect(await page.evaluate(() => window.__desktopTest.captureOptions)).toEqual({
+    displayID: 'synthetic', width: 640, height: 360, fps: 15, tau: 4, keyInterval: 30,
+  })
   await page.getByRole('button', { name: 'Dừng preview', exact: true }).click()
   await expect(page.locator('.status')).toHaveText('Chưa chụp màn hình')
   await expect(page.locator('#resolution')).toBeEnabled()
   expect(await page.evaluate(() => window.__desktopTest.sockets.every(s => s.closed))).toBe(true)
   await page.getByRole('button', { name: '← Dừng phiên và về Home', exact: true }).click()
   await expect(page.getByTestId('home-local')).toBeVisible()
+})
+
+test('Share sends the selected capture and compression settings', async ({ page }) => {
+  await page.getByTestId('home-share').click()
+  await expect(page.locator('#stream-display')).toHaveValue('synthetic')
+  await page.locator('#relay').fill('127.0.0.1:9009')
+  await page.locator('#relay-password').fill('synthetic-password')
+  await page.locator('#stream-resolution').selectOption('640x360')
+  await page.locator('#stream-fps').selectOption('30')
+  await page.getByText('Nén ảnh nâng cao', { exact: true }).click()
+  await page.locator('#stream-tau').fill('6')
+  await page.locator('#stream-keyinterval').fill('60')
+  await page.getByRole('button', { name: labels.start, exact: true }).click()
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  await expect(page.locator('#stream-resolution')).toBeDisabled()
+  expect(await page.evaluate(() => window.__desktopTest.captureOptions)).toEqual({
+    displayID: 'synthetic', width: 640, height: 360, fps: 30, tau: 6, keyInterval: 60,
+  })
 })
