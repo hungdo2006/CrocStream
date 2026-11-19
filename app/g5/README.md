@@ -1,6 +1,6 @@
 # G5 UX, telemetry and resilience verification
 
-Status and executed results: [G5_CLOSEOUT](../G5_CLOSEOUT.md).
+Status and executed results: [G5_CLOSEOUT](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G5_CLOSEOUT.md).
 
 ## Reproduce the Windows UI acceptance
 

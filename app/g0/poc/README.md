@@ -4,7 +4,7 @@ Experimental CLI only: no UI, media codec, capture or stock croc-client support.
 Source: `croc/` at `552f40fd2d7593316118370bec0a93478d48e715`.
 The module uses a local `replace`; it must be built inside this repository.
 
-Final feasibility gate: **[G0 PASS](../../G0_CLOSEOUT.md)**. Keep the reviewed
+Final feasibility gate: **[G0 PASS](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_CLOSEOUT.md)**. Keep the reviewed
 [third-party notices](../licenses/README.md) with G0 binaries; prototype PASS
 does not certify production or media/capture/UI behavior.
 
@@ -141,10 +141,10 @@ return `REMOTE_RELAY_PASS`. `remote_cleanup_complete` must also be present.
 `-DataIntervalMilliseconds 100` selects the slower diagnostic rate; the
 helper verifies that the executable actually reports the requested pacing.
 Route labels describe this explicit topology, not public-relay or general
-cross-platform compatibility. See [remote evidence](../../G0_REMOTE_PROOF.md)
+cross-platform compatibility. See [remote evidence](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_REMOTE_PROOF.md)
 for what was actually executed.
 Further rate/latency observations are in the
-[follow-up report](../../G0_LATENCY_FOLLOWUP.md).
+[follow-up report](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_LATENCY_FOLLOWUP.md).
 
 ### Independently verify remote peer results
 

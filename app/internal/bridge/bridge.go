@@ -16,13 +16,17 @@ import (
 	"sync/atomic"
 	"time"
 
+	"crocstream.local/app/internal/latest"
 	"github.com/coder/websocket"
 )
 
 const MaxJPEG = 4 * 1024 * 1024
 const Subprotocol = "crocstream.preview"
 
-var ErrClosed = errors.New("bridge: session closed")
+var (
+	ErrClosed      = errors.New("bridge: session closed")
+	errImageLength = errors.New("bridge: invalid image length")
+)
 
 type Endpoint struct {
 	URL   string `json:"url"`
@@ -174,7 +178,7 @@ func (b *Bridge) handle(w http.ResponseWriter, r *http.Request) {
 // Publish copies one JPEG into a latest-only queue; it never blocks on a client.
 func (b *Bridge) Publish(jpeg []byte) error {
 	if len(jpeg) < 4 || len(jpeg) > MaxJPEG {
-		return errors.New("bridge: invalid image length")
+		return errImageLength
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -185,20 +189,8 @@ func (b *Bridge) Publish(jpeg []byte) error {
 		b.dropped.Add(1)
 		return nil
 	}
-	copyJPEG := append([]byte(nil), jpeg...)
-	select {
-	case b.queue <- copyJPEG:
-	default:
-		select {
-		case <-b.queue:
-			b.dropped.Add(1)
-		default:
-		}
-		select {
-		case b.queue <- copyJPEG:
-		default:
-			b.dropped.Add(1)
-		}
+	if latest.Offer(b.queue, append([]byte(nil), jpeg...)) {
+		b.dropped.Add(1)
 	}
 	return nil
 }

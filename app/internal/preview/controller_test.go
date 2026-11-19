@@ -47,7 +47,7 @@ func TestNoCaptureBeforeStartAnd100Lifecycles(t *testing.T) {
 	if _, err = c.Displays(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if source.starts.Load() != 0 || c.Stats().State != Idle {
+	if source.starts.Load() != 0 || c.Active() || c.Stats().State != Idle {
 		t.Fatal("captured before consent")
 	}
 	tokens := map[string]bool{}
@@ -55,6 +55,9 @@ func TestNoCaptureBeforeStartAnd100Lifecycles(t *testing.T) {
 		start, err := c.Start(capture.Options{DisplayID: "test", Width: 640, Height: 360, FPS: 24})
 		if err != nil {
 			t.Fatal(err)
+		}
+		if !c.Active() {
+			t.Fatal("started preview must exclude other sessions")
 		}
 		if tokens[start.Endpoint.Token] || len(start.Endpoint.Token) != 64 {
 			t.Fatal("token reused")
@@ -68,7 +71,7 @@ func TestNoCaptureBeforeStartAnd100Lifecycles(t *testing.T) {
 			t.Fatal(err)
 		}
 		cancel()
-		if c.Stats().State != Idle {
+		if c.Active() || c.Stats().State != Idle {
 			t.Fatal(c.Stats())
 		}
 	}
@@ -99,7 +102,7 @@ func TestMissingSourceAndStopTimeout(t *testing.T) {
 			t.Fatal("failure did not clean up")
 		}
 	}
-	if c.Stats().State != Failed {
+	if c.Active() || c.Stats().State != Failed {
 		t.Fatal("false preview state")
 	}
 	c.Shutdown()
@@ -114,7 +117,7 @@ func TestMissingSourceAndStopTimeout(t *testing.T) {
 	if err = c.Stop(ctx); err == nil {
 		t.Fatal("hung native falsely stopped")
 	}
-	if c.Stats().State != Stopping {
+	if !c.Active() || c.Stats().State != Stopping {
 		t.Fatal("timeout state")
 	}
 	close(source.gate)

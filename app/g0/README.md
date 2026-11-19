@@ -56,7 +56,7 @@ go -C croc test -count=1 -timeout=180s ./...
 go -C croc vet ./...
 ```
 
-Check actual results in [the toolchain report](../G0_TOOLCHAIN.md); these commands
+Check actual results in [the toolchain report](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_TOOLCHAIN.md); these commands
 are reproducible checks, not claims they all pass. Upstream tests may have their
 own Windows/environment limitations and fixed ports; run the network test jobs
 sequentially. Full upstream CLI tests also emit fixture codes and exercise the
@@ -98,12 +98,12 @@ not a screen-streaming implementation.
 
 ## G0 license inventory and final decision
 
-See [license scope](licenses/README.md) and [closeout](../G0_CLOSEOUT.md).
+See [license scope](licenses/README.md) and [closeout](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_CLOSEOUT.md).
 `Audit-Licenses.ps1` requires a fresh output directory, does not install
 dependencies, and refuses to overwrite an existing review snapshot.
 
 ## Design and next step
 
-Read [G0_ADAPTER_DESIGN](../G0_ADAPTER_DESIGN.md) for the proposed purpose,
+Read [G0_ADAPTER_DESIGN](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_ADAPTER_DESIGN.md) for the proposed purpose,
 handshake, record envelope and acceptance matrix. Read
-[G0_LOCAL_PROOF](../G0_LOCAL_PROOF.md) for implementation/test evidence.
+[G0_LOCAL_PROOF](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_LOCAL_PROOF.md) for implementation/test evidence.

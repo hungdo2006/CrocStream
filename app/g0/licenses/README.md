@@ -21,7 +21,7 @@ assuming a future download has identical text.
 
 The generated status is deliberately **review required**, never automatic
 legal approval. The reviewed G0 snapshot and decision are recorded in
-[G0_CLOSEOUT](../../G0_CLOSEOUT.md).
+[G0_CLOSEOUT](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G0_CLOSEOUT.md).
 
 Authoritative reviewed snapshot: [`reviewed-20261116/inventory.json`](reviewed-20261116/inventory.json)
 and [`THIRD_PARTY_NOTICES.txt`](reviewed-20261116/THIRD_PARTY_NOTICES.txt).

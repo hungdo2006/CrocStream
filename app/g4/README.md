@@ -2,7 +2,7 @@
 
 G4 uses the verified G0 secure duplex and protocol-v1 LZ4 media. It is not
 compatible with stock croc send/receive. Overall gate status:
-[G4 closeout](../G4_CLOSEOUT.md).
+[G4 closeout](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G4_CLOSEOUT.md).
 
 ## Local synthetic proof — two OS processes
 
@@ -52,7 +52,7 @@ injection; these require the explicit `g3test,g4test` tags.
 2026-11-17 follow-up: owner restarted EC2 and supplied `47.128.220.28`.
 Its key matched the old trusted record selected with
 `-PinnedHostKeyAlias 54.151.152.78`. Remote smoke, >=600s proof and independent
-cleanup all passed; see [G4_REMOTE_PROOF](../G4_REMOTE_PROOF.md). Do not change
+cleanup all passed; see [G4_REMOTE_PROOF](https://github.com/hungdo2006/CrocStream/blob/8e10002f7997bb1a12a8f2996d883610e1072b4d/app/G4_REMOTE_PROOF.md). Do not change
 the historical known-host record or accept a new key just because the IP changed.
 
 From repository root, after the owner confirms EC2 address/host key/ingress:

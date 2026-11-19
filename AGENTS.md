@@ -4,15 +4,24 @@
 Develop a secure, measurable 1-to-1 desktop screen-streaming MVP, with Go + Wails v3 and a deterministic tile-delta codec. Use `schollz/croc` **only after a passed transport feasibility spike**. Do not imply stock croc clients understand this custom media protocol.
 
 ## Source of truth
-Read, in order: `docs/PRD.md`, `docs/ARCHITECTURE.md` (including decisions, blockers and media protocol), `docs/TEST_PLAN.md`, `docs/ROADMAP.md`. Source and workspace paths are relative to the repository root. If implementation conflicts with the spec, document the conflict and propose a patch; don't silently alter wire format, security design or scope.
 
-## Workspace boundary
-The owner chose one CrocStream repository at `D:\CrocStream` on 2026-11-15, superseding the previous separate local repositories. It contains the pristine upstream snapshot in `croc/` at commit `552f40fd2d7593316118370bec0a93478d48e715`, planning documents in `docs/`, and a reserved future application location `app/`. There is only one active `.git`, at the repository root; `croc/` is not a nested repository or submodule. Keep the upstream source pristine and place new CrocStream code in `app/` within this same repository when implementation is requested. The old standalone upstream checkout was backed up outside the workspace. Previous custom implementation and experiment artifacts are no longer retained. Repository consolidation alone does not authorize application implementation or tool installation.
+Start with `README.md` for the current app and commands. Use
+`docs/ARCHITECTURE.md` for the media, lifecycle and security contracts and
+`docs/VERIFICATION.md` for existing evidence and the original decisions.
+Paths are relative to the repository root. Document any conflict between code
+and specification before changing wire format, security design or scope.
 
-## Execution gate
-- **First task = G0 only** as described in `docs/ROADMAP.md#codex-handoff`. Inspect the repository and pinned upstream croc code; produce a small duplex-stream feasibility PoC and a written decision. Do NOT scaffold full UI or claim transport is done without two-process evidence.
-- Work in small, verifiable changes. After each phase: list files changed, precise commands/tests actually run, observed results, unresolved issues, and next gate. Never claim tests ran if not executed.
-- If croc transport internals, licensing, or security are uncertain: stop at the gate, present evidence and viable options, ask for owner decision before switching cryptography or relay provider.
+## Workspace and verification
+
+Keep CrocStream changes in `app/`. Preserve the upstream source in `croc/` at
+commit `552f40fd2d7593316118370bec0a93478d48e715`. The G0 duplex feasibility
+gate passed before integration, and G1–G6 have verification evidence.
+G7 (webcam and other platforms) remains deferred.
+
+Work in small, verifiable changes. Report affected areas, commands actually
+run, observed results and any remaining limits. If a transport change raises
+questions about croc internals, licensing or security, present the evidence
+and get owner approval before switching cryptography or relay providers.
 
 ## Coding constraints
 - Go: bounded resources, `context.Context` cancellation, explicit ownership of pooled buffers, no use-after-Put, no unbounded queue, one logical writer per connection; use `io.ReadFull` for fixed-size framing.

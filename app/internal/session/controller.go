@@ -1,18 +1,16 @@
 package session
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"errors"
-	"image"
-	"image/jpeg"
 	"io"
 	"sync"
 	"time"
 
 	"crocstream.local/app/internal/bridge"
 	"crocstream.local/app/internal/capture"
+	"crocstream.local/app/internal/latest"
 	"crocstream.local/app/internal/protocol"
 	"crocstream.local/app/internal/telemetry"
 	"crocstream.local/app/internal/transport"
@@ -174,25 +172,6 @@ func (c *Controller) Invitation() string {
 	}
 	return c.active.invitation
 }
-func latest(q chan capture.Frame, f capture.Frame) bool {
-	select {
-	case q <- f:
-		return false
-	default:
-	}
-	dropped := false
-	select {
-	case <-q:
-		dropped = true
-	default:
-	}
-	select {
-	case q <- f:
-	default:
-		dropped = true
-	}
-	return dropped
-}
 func (c *Controller) setState(s *activeSession, state State) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -261,11 +240,10 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 				return
 			case f := <-images:
 				begin := time.Now()
-				var out bytes.Buffer
-				err := jpeg.Encode(&out, &image.RGBA{Pix: f.RGBA, Stride: f.Width * 4, Rect: image.Rect(0, 0, f.Width, f.Height)}, &jpeg.Options{Quality: 75})
+				jpeg, err := bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
 				elapsed := time.Since(begin)
 				if err == nil && ctx.Err() == nil {
-					err = s.bridge.Publish(out.Bytes())
+					err = s.bridge.Publish(jpeg)
 				}
 				c.mu.Lock()
 				s.jpegTotal += elapsed
@@ -285,7 +263,6 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		if failure != nil {
 			return
 		}
-		relay = transport.Options{} // Do not retain admission password in coordinator.
 		c.mu.Lock()
 		if !s.stopping {
 			s.invitation = listener.Invitation()
@@ -295,13 +272,13 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		workers.Add(1)
 		go func() {
 			defer workers.Done()
-			err := c.source.Run(ctx, o, func(f capture.Frame) {
+			_ = c.source.Run(ctx, o, func(f capture.Frame) {
 				c.mu.Lock()
 				s.captured++
 				c.mu.Unlock()
 				s.metrics.Record(telemetry.Event{Kind: telemetry.Captured})
-				latest(images, f) // Capture snapshots are immutable, owned slices.
-				if latest(frames, f) {
+				latest.Offer(images, f) // Capture snapshots are immutable, owned slices.
+				if latest.Offer(frames, f) {
 					c.mu.Lock()
 					s.dropped++
 					c.mu.Unlock()
@@ -314,7 +291,6 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 				c.mu.Unlock()
 				s.cancel()
 			}
-			_ = err // UI uses a fixed actionable error, never raw native/log data.
 		}()
 		conn, failure = listener.Accept(network)
 		c.mu.Lock()
@@ -330,7 +306,7 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	}
 	hooks := Hooks{State: func(state State) { c.setState(s, state) }}
 	if !host {
-		hooks.Image = func(f capture.Frame) { latest(images, f) }
+		hooks.Image = func(f capture.Frame) { latest.Offer(images, f) }
 	}
 	peer := NewPeerWithTau(conn, host, s.metrics, hooks, o.Tau)
 	c.mu.Lock()
