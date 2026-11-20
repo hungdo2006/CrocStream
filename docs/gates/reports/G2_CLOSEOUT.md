@@ -10,7 +10,7 @@ The owner requested G2 after [G1 PASS](G1_CLOSEOUT.md), then explicitly
 approved adding/pinning `github.com/pierrec/lz4/v4 v4.1.33` in `app/go.mod`.
 The module has no external module requirements, uses Go 1.22+, and is
 BSD-3-Clause. Exact source/checksums and complete notice are retained in
-[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md); `go.sum` pins both checksums.
+[THIRD_PARTY_NOTICES](../../../app/THIRD_PARTY_NOTICES.md); `go.sum` pins both checksums.
 Go module verification passed. No new tool installation was needed.
 
 The G1 wire contract is preserved: header/config sizes, type values, version,
@@ -39,7 +39,7 @@ frame representation already permitted by that contract.
   full-frame result is also the transmitted payload. Negative savings and
   unknown/empty states are represented explicitly.
 
-API/ownership and reproducible commands: [application README](README.md).
+API/ownership and reproducible commands: [application README](../../../app/README.md).
 
 ## Acceptance evidence
 

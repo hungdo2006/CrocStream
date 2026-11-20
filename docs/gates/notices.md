@@ -1,6 +1,6 @@
 # Chỉ mục giấy phép và attribution
 
-Mỗi snapshot ghi lại một phạm vi phụ thuộc tại thời điểm thu thập. G6 kiểm chứng ZIP cụ thể, gồm notice của package, notice closure thu lúc đóng gói và các attribution đã review từ G0. Chi tiết phạm vi, hash ZIP và manifest nằm trong [G6 closeout](../../app/G6_CLOSEOUT.md#deliverable) và [G6 notice scope](../../app/g6/NOTICE_SCOPE.md). [NOTICE của G6](../../app/g6/NOTICE.txt) ghi tình trạng cấp phép của mã CrocStream.
+Mỗi snapshot ghi lại một phạm vi phụ thuộc tại thời điểm thu thập. G6 kiểm chứng ZIP cụ thể, gồm notice của package, notice closure thu lúc đóng gói và các attribution đã review từ G0. Chi tiết phạm vi, hash ZIP và manifest nằm trong [G6 closeout](reports/G6_CLOSEOUT.md#deliverable) và [G6 notice scope](../../app/g6/NOTICE_SCOPE.md). [NOTICE của G6](../../app/g6/NOTICE.txt) ghi tình trạng cấp phép của mã CrocStream.
 
 | Snapshot | Phạm vi |
 | --- | --- |

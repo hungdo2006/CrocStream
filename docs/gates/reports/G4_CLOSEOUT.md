@@ -116,7 +116,7 @@ also completed **600s** on the stabilized implementation:
 ```
 
 Saved raw sanitized result:
-[local-synthetic-600s-20261117.json](g4/evidence/local-synthetic-600s-20261117.json).
+[local-synthetic-600s-20261117.json](../evidence/g4/local-synthetic-600s-20261117.json).
 It was fed back to the binary's independent `-mode verify -duration 600s`
 verifier: **RESULTS_VERIFIED**.
 
@@ -186,7 +186,7 @@ node g4/ui-proof.mjs "$env:GOBIN\crocstream-g4-verified.exe" "$env:GOBIN\g4proof
 ```
 
 **PASS**, raw sanitized output:
-[local-desktop-final-20261117.jsonl](g4/evidence/local-desktop-final-20261117.jsonl).
+[local-desktop-final-20261117.jsonl](../evidence/g4/local-desktop-final-20261117.jsonl).
 Paired at 2026-11-17T10:19:55.512Z, total observation including Stop/checks
 31.143s. Final settled counters after Stop:
 
@@ -293,7 +293,7 @@ wails3 build
 ```
 
 Local and remote verification are complete; see the remote report above.
-Usage/proof instructions: [g4/README](g4/README.md).
+Usage/proof instructions: [g4/README](../../../app/g4/README.md).
 
 | Artifact | SHA-256 |
 | --- | --- |
@@ -312,7 +312,7 @@ not falsely described as a UI automation run on the ordinary binary.
 
 Source minimums selected `coder/websocket 1.8.15` (from G3's 1.8.14) and graph
 dependency `godbus/dbus/v5 5.2.4`; the graph is pinned in go.mod/go.sum and uses
-the owner-approved G0 dependency closure. See [G4 notice inventory/scope](g4/licenses/README.md).
+the owner-approved G0 dependency closure. See [G4 notice inventory/scope](../../../app/g4/licenses/README.md).
 No third-party crypto source was copied or altered in `croc/`.
 
 The notice collector was rerun for the linked G4 application: **178 records**,

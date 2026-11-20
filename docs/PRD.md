@@ -9,14 +9,14 @@
 
 This file owns product behavior and UI acceptance. [ARCHITECTURE](ARCHITECTURE.md) owns technical contracts; [TEST_PLAN](TEST_PLAN.md) owns verification; [ROADMAP](ROADMAP.md) owns execution gates. Unresolved differences are tracked in [clarifications](ARCHITECTURE.md#pending-clarifications), not silently resolved by this consolidation.
 
-**G2 update (2026-11-16): [codec/telemetry PASS](../app/G2_CLOSEOUT.md).**
+**G2 update (2026-11-16): [codec/telemetry PASS](gates/reports/G2_CLOSEOUT.md).**
 Pure-Go normalization, lossless KEY/tile DELTA, canonical-reference validation
 and rolling telemetry are implemented/tested on synthetic data. The approved
 LZ4 dependency and notices are pinned in `app/`. Actual capture/preview work is
 tracked in G3 below; secure app integration remains G4.
 
 **G3 implementation:** a runnable Windows local preview now exists; see
-[G3 evidence](../app/G3_CLOSEOUT.md) and [build/run](../app/README.md#g3-desktop-preview--build-and-run).
+[G3 evidence](gates/reports/G3_CLOSEOUT.md) and [build/run](../app/README.md#g3-desktop-preview--build-and-run).
 Broadcaster/viewer integration is implemented in G4; measured Windows UX/telemetry
 and 600s local stress acceptance are in the G5 closeout.
 
@@ -24,7 +24,7 @@ and 600s local stress acceptance are in the G5 closeout.
 CONFIG/KEY/DELTA, PLI, Ping/Pong and EOS; local synthetic and two-process desktop
 tests pass. Remote synthetic acceptance also passed at the owner's restarted
 EC2 after 600s, with matching hashes/bytes/control and independent cleanup.
-See [G4_CLOSEOUT](../app/G4_CLOSEOUT.md); no real remote capture was authorized.
+See [G4_CLOSEOUT](gates/reports/G4_CLOSEOUT.md); no real remote capture was authorized.
 
 ## Product outcome
 Two separate desktop app processes on two Windows 10/11 x64 machines can join a secret-code 1:1 session. Broadcaster shares one screen; Viewer watches live output reconstructed from a lossless Keyframe + selected dirty tiles. Users can start/stop safely and compare bandwidth against a fair whole-frame compressed baseline.

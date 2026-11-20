@@ -42,10 +42,10 @@ Portable root:
 | Packaging tools | Doctor reports MSIX Packaging Tool, MakeAppx, NSIS and SignTool not installed; signing not configured |
 | Machine reported by doctor | i7-13650HX, RTX 4060 Laptop GPU, 23 GB RAM; Windows branding 11 Home / build 26300 |
 
-Scripts: [Install-Toolchain](g0/Install-Toolchain.ps1),
-[Use-Toolchain](g0/Use-Toolchain.ps1),
-[Inspect-Environment](g0/Inspect-Environment.ps1).
-Exact reproduction steps: [g0/README.md](g0/README.md).
+Scripts: [Install-Toolchain](../../../app/g0/Install-Toolchain.ps1),
+[Use-Toolchain](../../../app/g0/Use-Toolchain.ps1),
+[Inspect-Environment](../../../app/g0/Inspect-Environment.ps1).
+Exact reproduction steps: [g0/README.md](../../../app/g0/README.md).
 
 ## Commands and results
 

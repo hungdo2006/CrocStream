@@ -87,7 +87,7 @@ synthetic proof remains separate. No Internet screen-capture claim.
 Windows 11 Home x64 build **26300**; Intel Core i7-13650HX, 20 logical
 processors, 24,883,064 KiB visible memory. WebView2 **157.0.4341.46**;
 Go **1.27.4**, Wails **3.1.0**, Node **24.22.1**, npm **12.2.1**.
-See [environment](g6/evidence/environment-20261117.json).
+See [environment](../evidence/g6/environment-20261117.json).
 Commands below are from `app/` after `. .\g0\Use-Toolchain.ps1`, unless stated.
 
 | Executed command/check | Observed result |
@@ -118,14 +118,14 @@ G5's historical 600s stress is not relabeled as a new G6 600s test; G6 reran
 the affected UI/lifecycle cases, production handoff and full automated suites.
 
 Evidence:
-[production two-app](g6/evidence/production-two-app-20261117.jsonl),
-[extracted runtime](g6/evidence/portable-runtime-20261117.json),
-[final 26-case suite](g6/evidence/ui-vi-final-20261117.jsonl),
-[summary](g6/evidence/ui-summary-20261117.json),
-[package negative checks](g6/evidence/package-verification-20261117.json),
-[G4 regression](g6/evidence/g4-desktop-20261117.jsonl),
-[G3 packaged](g6/evidence/g3-packaged-20261117.jsonl),
-[G3 dev](g6/evidence/g3-dev-20261117.jsonl).
+[production two-app](../evidence/g6/production-two-app-20261117.jsonl),
+[extracted runtime](../evidence/g6/portable-runtime-20261117.json),
+[final 26-case suite](../evidence/g6/ui-vi-final-20261117.jsonl),
+[summary](../evidence/g6/ui-summary-20261117.json),
+[package negative checks](../evidence/g6/package-verification-20261117.json),
+[G4 regression](../evidence/g6/g4-desktop-20261117.jsonl),
+[G3 packaged](../evidence/g6/g3-packaged-20261117.jsonl),
+[G3 dev](../evidence/g6/g3-dev-20261117.jsonl).
 
 ## Attribution review
 
@@ -174,7 +174,7 @@ platforms remain unimplemented and require their own request/environment.
 
 Final handoff checks: **191 local Markdown targets/anchors across 13 documents
 PASS**; `git diff --check` PASS; final ZIP SHA-256 and extracted 16-file allowlist
-reverified. [Source/package fingerprint record](g6/evidence/final-source-20261117.json)
+reverified. [Source/package fingerprint record](../evidence/g6/final-source-20261117.json)
 identifies the changed runtime/relay/build/acceptance sources and packaged files.
 `croc/`, G0 sources and dependency pins remain unchanged. No commit or push was performed during the G6 implementation phase.
 

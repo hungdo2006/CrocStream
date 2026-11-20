@@ -1,6 +1,6 @@
 # G5 UX, telemetry and resilience verification
 
-Status and executed results: [G5_CLOSEOUT](../G5_CLOSEOUT.md).
+Status and executed results: [G5_CLOSEOUT](../reports/G5_CLOSEOUT.md).
 
 ## Reproduce the Windows UI acceptance
 
@@ -21,13 +21,13 @@ npm --prefix frontend run test
 npm --prefix frontend run build
 go build -tags production,g3test,g4test -buildvcs=false -o "$env:GOBIN\crocstream-g5-ui.exe" .
 go build -buildvcs=false -o "$env:GOBIN\g5-relay.exe" ./g4/proof
-node g5/ui-proof.mjs "$env:GOBIN\crocstream-g5-ui.exe" "$env:GOBIN\g5-relay.exe" 600
+node ../docs/gates/g5/ui-proof.mjs "$env:GOBIN\crocstream-g5-ui.exe" "$env:GOBIN\g5-relay.exe" 600
 ```
 
 For saved numeric JSONL, independently recompute summary/checks:
 
 ```powershell
-node g5/summarize.mjs g5/evidence/ui-600s-20261117.jsonl
+node ../docs/gates/g5/summarize.mjs ../docs/gates/evidence/g5/ui-600s-20261117.jsonl
 ```
 
 The reader accepts UTF-8 and PowerShell 5.1's `Tee-Object` UTF-16LE output.

@@ -85,20 +85,20 @@ Các đường dẫn sau trỏ vào snapshot `croc/` đã xác minh; số dòng 
 
 | Thành phần | API / vị trí thật | Nhận định |
 | --- | --- | --- |
-| Mã mời | [`codephrase.go`](../croc/src/codephrase/codephrase.go), `Generate`, `Parse`, `GenerateSSH`, `ParseSSH` | Phân tách room và PAKE passphrase; định dạng mã khác nhau theo chế độ, không dùng regex tự đoán |
-| Relay admission | [`tcp.go`](../croc/src/tcp/tcp.go):871, `ConnectToTCPServerControlContext(ctx, address, password, room, ...time.Duration)` | Trả `*comm.Comm`, banner, IP, capability, error; chỉ là vào relay room, chưa xác thực peer |
+| Mã mời | [`codephrase.go`](../../../croc/src/codephrase/codephrase.go), `Generate`, `Parse`, `GenerateSSH`, `ParseSSH` | Phân tách room và PAKE passphrase; định dạng mã khác nhau theo chế độ, không dùng regex tự đoán |
+| Relay admission | [`tcp.go`](../../../croc/src/tcp/tcp.go):871, `ConnectToTCPServerControlContext(ctx, address, password, room, ...time.Duration)` | Trả `*comm.Comm`, banner, IP, capability, error; chỉ là vào relay room, chưa xác thực peer |
 | Chuyển tiếp hai chiều | `tcp.go`:649–664, 779–801 | Hai hướng copy giữa socket sau khi ghép room; bằng chứng source về duplex, chưa phải runtime evidence |
-| Framing upstream | [`comm.go`](../croc/src/comm/comm.go):186–235, 326–331 | `Connection() net.Conn`, `Read() ([]byte,int,[]byte,error)`, `Write([]byte)(int,error)`, `Close()` không trả error; không implement trực tiếp `io.ReadWriteCloser` |
-| PAKE/key schedule | [`pakekey.go`](../croc/src/pakekey/pakekey.go):51–125 | `Init`, `Derive`, `Confirm` export; purpose allowlist không có CrocStream |
-| File-transfer API | [`croc.go`](../croc/src/croc/croc.go):1805, 2040 | `Send(filesInfo, emptyFolders, totalFolders) error` và `Receive() error`; không trả authenticated stream |
+| Framing upstream | [`comm.go`](../../../croc/src/comm/comm.go):186–235, 326–331 | `Connection() net.Conn`, `Read() ([]byte,int,[]byte,error)`, `Write([]byte)(int,error)`, `Close()` không trả error; không implement trực tiếp `io.ReadWriteCloser` |
+| PAKE/key schedule | [`pakekey.go`](../../../croc/src/pakekey/pakekey.go):51–125 | `Init`, `Derive`, `Confirm` export; purpose allowlist không có CrocStream |
+| File-transfer API | [`croc.go`](../../../croc/src/croc/croc.go):1805, 2040 | `Send(filesInfo, emptyFolders, totalFolders) error` và `Receive() error`; không trả authenticated stream |
 | Handshake truyền file | `croc.go`:2773–2931 | PAKE → derive transcript-bound keys → kiểm tra xác nhận cả hai vai → kích hoạt data transport |
 | Vòng đời file | `croc.go`:3105–3112, 3233–3284, 3870 | `TypeFinished` kết thúc; sau secured channel là file metadata; `sendData` nhận `*os.File` |
-| Primitive AEAD | [`crypt.go`](../croc/src/crypt/crypt.go):45–109 | AES-GCM encrypt/decrypt bản ghi, không phải session/duplex adapter hoàn chỉnh |
-| Tailcat data plane | [`endpoint_supported.go`](../croc/src/tailcattransport/endpoint_supported.go):37, 166, 197 | `Listen(ctx,key,config,events)`, `Accept(ctx)`, `Dial(ctx,offer,key,config,events)` export; phải có session key và offer được xác thực trước |
-| Stream/ownership Tailcat | [`bundle_supported.go`](../croc/src/tailcattransport/bundle_supported.go):122, 192 | `Connections() []net.Conn`; phải giữ và đóng `Bundle` để dọn node/ticker, không chỉ đóng socket |
-| SSH handshake | [`protocol.go`](../croc/src/sshshare/protocol.go):109, 175 | `guestPAKE` / `hostPAKE` không export; gắn với purpose SSH và authorization/host-key/terminal |
-| SSH public API | [`host.go`](../croc/src/sshshare/host.go):83, [`client.go`](../croc/src/sshshare/client.go):105 | `StartHost(ctx,HostConfig)` và `Join(ctx,ClientConfig)` phục vụ terminal, không trả stream chung |
-| SSH trên Windows | [`terminal_unsupported.go`](../croc/src/sshshare/terminal_unsupported.go):10–13 | Hosting terminal trả lỗi unsupported trên Windows; không phù hợp làm đường tắt cho MVP Windows |
+| Primitive AEAD | [`crypt.go`](../../../croc/src/crypt/crypt.go):45–109 | AES-GCM encrypt/decrypt bản ghi, không phải session/duplex adapter hoàn chỉnh |
+| Tailcat data plane | [`endpoint_supported.go`](../../../croc/src/tailcattransport/endpoint_supported.go):37, 166, 197 | `Listen(ctx,key,config,events)`, `Accept(ctx)`, `Dial(ctx,offer,key,config,events)` export; phải có session key và offer được xác thực trước |
+| Stream/ownership Tailcat | [`bundle_supported.go`](../../../croc/src/tailcattransport/bundle_supported.go):122, 192 | `Connections() []net.Conn`; phải giữ và đóng `Bundle` để dọn node/ticker, không chỉ đóng socket |
+| SSH handshake | [`protocol.go`](../../../croc/src/sshshare/protocol.go):109, 175 | `guestPAKE` / `hostPAKE` không export; gắn với purpose SSH và authorization/host-key/terminal |
+| SSH public API | [`host.go`](../../../croc/src/sshshare/host.go):83, [`client.go`](../../../croc/src/sshshare/client.go):105 | `StartHost(ctx,HostConfig)` và `Join(ctx,ClientConfig)` phục vụ terminal, không trả stream chung |
+| SSH trên Windows | [`terminal_unsupported.go`](../../../croc/src/sshshare/terminal_unsupported.go):10–13 | Hosting terminal trả lỗi unsupported trên Windows; không phù hợp làm đường tắt cho MVP Windows |
 
 ### Phân biệt hai lớp xác thực
 
@@ -143,7 +143,7 @@ Admission chỉ xác nhận quyền vào relay. Bỏ bước peer PAKE rồi l�
 Source relay có hai hướng copy, không tự yêu cầu file-completion metadata ở bước
 pipe. Đây là dấu hiệu tích cực cho adapter riêng.
 
-Defaults tại [`src/tcp/defaults.go`](../croc/src/tcp/defaults.go):
+Defaults tại [`src/tcp/defaults.go`](../../../croc/src/tcp/defaults.go):
 64 pending handshakes tổng, 32/source; first message 1 phút, handshake 5 phút;
 128 waiting rooms; room TTL 3 giờ; admission 30/source và 30/room mỗi phút.
 Các giá trị này **không phải** thông lượng hoặc chính sách cam kết của relay công
@@ -161,12 +161,12 @@ Inventory nguồn, chưa có module ứng dụng hoặc dependency graph đã re
 
 | Thành phần trong snapshot | Phiên bản | Bằng chứng giấy phép |
 | --- | --- | --- |
-| croc | Commit ghim ở trên | [`croc/LICENSE`](../croc/LICENSE): MIT, giữ copyright và permission notice |
+| croc | Commit ghim ở trên | [`croc/LICENSE`](../../../croc/LICENSE): MIT, giữ copyright và permission notice |
 | `github.com/schollz/pake/v3` | `v3.2.1` | LICENSE ở tag: MIT |
 | `golang.org/x/crypto` | `v0.59.0` | LICENSE ở tag: BSD-3-Clause |
 | `github.com/magisterquis/connectproxy` | `v0.0.0-20200725203833-3582e84f0c9b` | LICENSE ở revision: zlib-style, phải đánh dấu bản sửa và giữ notice |
 | `tailscale.com` | `v1.104.6` | LICENSE ở tag: BSD-3-Clause |
-| Tailcat in-tree | `c04c5afee401df40e620db8ae108e957ae07bcd9` + croc-local patches | [`UPSTREAM.md`](../croc/internal/tailcat/UPSTREAM.md), [`LICENSE`](../croc/internal/tailcat/LICENSE) |
+| Tailcat in-tree | `c04c5afee401df40e620db8ae108e957ae07bcd9` + croc-local patches | [`UPSTREAM.md`](../../../croc/internal/tailcat/UPSTREAM.md), [`LICENSE`](../../../croc/internal/tailcat/LICENSE) |
 | `gvisor.dev/gvisor` | `v0.0.0-20261112101947-136968485ee1` | Notice upstream ghi Apache-2.0 cho revision cũ; cần đối chiếu revision thực tế trước phân phối |
 | `github.com/fxamacker/cbor/v2` | `v2.10.0` | Notice upstream ghi phiên bản cũ `v2.9.0`; cần đối chiếu phiên bản thực tế |
 
@@ -196,7 +196,7 @@ trong `croc/` không có thay đổi. Lookup `Get-Command` cho go/wails3/node/np
 gcc/clang và `Test-Path` các vị trí phổ biến cho kết quả ở mục 2.
 `safe.directory` chỉ dùng cho từng lệnh, không sửa cấu hình Git toàn máy.
 
-Script inventory tái lập được tại [`g0/Inspect-Environment.ps1`](g0/Inspect-Environment.ps1):
+Script inventory tái lập được tại [`g0/Inspect-Environment.ps1`](../../../app/g0/Inspect-Environment.ps1):
 
 ```powershell
 powershell -NoProfile -File app/g0/Inspect-Environment.ps1

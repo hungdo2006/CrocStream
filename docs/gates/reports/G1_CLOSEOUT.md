@@ -8,7 +8,7 @@ Scope: pure-Go protocol package in `app/internal/protocol`.
 Reviewed `docs/PRD.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `ROADMAP.md`,
 `G0_CLOSEOUT.md`, `G0_LOCAL_PROOF.md`, `G0_LATENCY_FOLLOWUP.md`,
 `G0_TOOLCHAIN.md` and the collected
-[remote JSON](g0/poc/evidence/remote-new-network-20261116.json).
+[remote JSON](../evidence/g0/remote-new-network-20261116.json).
 
 The G0 closeout and underlying evidence agree: **G0 PASS** for the measured
 prototype. The recorded remote run lasted 600.095/600.099s, transferred
@@ -49,7 +49,7 @@ tracks the highest consumed wire ID; rejected frames never advance canonical
 progress but cannot be replayed. Regression tests exercise initial failed KEY,
 later failed KEY, discarded DELTA gaps and recovery with a new forward KEY.
 
-API integration and ownership: [application README](README.md).
+API integration and ownership: [application README](../../../app/README.md).
 
 ## Environment and commands actually run
 

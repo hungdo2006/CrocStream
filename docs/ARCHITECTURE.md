@@ -17,7 +17,7 @@
 - [Sources and licensing](#sources-and-licensing)
 
 ## Reference source
-The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5. `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The owner consolidated the workspace on 2026-11-15 and backed up the former standalone checkout. [Provenance](../UPSTREAM.md) records that decision. [G0](../app/G0_CLOSEOUT.md) records transport feasibility, and [G4](../app/G4_CLOSEOUT.md) records the subsequent media integration.
+The reference is `croc/` (relative to the repository root) at **552f40fd2d7593316118370bec0a93478d48e715**, after tag v11.6.5. `src/version/version.go` reports 11.6.5 and `go.mod` requires Go 1.27.3. The owner consolidated the workspace on 2026-11-15 and backed up the former standalone checkout. [Provenance](../UPSTREAM.md) records that decision. [G0](gates/reports/G0_CLOSEOUT.md) records transport feasibility, and [G4](gates/reports/G4_CLOSEOUT.md) records the subsequent media integration.
 
 Source inspection, not runtime feasibility evidence:
 - `src/croc/croc.go`: Send and transfer lifecycle depend on file metadata.
@@ -49,7 +49,7 @@ links to verification for the implemented Windows prototype.
 
 ### G0 blockers
 G0 feasibility closed **PASS** on 2026-11-16; see
-[closeout and explicit limits](../app/G0_CLOSEOUT.md).
+[closeout and explicit limits](gates/reports/G0_CLOSEOUT.md).
 The IDs below remain stable; PASS is for the measured prototype scope, not
 production/capture/UI/installer or an independent security audit.
 
@@ -65,15 +65,15 @@ G0 follow-up, 2026-11-16: the owner approved portable tools and pursuing the
 croc-based adapter design/review (option A). Go/Wails installation and a minimal
 combined native link/runtime probe and license review succeeded; B-04 is closed
 at G0's dependency-feasibility level, not G3 real-capture acceptance.
-The experimental [adapter contract](../app/G0_ADAPTER_DESIGN.md) is now
+The experimental [adapter contract](gates/reports/G0_ADAPTER_DESIGN.md) is now
 implemented in `app/g0/poc` with local B-01/B-03 test evidence; production/security
 review remains distinct from those tests. B-02 has an owner-provided EC2 path
 and >600s proofs on two network conditions; the latest original-load run measured
 48–51ms mean application RTT. The old path's high RTT remains in the
-[remote report](../app/G0_REMOTE_PROOF.md); follow-up in
-[G0_LATENCY_FOLLOWUP](../app/G0_LATENCY_FOLLOWUP.md). Local [runtime report](../app/G0_LOCAL_PROOF.md). Initial survey:
-[G0_FEASIBILITY](../app/G0_FEASIBILITY.md); current checks:
-[G0_TOOLCHAIN](../app/G0_TOOLCHAIN.md). No transport blocker is closed by tool installation.
+[remote report](gates/reports/G0_REMOTE_PROOF.md); follow-up in
+[G0_LATENCY_FOLLOWUP](gates/reports/G0_LATENCY_FOLLOWUP.md). Local [runtime report](gates/reports/G0_LOCAL_PROOF.md). Initial survey:
+[G0_FEASIBILITY](gates/reports/G0_FEASIBILITY.md); current checks:
+[G0_TOOLCHAIN](gates/reports/G0_TOOLCHAIN.md). No transport blocker is closed by tool installation.
 
 Deferred owner choices: webcam versus macOS/Linux priority; installer format; self-hosted versus public demo relay; Vietnamese-only versus bilingual UI; named hardware/network before absolute performance acceptance; whether the academic demo requires raw-capture losslessness (`tau=0`) or tolerates skipped changes (`tau=4`). Both tau modes must preserve sender/viewer canonical equality.
 
@@ -121,45 +121,37 @@ The [gate evidence index](gates/README.md) records reports, proof harnesses and 
 ```
 AGENTS.md
 README.md
-docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
+PROJECT_GUIDE.md
+docs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP,GETTING_STARTED}.md
+docs/gates/{README,notices}.md
+docs/gates/reports/                   # Historical G0–G6 closeout/proof reports
+docs/gates/evidence/                  # Historical G0, G3–G6 sanitized evidence
+docs/gates/g5/                        # G5 UX and local stress harnesses
 croc/                                 # Existing pristine upstream source
-app/                                  # Application core and G0 artifacts
-  G0_FEASIBILITY.md                    # Historical survey; final status in closeout
-  G0_TOOLCHAIN.md                      # Tool/build/test evidence
-  G0_ADAPTER_DESIGN.md                 # Experimental transport contract
-  G0_LOCAL_PROOF.md                    # Historical local PoC evidence
-  G0_CLOSEOUT.md                       # G0 PASS, notices/native checks and G1 handoff
-  G1_CLOSEOUT.md                       # Framing/config implementation and evidence
-  G2_CLOSEOUT.md                       # Codec/telemetry evidence and benchmarks
+app/                                  # Application core and active tooling
   README.md                           # Application-core commands and API contract
-  go.mod                              # Pure Go, approved LZ4 dependency at G2
-  internal/protocol/                  # Implemented: header, CONFIG, reader/writer, tests/fuzz
-  internal/frame/                     # Implemented: stride/order/alpha normalization
-  internal/delta/                     # Implemented: bounded LZ4 KEY/DELTA, canonical state
-  internal/telemetry/                 # Implemented: bounded exact rolling 1s measurements
-  g0/Inspect-Environment.ps1           # Existing read-only inventory script
-  g0/Install-Toolchain.ps1             # Approved portable tool installation
-  g0/Use-Toolchain.ps1                 # Process-local environment
-  g0/buildprobe/                       # Isolated minimal Go/Wails/croc compile probe
-  g0/poc/                              # Experimental transport + CLI harness + tests
-  main_windows.go                     # G3 Wails bootstrap; root package for actual v3 build
+  THIRD_PARTY_NOTICES.md              # Application dependency notices
+  go.mod                              # Pure Go, approved LZ4/Wails/croc dependencies
+  main_windows.go                     # Wails v3 bootstrap; root package for actual v3 build
   wails.yaml                          # Wails v3.1 manifest (Wake opt-in)
-  internal/capture/                   # G3 Win32 GDI display capture, consent at Start
-  internal/bridge/                    # G3 session-owned binary JPEG WebSocket
-  internal/latest/                    # Capacity-one handoff for replaceable capture and display snapshots
-  internal/preview/                   # G3 preview lifecycle and bounded sampling
-  internal/desktop/                   # G3 Wails service bindings
-  internal/session/                   # G4 authenticated role/media/control lifecycle
-  internal/transport/                 # G4 factory over the existing G0 module
-  g0/poc/duplex/                       # G4 public façade; one crypto source of truth
-  g4/                                # Synthetic/local-desktop proofs and remote helper
-  G4_CLOSEOUT.md                      # Local desktop + remote synthetic G4 PASS
-  G4_REMOTE_PROOF.md                  # >=600s two-machine hashes/control/cleanup
+  cmd/demo-relay/                     # Optional loopback/LAN demo relay wrapper
+  internal/protocol/                  # Header, CONFIG, reader/writer, tests/fuzz
+  internal/frame/                     # Stride/order/alpha normalization
+  internal/delta/                     # Bounded LZ4 KEY/DELTA, canonical state
+  internal/telemetry/                 # Bounded exact rolling 1s measurements
+  internal/capture/                   # Win32 GDI display capture, consent at Start
+  internal/bridge/                    # Session-owned binary JPEG WebSocket
+  internal/latest/                    # Capacity-one handoff for replaceable snapshots
+  internal/preview/                   # Preview lifecycle and bounded sampling
+  internal/desktop/                   # Wails service bindings and diagnostics
+  internal/session/                   # Authenticated role/media/control lifecycle
+  internal/transport/                 # Factory over the verified G0 duplex module
   frontend/src/                       # React/TypeScript preview, Share/Watch and metrics
   frontend/package.json               # Pinned dependencies + package-lock.json
-  g3/                                # Capture-free Origin probe, opt-in verification
-  g5/                                # UX and local stress harnesses
-  g6/                                # Portable package recipe, verifier and demo
+  g0/                                 # Portable toolchain scripts, buildprobe, licenses, poc/duplex
+  g3/                                 # Capture-free Origin probe, notice collector, UI proof
+  g4/                                 # Synthetic/local-desktop proofs and remote helper
+  g6/                                 # Portable package recipe, verifier, relay launcher and demo
 ```
 
 ## Suggested Go boundaries
@@ -233,7 +225,7 @@ canvas acknowledgement. No media wire field is added. Back waits for the
 pending Start binding before Stop; display-only reconnect uses the same live
 session endpoint, is user-triggered/rate-limited, and invalidates old canvas
 decode work. Optional LZ4 decode→render stays N/A because JPEG snapshots do not
-carry correlated timestamps. See [G5 report](../app/G5_CLOSEOUT.md).
+carry correlated timestamps. See [G5 report](gates/reports/G5_CLOSEOUT.md).
 
 ## Local WebView media bridge
 - Bind **only** `127.0.0.1:<OS-assigned-port>`; require a cryptographic 256-bit launch/session token on WebSocket upgrade. The listener and upgraded connections belong to the preview session (C-03). Reject absent/null/foreign Origin with an exact mode-specific allowlist (C-04); no wildcard.
@@ -281,12 +273,12 @@ It changes no transport cryptography or media bytes and is not a Windows service
 The actual extracted production apps complete a local Share/Watch session via
 Windows UI Automation without test/CDP APIs. WebView2 remains a separately
 installed prerequisite. Installer/signing and fresh-machine startup are not
-passed by the portable result. See [G6 closeout](../app/G6_CLOSEOUT.md).
+passed by the portable result. See [G6 closeout](gates/reports/G6_CLOSEOUT.md).
 
 ## Media protocol v1
 **Normative v1 contract implemented in the Windows prototype.** G1 implements
 framing/configuration, G2 implements codec/telemetry and G4 integrates Share/Watch.
-[G4 evidence](../app/G4_CLOSEOUT.md) covers local desktop and two-machine synthetic
+[G4 evidence](gates/reports/G4_CLOSEOUT.md) covers local desktop and two-machine synthetic
 media on the measured EC2 route. Real-screen performance over that route remains
 unmeasured. Framing runs
 inside an authenticated/encrypted transport; stock croc clients do not

@@ -42,7 +42,7 @@ npm 12.2.1, TypeScript 6.0.3. Native app process pair + real croc relay on
 ephemeral loopback. Actual primary display capture is owner-authorized locally.
 No EC2 traffic or frame recording. Dataset is the actual desktop with Share/
 Watch windows, not a standardized full-screen video benchmark.
-See [environment](g5/evidence/environment-20261117.json).
+See [environment](../evidence/g5/environment-20261117.json).
 
 Test binary SHA-256:
 `031D88BC07A43E1F2443EA5C1013CE7CC1F1635840C16B991EFCE28D55E2D7EA`.
@@ -85,8 +85,8 @@ Stop 129ms. GDI 12→15 active→12 stopped (host), viewer 12; both return to
 
 ### Actual >=600s stress
 
-Evidence: [raw numeric JSONL](g5/evidence/ui-600s-20261117.jsonl),
-[independently computed summary](g5/evidence/summary-600s-20261117.json).
+Evidence: [raw numeric JSONL](../evidence/g5/ui-600s-20261117.jsonl),
+[independently computed summary](../evidence/g5/summary-600s-20261117.json).
 Warmup 3s before measurement; stress starts **2026-11-17T13:50:03.757Z**.
 The stress loop runs >=600s; **600.331s including Stop**, which took **141ms**.
 All 23 initial UX checks, recovery, rejoin, live native close and cleanup pass.
@@ -145,7 +145,7 @@ string and dashboard label. The final short run repeated the UX suite and
 added inline-input preservation, disabled retry cooldown, 150ms image-decode
 lag while media decoding continues, and frame-kind checks. Result:
 **26 checks PASS, 146ms Stop, zero page errors, 11 listeners closed**.
-[Evidence](g5/evidence/ui-final-20261117.jsonl).
+[Evidence](../evidence/g5/ui-final-20261117.jsonl).
 The new counter is also covered by `TestLastFrameKindIsAcceptedMedia`.
 The long-run binary and final binary are separately identified, not conflated.
 
@@ -165,7 +165,7 @@ Raw evidence is retained in its original encoding.
 
 ## Acceptance limits
 
-See [verification README](g5/README.md). RTT is local sampled Ping/Pong, not
+See [verification README](../g5/README.md). RTT is local sampled Ping/Pong, not
 one-way latency; JPEG/codec timings are elapsed execution time. Native process
 memory excludes WebView2 subprocesses. Screen-reader speech, physical monitor
 removal, HDR/protected content and cross-OS tests are not claimed by automation.
@@ -185,7 +185,7 @@ No commit or push was performed during the G5 implementation phase.
 
 Final document verification: **171 local targets/anchors in 9 documents PASS**;
 `git diff --check` PASS; diff against `croc/`, G0, module pins and npm lockfile
-is empty. [Final changed-source fingerprints](g5/evidence/final-source-20261117.json)
+is empty. [Final changed-source fingerprints](../evidence/g5/final-source-20261117.json)
 identify the implementation and verification scripts retained for handoff.
 ## Pre-push verification (2026-11-17)
 

@@ -29,8 +29,8 @@ remaining manual checks must be recorded in G3 closeout.
 
 ## A. Protocol tests (unit + fuzz; no network required)
 G1 framing/config implementation and executed commands:
-[G1 closeout](../app/G1_CLOSEOUT.md). Decompression, tile records and canonical
-image correctness evidence: [G2 closeout](../app/G2_CLOSEOUT.md).
+[G1 closeout](gates/reports/G1_CLOSEOUT.md). Decompression, tile records and canonical
+image correctness evidence: [G2 closeout](gates/reports/G2_CLOSEOUT.md).
 
 - Header: fixed 18 bytes, BigEndian encode/decode fixtures below and [media protocol](ARCHITECTURE.md#media-protocol-v1), all packet types, EOF between any two bytes, invalid magic/type/direction, unsupported version.
 - Reject lengths >8 MiB **before allocation**, negative/overflow arithmetic in dimension calculation, oversize decompression and unexpected trailing data. A fuzz target should cover `DecodeHeader`, `DecodeConfig`, `DecodePacket`, `DecodeDelta`; prohibit panics and unbounded memory for any input.
@@ -85,17 +85,17 @@ image correctness evidence: [G2 closeout](../app/G2_CLOSEOUT.md).
   END, auth progress, wrong invitation, canceled preparation and Join limits.
   Two-desktop-app proof verifies local capture, both canvases, PLI recovery,
   Stop/disconnect/EOS and closed role-isolated bridges. See
-  [G4 evidence/status](../app/G4_CLOSEOUT.md).
+  [G4 evidence/status](gates/reports/G4_CLOSEOUT.md).
 - Remote G4 acceptance is not waived by local/G0 success. It passed on
   2026-11-17 with the owner-restarted EC2: synthetic-only two-machine media
   proof >=600s, expected hashes/bytes/IDs/control and independent run-owned
   process/firewall cleanup. Evidence:
-  [G4 remote report](../app/G4_REMOTE_PROOF.md). These remain the reproduction
+  [G4 remote report](gates/reports/G4_REMOTE_PROOF.md). These remain the reproduction
   criteria; never transmit real screen content under local-only capture permission.
 
 ## D. Transport G0 proof (two processes, no GUI)
 Execution status (2026-11-16): **G0 PASS** for the named prototype paths; see
-[closeout](../app/G0_CLOSEOUT.md), including native minimal-build and license
+[closeout](gates/reports/G0_CLOSEOUT.md), including native minimal-build and license
 evidence. The test requirements below remain the verification contract;
 later media/capture/UI tests are not retroactively passed by G0.
 
@@ -116,19 +116,19 @@ upstream baseline. The isolated transport package and harness are in `app/g0/poc
 Use the [PoC README](../app/g0/poc/README.md) for commands and reporting limits.
 The G0 inventory script records source provenance and environment metadata.
 Historical runtime results are in
-[G0_CLOSEOUT](../app/G0_CLOSEOUT.md).
+[G0_CLOSEOUT](gates/reports/G0_CLOSEOUT.md).
 Local adapter tests do not satisfy G1 media framing or remote acceptance.
 
 ## E. GUI/system manual acceptance
 
-G5 executed evidence: [G5 closeout](../app/G5_CLOSEOUT.md) and
-[reproduction harness](../app/g5/README.md). Actual local two-app 600s stress
+G5 executed evidence: [G5 closeout](gates/reports/G5_CLOSEOUT.md) and
+[reproduction harness](gates/g5/README.md). Actual local two-app 600s stress
 and final 26-check UI suite passed; keyboard/accessibility-tree tests are
 distinct from unexecuted screen-reader speech and physical-device cases.
 The methodology below remains the contract, including explicitly unmeasured
 content/platform cases in the report.
 
-G6 portable acceptance: [G6 closeout](../app/G6_CLOSEOUT.md) records exact ZIP/
+G6 portable acceptance: [G6 closeout](gates/reports/G6_CLOSEOUT.md) records exact ZIP/
 binary hashes, the production two-app UIA run, extracted startup/normal close,
 relay cancellation, modified/extra-file rejection and notice audit. The
 instrumented UI suite separately covers malformed/recovery/canvas behavior.
@@ -177,7 +177,7 @@ go -C app test -run '^$' -bench '^BenchmarkCodec$' -benchtime=1s -benchmem ./int
 
 ## Typical verification commands
 
-Run from the repository root with the [Windows toolchain](../CONTRIBUTING.md#môi-trường-windows).
+Run from the repository root with the [Windows toolchain](../README.md#4-điều-kiện-tiên-quyết).
 The verifier runs Go tests, vet and module integrity checks in `app/`, `app/g0/poc`
 and `app/g0/buildprobe`. `-Race` adds the race suite for each module. Wails regenerates
 bindings from Go and runs the frontend build. The browser suite uses synthetic

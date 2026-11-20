@@ -1,6 +1,6 @@
 // Owner-authorized local capture only. Never record pixels, traces, clipboard,
 // socket headers, invitations or credentials. Output is numeric/fixed labels.
-import {chromium} from '../frontend/node_modules/playwright-core/index.mjs'
+import {chromium} from '../../../app/frontend/node_modules/playwright-core/index.mjs'
 import {spawn} from 'node:child_process'
 import {once} from 'node:events'
 import {createInterface} from 'node:readline'

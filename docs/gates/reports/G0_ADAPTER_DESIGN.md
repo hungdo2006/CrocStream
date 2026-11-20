@@ -4,7 +4,7 @@
 tiếp tục hoàn thiện G0 ngày 2026-11-16. Đã kiểm chứng local/remote và self-review
 ở mức G0: [closeout PASS](G0_CLOSEOUT.md). Chưa audit bảo mật độc lập.
 Xem [kết quả PoC](G0_LOCAL_PROOF.md) và
-[lệnh chạy](g0/poc/README.md). Các nội dung bên dưới là hợp đồng thử nghiệm,
+[lệnh chạy](../../../app/g0/poc/README.md). Các nội dung bên dưới là hợp đồng thử nghiệm,
 không phải tuyên bố transport đã sẵn sàng cho production.
 
 ## 1. Phạm vi đề xuất

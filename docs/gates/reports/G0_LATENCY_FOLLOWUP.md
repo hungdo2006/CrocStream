@@ -116,7 +116,7 @@ then the same command with `-DataIntervalMilliseconds 100`.
 
 ## Paired-load results on the same current route
 
-[Sanitized collected JSON](g0/poc/evidence/latency-pair-20261116.json).
+[Sanitized collected JSON](../evidence/g0/latency-pair-20261116.json).
 Both runs returned **REMOTE_SMOKE_PASS**, independently verified hashes and
 cross-peer counts, correct requested pacing, no detected race, then
 `remote_cleanup_complete`.
@@ -150,7 +150,7 @@ interval (`-DurationSeconds 600 -DataIntervalMilliseconds 20`).
 ## Completed ten-minute repeat on the new network
 
 Run ID `8493be781a904ec6a8731b63d4814f49`, same source/executable hashes above.
-[Collected sanitized result](g0/poc/evidence/remote-new-network-20261116.json).
+[Collected sanitized result](../evidence/g0/remote-new-network-20261116.json).
 
 | Metric | Local host | EC2 viewer |
 | --- | ---: | ---: |

@@ -21,7 +21,7 @@ assuming a future download has identical text.
 
 The generated status is deliberately **review required**, never automatic
 legal approval. The reviewed G0 snapshot and decision are recorded in
-[G0_CLOSEOUT](../../G0_CLOSEOUT.md).
+[G0_CLOSEOUT](../../../docs/gates/reports/G0_CLOSEOUT.md).
 
 Authoritative reviewed snapshot: [`reviewed-20261116/inventory.json`](reviewed-20261116/inventory.json)
 and [`THIRD_PARTY_NOTICES.txt`](reviewed-20261116/THIRD_PARTY_NOTICES.txt).

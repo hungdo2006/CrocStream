@@ -44,7 +44,7 @@ Local: Windows x64, Go **1.27.4**, existing compiler for `-race`.
 EC2: **Windows Server 2022 Datacenter**, build **20348**, x64,
 Intel Xeon Platinum **8488C**, **2 logical processors**, visible memory
 **8,224,276 KiB**. Authenticated environment sample:
-[remote-environment-20261117.json](g4/evidence/remote-environment-20261117.json).
+[remote-environment-20261117.json](../evidence/g4/remote-environment-20261117.json).
 These are the observed specs, not a claim about a particular EC2 instance SKU.
 
 Synthetic dataset: 640×360 opaque RGBA, black background with a changing
@@ -61,7 +61,7 @@ Executable `g4proof-remote-20261117.exe`:
 - Same executable used by local host, remote viewer and remote relay; SCP
   content is checked with `Get-FileHash` before execution.
 - Runtime/source fingerprints, repository HEAD and build command:
-  [remote-source-20261117.json](g4/evidence/remote-source-20261117.json).
+  [remote-source-20261117.json](../evidence/g4/remote-source-20261117.json).
 - Application/runtime/codec/crypto code was not changed during these runs.
   Only the SSH helper gained an optional pinned alias and an extra cleanup
   rule check; no wire bytes, primitive or relay provider changed.
@@ -107,7 +107,7 @@ No passwords, invitation or token appear in arguments or evidence files.
 
 Run ID **fb21f2b869fd47a4988b993e6ddc8de0**.
 Saved sanitized output:
-[remote-smoke-20261117.jsonl](g4/evidence/remote-smoke-20261117.jsonl).
+[remote-smoke-20261117.jsonl](../evidence/g4/remote-smoke-20261117.jsonl).
 
 | Observation | Local host | EC2 viewer |
 | --- | ---: | ---: |
@@ -138,7 +138,7 @@ This 30s smoke alone does not close the required >=600s remote gate.
 
 Run ID **3f434ebe75a24f6183f2e298faed3c0f**; exactly the same hash-pinned binary,
 source, role configuration and route as the smoke. Saved sanitized output:
-[remote-600s-20261117.jsonl](g4/evidence/remote-600s-20261117.jsonl).
+[remote-600s-20261117.jsonl](../evidence/g4/remote-600s-20261117.jsonl).
 
 | Observation | Local host | EC2 viewer |
 | --- | ---: | ---: |
@@ -192,7 +192,7 @@ both run-specific executable paths and firewall rule names. It observed:
   processes** after completion.
 
 Saved independent result:
-[remote-cleanup-20261117.json](g4/evidence/remote-cleanup-20261117.json).
+[remote-cleanup-20261117.json](../evidence/g4/remote-cleanup-20261117.json).
 The EC2 instance, SSH/RDP and owner security groups are deliberately retained.
 
 ### Evidence hashes

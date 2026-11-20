@@ -145,7 +145,7 @@ backpressure/scheduling, not just physical network latency.
 
 Same command as above, with `-DurationSeconds 600`, completed successfully.
 Run ID: `926bcb28763e4d07af6dc7ec0d7a9a41`. Executable/source hashes are unchanged.
-The collected [sanitized results](g0/poc/evidence/remote-20261116.json) contain
+The collected [sanitized results](../evidence/g0/remote-20261116.json) contain
 no room code, relay password, private key or server IP.
 
 | Metric | Local host | EC2 viewer |

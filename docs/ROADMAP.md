@@ -3,13 +3,13 @@
 > **Cách đọc:** tài liệu này cho biết thứ tự triển khai và điều kiện chuyển bước,
 > áp dụng cho cả thành viên nhóm và coding agent. Người mới nên đọc
 > [GETTING_STARTED](GETTING_STARTED.md) trước. **G0 PASS** cho khả thi prototype
-> đã kiểm chứng; xem [closeout](../app/G0_CLOSEOUT.md). **G1 PASS** cho
-> framing/config; [bằng chứng G1](../app/G1_CLOSEOUT.md).
-> **G2 PASS** codec/telemetry; [bằng chứng G2](../app/G2_CLOSEOUT.md).
-> **G3 PASS** capture/local preview; [bằng chứng G3](../app/G3_CLOSEOUT.md).
-> **G4 PASS** local desktop + remote synthetic; [bằng chứng G4](../app/G4_CLOSEOUT.md).
-> **G5 PASS** UX/telemetry/resilience Windows, stress 600s; [bằng chứng G5](../app/G5_CLOSEOUT.md).
-> **G6 PASS** Windows x64 portable và demo handoff; [bằng chứng G6](../app/G6_CLOSEOUT.md).
+> đã kiểm chứng; xem [closeout](gates/reports/G0_CLOSEOUT.md). **G1 PASS** cho
+> framing/config; [bằng chứng G1](gates/reports/G1_CLOSEOUT.md).
+> **G2 PASS** codec/telemetry; [bằng chứng G2](gates/reports/G2_CLOSEOUT.md).
+> **G3 PASS** capture/local preview; [bằng chứng G3](gates/reports/G3_CLOSEOUT.md).
+> **G4 PASS** local desktop + remote synthetic; [bằng chứng G4](gates/reports/G4_CLOSEOUT.md).
+> **G5 PASS** UX/telemetry/resilience Windows, stress 600s; [bằng chứng G5](gates/reports/G5_CLOSEOUT.md).
+> **G6 PASS** Windows x64 portable và demo handoff; [bằng chứng G6](gates/reports/G6_CLOSEOUT.md).
 
 > **Do not skip G0**. Each phase ends with code/tests/artifacts, exact observed evidence, and owner decision if a blocker remains. No blanket task “build everything” until transport has passed.
 
@@ -25,17 +25,17 @@ workspace paths are relative to the repository root.
 ## Current progress
 
 Kết quả nghiệm thu lịch sử **G0–G6 PASS**, tính đến 2026-11-17. [Chỉ mục gate](gates/README.md) liên kết báo cáo, môi trường, hướng dẫn tái lập và giới hạn.
-Trạng thái nghiệm thu G1 nằm trong [G1 closeout](../app/G1_CLOSEOUT.md).
-Xem [quyết định và giới hạn](../app/G0_CLOSEOUT.md),
-[bằng chứng local](../app/G0_LOCAL_PROOF.md),
-[toolchain](../app/G0_TOOLCHAIN.md),
-[thiết kế dự thảo](../app/G0_ADAPTER_DESIGN.md) và
-[khảo sát ban đầu](../app/G0_FEASIBILITY.md).
+Trạng thái nghiệm thu G1 nằm trong [G1 closeout](gates/reports/G1_CLOSEOUT.md).
+Xem [quyết định và giới hạn](gates/reports/G0_CLOSEOUT.md),
+[bằng chứng local](gates/reports/G0_LOCAL_PROOF.md),
+[toolchain](gates/reports/G0_TOOLCHAIN.md),
+[thiết kế dự thảo](gates/reports/G0_ADAPTER_DESIGN.md) và
+[khảo sát ban đầu](gates/reports/G0_FEASIBILITY.md).
 Tiếp nối cùng ngày: chủ dự án đã tạo EC2 Windows và cho phép SSH.
-[Bằng chứng remote](../app/G0_REMOTE_PROOF.md) ghi nhận smoke hai máy qua relay
+[Bằng chứng remote](gates/reports/G0_REMOTE_PROOF.md) ghi nhận smoke hai máy qua relay
 Internet và phiên dài 605s đã đạt kiểm tra dữ liệu/control. RTT trung bình
 10–12s, tối đa 42.8s được giữ như giới hạn của điều kiện mạng cũ.
-[Follow-up mạng mới](../app/G0_LATENCY_FOLLOWUP.md): cùng binary cũ đạt RTT
+[Follow-up mạng mới](gates/reports/G0_LATENCY_FOLLOWUP.md): cùng binary cũ đạt RTT
 48–49ms trong 30s; hai mức tải và phiên 600.1s ở mức tải gốc đều đạt.
 RTT phiên dài mới trung bình 48–51ms, max 191ms, hash/control/cleanup đúng.
 Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác định root cause.
@@ -48,11 +48,11 @@ Giữ nguyên kết quả độ trễ cao của mạng trước; chưa xác đ�
 | G0.4 | LOCAL_PASS; remote 605s trên mạng cũ và 600.1s trên mạng mới; hash/control/cleanup đúng; RTT mạng mới 48–51ms mean | Ghi rõ giới hạn theo mạng, không suy ra FPS/latency chung |
 | G0.5 | PASS: quyết định GO cho G1, bằng chứng native/license/security và giới hạn ở G0_CLOSEOUT | C-01/C-02 đã được chủ dự án chốt khi giao G1 |
 | G1 | PASS: framing/config, reader/writer, tests/race/vet/Windows build và 4 fuzz targets; xem G1_CLOSEOUT | Bàn giao G2 codec + telemetry |
-| G2 | PASS: codec/telemetry, canonical/oracle, malformed, tests/race/vet/build/fuzz/bench; [G2_CLOSEOUT](../app/G2_CLOSEOUT.md) | Bàn giao G3; theo dõi allocation khi tích hợp |
-| G3 | PASS: capture GDI, session bridge, React/Wails preview; 600.377s ở 720p, render mean 23.956 FPS, Stop 118ms; [G3_CLOSEOUT](../app/G3_CLOSEOUT.md) | G4; ghi rõ giới hạn một màn hình, process-only memory và manual cases |
-| G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](../app/G4_CLOSEOUT.md) | G5 đã tiếp nối bên dưới; chưa suy ra hiệu năng capture/render remote |
-| G5 | PASS: UI/dashboard thật, 26 kiểm tra UX cuối, stress 600.331s 720p, render p50 24 FPS / p95 25 FPS, Stop 141ms; [G5_CLOSEOUT](../app/G5_CLOSEOUT.md) | Giới hạn manual/content benchmark được ghi rõ; G6 đóng gói |
-| G6 | PASS: ZIP portable unsigned, checksum/notices/demo; chạy hai exe production từ ZIP giải nén qua loopback, Stop 535ms; [G6_CLOSEOUT](../app/G6_CLOSEOUT.md) | Owner demo; installer/signing và fresh-machine test chưa có |
+| G2 | PASS: codec/telemetry, canonical/oracle, malformed, tests/race/vet/build/fuzz/bench; [G2_CLOSEOUT](gates/reports/G2_CLOSEOUT.md) | Bàn giao G3; theo dõi allocation khi tích hợp |
+| G3 | PASS: capture GDI, session bridge, React/Wails preview; 600.377s ở 720p, render mean 23.956 FPS, Stop 118ms; [G3_CLOSEOUT](gates/reports/G3_CLOSEOUT.md) | G4; ghi rõ giới hạn một màn hình, process-only memory và manual cases |
+| G4 | PASS: local desktop + remote synthetic 600.28s, 6.839 packet / 2.021.033 byte, hash/control/cleanup khớp; [G4_CLOSEOUT](gates/reports/G4_CLOSEOUT.md) | G5 đã tiếp nối bên dưới; chưa suy ra hiệu năng capture/render remote |
+| G5 | PASS: UI/dashboard thật, 26 kiểm tra UX cuối, stress 600.331s 720p, render p50 24 FPS / p95 25 FPS, Stop 141ms; [G5_CLOSEOUT](gates/reports/G5_CLOSEOUT.md) | Giới hạn manual/content benchmark được ghi rõ; G6 đóng gói |
+| G6 | PASS: ZIP portable unsigned, checksum/notices/demo; chạy hai exe production từ ZIP giải nén qua loopback, Stop 535ms; [G6_CLOSEOUT](gates/reports/G6_CLOSEOUT.md) | Owner demo; installer/signing và fresh-machine test chưa có |
 | G7 | Chưa bắt đầu | Webcam/cross-platform cần yêu cầu và môi trường riêng |
 
 Inventory một mình không đóng G0; lần đóng gate này dựa trên toàn bộ bằng chứng
@@ -69,14 +69,14 @@ C-01/C-02: key interval 1–120, default 30; chỉ 640×360 và 1280×720.
 `app/internal/protocol` hiện có header 18 byte, CONFIG 11 byte, reader/writer
 bounded, fixtures, malformed/truncation/replay tests và fuzz.
 Chi tiết lệnh/kết quả, API codec acceptance và giới hạn:
-[G1_CLOSEOUT](../app/G1_CLOSEOUT.md), [app README](../app/README.md).
+[G1_CLOSEOUT](gates/reports/G1_CLOSEOUT.md), [app README](../app/README.md).
 
 ### G2 implementation and verification
 
 Chủ dự án đã yêu cầu G2 và phê duyệt pin `pierrec/lz4/v4 v4.1.33`.
 Đã triển khai canonical RGBA, LZ4-frame KEY/DELTA, tile records, bounded decode,
 tau=0/tau=4 và baseline cùng mẫu phát; telemetry cửa sổ 1s có giới hạn.
-Lệnh/kết quả thực tế nằm trong [G2_CLOSEOUT](../app/G2_CLOSEOUT.md).
+Lệnh/kết quả thực tế nằm trong [G2_CLOSEOUT](gates/reports/G2_CLOSEOUT.md).
 
 ### G3 — PASS
 
@@ -99,7 +99,7 @@ instance và cung cấp `47.128.220.28`. SSH khớp host key đã ghim, không b
 verification. Smoke 30s và phiên synthetic **600.277/600.282s** qua public relay
 đều PASS: **6.839 packet, 2.021.033 byte media**, hash/counter đúng, PLI/KEY,
 Ping/Pong và END đạt; kiểm tra SSH riêng không còn process/rule/listener test.
-Chi tiết: [G4_REMOTE_PROOF](../app/G4_REMOTE_PROOF.md).
+Chi tiết: [G4_REMOTE_PROOF](gates/reports/G4_REMOTE_PROOF.md).
 
 ### G5 — PASS
 
@@ -107,7 +107,7 @@ Chủ dự án giao G5 ngày 2026-11-17. Đã bổ sung uptime/loại frame, too
 empty state, retry countdown, phục hồi kênh hiển thị và Back chờ cleanup.
 Hai app Windows capture thật qua loopback đạt stress >=600s; final suite 26
 checks, full unit/race/vet, frontend và native build PASS.
-Nguồn số đo/giới hạn: [G5_CLOSEOUT](../app/G5_CLOSEOUT.md). Speech screen-reader,
+Nguồn số đo/giới hạn: [G5_CLOSEOUT](gates/reports/G5_CLOSEOUT.md). Speech screen-reader,
 physical monitor removal và benchmark toàn ma trận nội dung chưa chạy.
 
 ### G6 — PASS, portable Windows
@@ -120,7 +120,7 @@ mã mời cạnh điều khiển phiên. Không đổi crypto/media wire/depende
 
 Đây là gate portable **unsigned**, không phải installer hay public release.
 Không cài công cụ signing/installer, không publish, không thử màn hình thật qua
-EC2. Bằng chứng và giới hạn: [G6_CLOSEOUT](../app/G6_CLOSEOUT.md).
+EC2. Bằng chứng và giới hạn: [G6_CLOSEOUT](gates/reports/G6_CLOSEOUT.md).
 
 ### Next: owner demo; G7 deferred
 

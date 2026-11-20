@@ -160,7 +160,7 @@ node g3/ui-proof.mjs "$env:GOBIN\crocstream-g3-ui-final.exe" 600 packaged
 ```
 
 **PASS**. Collected numeric output:
-[packaged-600s-20261117.json](g3/evidence/packaged-600s-20261117.json).
+[packaged-600s-20261117.json](../evidence/g3/packaged-600s-20261117.json).
 Evidence SHA-256:
 `BFB3467E0F4C7B05456A5077219E80472DC1BB0E14DD123B37A25EE5AEAEF872`.
 

@@ -117,8 +117,8 @@ audit** or production certification.
 
 ## Reviewed notice bundle
 
-Authoritative snapshot: [reviewed-20261116](g0/licenses/reviewed-20261116/inventory.json),
-with [full notice text](g0/licenses/reviewed-20261116/THIRD_PARTY_NOTICES.txt).
+Authoritative snapshot: [reviewed-20261116](../../../app/g0/licenses/reviewed-20261116/inventory.json),
+with [full notice text](../../../app/g0/licenses/reviewed-20261116/THIRD_PARTY_NOTICES.txt).
 Bundle SHA-256:
 `0996E3672FDFE890833087181C2D2B234B2D6C7F53654EB99BE7F07BB4EB9106`.
 Inventory SHA-256:
@@ -145,7 +145,7 @@ switch was identified within this reviewed scope. This is an engineering
 inventory/obligation review, not legal advice or a blanket shipping opinion.
 Wails CLI/Node/compiler distributions and a future React/capture/installer
 package are not redistributed here; their eventual release contents need a
-fresh G6 audit, not retroactive G0 approval. See [scope](g0/licenses/README.md).
+fresh G6 audit, not retroactive G0 approval. See [scope](../../../app/g0/licenses/README.md).
 
 ## Commands actually executed in closeout
 
