@@ -244,28 +244,7 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	workers.Add(1)
 	go func() {
 		defer workers.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case f := <-images:
-				begin := time.Now()
-				encoded, err := bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
-				elapsed := time.Since(begin)
-				if err == nil && ctx.Err() == nil {
-					err = s.bridge.Publish(encoded)
-				}
-				c.mu.Lock()
-				s.jpegTotal += elapsed
-				s.jpegCount++
-				if err != nil && ctx.Err() == nil {
-					s.stats.PreviewError = "Preview unavailable"
-				} else if err == nil {
-					s.stats.PreviewError = ""
-				}
-				c.mu.Unlock()
-			}
-		}
+		c.publishPreviewFrames(s, images)
 	}()
 	if host {
 		listener, failure = c.factory.Host(network, relay, func() { c.setState(s, Authenticating) })
@@ -273,7 +252,6 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		if failure != nil {
 			return
 		}
-		relay = transport.Options{} // Do not retain admission password in coordinator.
 		c.mu.Lock()
 		if !s.stopping {
 			s.invitation = listener.Invitation()
@@ -331,6 +309,33 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 		failure = peer.Run(ctx, cfg, frames)
 	} else {
 		failure = peer.Run(ctx, protocol.Config{}, nil)
+	}
+}
+
+// publishPreviewFrames encodes replaceable snapshots for the local canvas.
+func (c *Controller) publishPreviewFrames(s *activeSession, images <-chan capture.Frame) {
+	ctx := s.ctx
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case f := <-images:
+			begin := time.Now()
+			encoded, err := bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
+			elapsed := time.Since(begin)
+			if err == nil && ctx.Err() == nil {
+				err = s.bridge.Publish(encoded)
+			}
+			c.mu.Lock()
+			s.jpegTotal += elapsed
+			s.jpegCount++
+			if err != nil && ctx.Err() == nil {
+				s.stats.PreviewError = "Preview unavailable"
+			} else if err == nil {
+				s.stats.PreviewError = ""
+			}
+			c.mu.Unlock()
+		}
 	}
 }
 

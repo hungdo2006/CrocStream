@@ -221,3 +221,33 @@ test('Share sends the selected capture and compression settings', async ({ page 
     displayID: 'synthetic', width: 640, height: 360, fps: 30, tau: 6, keyInterval: 60,
   })
 })
+
+test('waiting and incomplete telemetry keep unmeasured video rates hidden', async ({ page }) => {
+  await startShare(page)
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  await page.getByText('Chi tiết luồng', { exact: true }).click()
+
+  const rate = page.getByLabel(/^Tốc độ video/)
+  const capture = page.getByLabel(/^FPS chụp/)
+  const uptime = page.getByLabel(/^Thời lượng phiên/)
+  await expect(rate.getByText('—', { exact: true })).toBeVisible()
+  await expect(capture.getByText('24', { exact: true })).toBeVisible()
+
+  await page.evaluate(() => {
+    const stats = window.__desktopTest.session
+    stats.state = 'Live'
+    stats.counters.emitted = 1
+    stats.sentKiB = 12.5
+  })
+  await expect(rate.getByText('12.5', { exact: true })).toBeVisible()
+
+  await page.evaluate(() => {
+    const stats = window.__desktopTest.session
+    stats.measurementsComplete = false
+    stats.measurementOverflow = true
+  })
+  await expect(rate.getByText('—', { exact: true })).toBeVisible()
+  await expect(capture.getByText('—', { exact: true })).toBeVisible()
+  await expect(uptime.getByText('1', { exact: true })).toBeVisible()
+  await expect(page.getByText(/Cửa sổ đo chưa đầy đủ/)).toBeVisible()
+})
