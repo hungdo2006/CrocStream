@@ -25,3 +25,5 @@ Desktop.ini
 /app/frontend/bindings/
 /app/release/
 /app/release-*/
+/packaging/release/
+/release/

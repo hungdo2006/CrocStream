@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 
-const labels = JSON.parse(readFileSync(new URL('../../g6/ui-labels.json', import.meta.url), 'utf8'))
+const labels = JSON.parse(readFileSync(new URL('../../../packaging/ui-labels.json', import.meta.url), 'utf8'))
 
 // Exercise the actual React hooks/DOM with deferred desktop RPCs and synthetic
 // JPEGs. No capture, relay traffic, clipboard writes, screenshots or recordings.

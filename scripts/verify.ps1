@@ -23,7 +23,7 @@ function Invoke-Check([string]$Program, [string[]]$Arguments) {
 $repo = Split-Path -Parent $PSScriptRoot
 Push-Location -LiteralPath $repo
 try {
-    . .\app\g0\Use-Toolchain.ps1 -ToolRoot $ToolRoot
+    . .\scripts\toolchain\Use-Toolchain.ps1 -ToolRoot $ToolRoot
     Remove-Item Env:CROCSTREAM_CAPTURE_CONSENT -ErrorAction SilentlyContinue
     $env:WAILS_EXP_USE_WAKE = '1'
     if ($Offline) {
@@ -36,7 +36,7 @@ try {
     Invoke-Check npm.cmd @('--version')
     Invoke-Check wails3 @('version')
 
-    foreach ($module in @('app', 'app/g0/poc', 'app/g0/buildprobe')) {
+    foreach ($module in @('app', 'scripts/qa-probes/buildprobe')) {
         Invoke-Check go @('-C', $module, 'test', '-count=1', '-timeout=240s', './...')
         Invoke-Check go @('-C', $module, 'vet', './...')
         Invoke-Check go @('-C', $module, 'mod', 'verify')

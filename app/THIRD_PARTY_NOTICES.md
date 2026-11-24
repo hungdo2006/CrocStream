@@ -3,18 +3,18 @@
 G6's exact Windows portable package ships the generated G4/G6 conservative
 notice closure, reviewed G0 nested/inline/embedded attributions and Go LICENSE.
 All 24 linked non-app Go module roots and frontend runtime pins were checked;
-see [G6 closeout](../docs/gates/reports/G6_CLOSEOUT.md). No toolchain/installer/WebView2 binary is
+see [G6 closeout](../docs/archive-gates/reports/G6_CLOSEOUT.md). No toolchain/installer/WebView2 binary is
 redistributed. Original CrocStream code still has no owner-selected blanket
 license; G6 does not invent one.
 
-G4 reuses the owner-approved G0 secure-duplex module and pinned croc source.
+G4 reuses the owner-approved G0 secure-duplex implementation (`internal/crocduplex`) and pinned croc source.
 The resolved Go dependency graph and extra notices are documented in
-[G4 notice follow-up](g4/licenses/README.md); it includes the graph-required
+[G4 notice follow-up](../docs/archive-gates/licenses/g4/README.md); it includes the graph-required
 `coder/websocket v1.8.15`. Keep the earlier G0–G3 attribution bundles too.
 
 G3 adds owner-approved Wails 3.1.0, x/sys 0.50.0, coder/websocket 1.8.14
 and locked frontend/build/test dependencies. See
-[G3 notice scope and full bundle](g3/licenses/README.md). Runtime and
+[G3 notice scope and full bundle](../docs/archive-gates/licenses/g3/README.md). Runtime and
 development tools are distinguished; G6 must audit the exact distributed
 package. The LZ4 notice below remains applicable to G2 components.
 
@@ -31,7 +31,7 @@ commit `b3ae24d689a8c0020f1567fc424c53bde9dfc4f7`.
   and source notice search. The downloaded module contains one LICENSE file;
   no additional inline copyright/license notices were found in Go/assembly.
 - Preserve the complete notice below with redistributed application binaries.
-  The separate G0 notices remain in `g0/licenses/`.
+  The separate G0 notices remain in `../docs/archive-gates/licenses/g0/`.
 
 ## github.com/pierrec/lz4/v4 — BSD-3-Clause
 

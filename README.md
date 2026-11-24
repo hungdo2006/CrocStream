@@ -1,8 +1,24 @@
 # CrocStream
 
-CrocStream là ứng dụng desktop chia sẻ màn hình 1-1 thời gian thực trên Windows 10/11 x64, được phát triển mở rộng từ nền tảng truyền dữ liệu mã hóa của [`schollz/croc`](https://github.com/schollz/croc) (ghim tại commit [`552f40fd2d75`](UPSTREAM.md)).
+CrocStream là ứng dụng desktop chia sẻ màn hình 1-1 thời gian thực trên Windows 10/11 x64, được phát triển mở rộng từ nền tảng truyền dữ liệu mã hóa của [`schollz/croc`](https://github.com/schollz/croc) (ghim nguyên bản tại commit [`552f40fd2d75`](UPSTREAM.md)).
 
-> **Tài liệu dành cho thành viên nhóm & bảo vệ đồ án:** Xem ngay **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** để nắm toàn bộ luồng hoạt động, kiến trúc, bảng đối chiếu đóng góp so với repository gốc và kịch bản demo.
+> **Chỉ dẫn đọc nhanh theo nhu cầu:**
+> - **Người mới tìm hiểu dự án / thành viên nhóm:** Đọc **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** (giải thích từ A–Z bằng tiếng Việt).
+> - **Người dùng muốn chạy thử ngay trong vài phút:** Đọc **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** và **[packaging/DEMO.md](packaging/DEMO.md)**.
+> - **Kỹ sư xem thiết kế & giao thức:** Xem thư mục **[docs/specs/](docs/specs/)** (`PRD.md`, `ARCHITECTURE.md`, `TEST_PLAN.md`, `ROADMAP.md`).
+> - **Tra cứu biên bản nghiệm thu lịch sử (G0–G6):** Xem kho lưu trữ **[docs/archive-gates/README.md](docs/archive-gates/README.md)**.
+
+---
+
+## Bố cục kho mã nguồn (Dành cho người mới)
+
+| Thư mục | Vai trò dễ hiểu | Người mới có cần mở không? |
+| --- | --- | --- |
+| **`app/`** | **Phần mềm chính CrocStream** (`frontend/` là giao diện màn hình, `internal/` là bộ xử lý ngầm Go, `cmd/demo-relay/` là trạm chuyển tiếp đi kèm). | **Có** – Đây là nơi chứa toàn bộ ứng dụng. |
+| **`packaging/`** | Công thức đóng gói bản chạy ngay (**Portable ZIP**), script bật trạm relay và hướng dẫn chạy Demo. | **Có** – Mở khi muốn đóng gói hoặc chạy Demo. |
+| **`docs/`** | Tài liệu hướng dẫn nhanh (`GETTING_STARTED.md`), bản vẽ thiết kế (`specs/`) và kho lưu trữ nghiệm thu cũ (`archive-gates/`). | Đọc theo nhu cầu ở khung chỉ dẫn phía trên. |
+| **`scripts/`** | Các công cụ tự động hóa: chạy kiểm thử (`verify.ps1`), dọn file tạm (`clean.ps1`), cài môi trường (`toolchain/`), kiểm tra bản quyền (`notices/`) và bộ test chuyên sâu (`qa-probes/`). | Chỉ dùng khi cần build/kiểm thử từ mã nguồn. |
+| **`croc/`** | Kho mã nguồn gốc của tác giả `schollz/croc` được giữ nguyên vẹn 100% để làm thư viện nền và đối chứng tự động trên CI. | **Không cần mở / Không chỉnh sửa.** |
 
 ---
 
@@ -28,7 +44,7 @@ CrocStream mở rộng nền tảng mật mã và relay của `croc` để giả
 | **Desktop & IPC** | [Wails v3.1.0](https://v3.wails.io/), WebView2 | Đóng gói ứng dụng Windows native và cầu nối RPC giữa Go và React |
 | **Backend & Codec** | Go 1.27, [`pierrec/lz4/v4`](https://github.com/pierrec/lz4) | Điều phối phiên, giao thức nhị phân 18-byte header, codec Tile-Delta, nén LZ4 và telemetry |
 | **Chụp màn hình & Cầu nối ảnh** | Win32 GDI (`golang.org/x/sys/windows`), [`coder/websocket`](https://github.com/coder/websocket) | Chụp màn hình DPI-aware trên luồng OS cố định; truyền ảnh JPEG cục bộ qua WebSocket loopback `127.0.0.1` có xác thực token |
-| **Mật mã & Truyền vận** | [`schollz/croc/v11`](croc/), `schollz/pake/v3`, `golang.org/x/crypto` | Sinh mã mời, kết nối relay TCP, thỏa thuận khóa PAKE (`p256`) và mã hóa luồng hai chiều AES-256-GCM |
+| **Mật mã & Truyền vận** | [`schollz/croc/v11`](croc/), `schollz/pake/v3`, `golang.org/x/crypto` | Sinh mã mời, kết nối relay TCP, thỏa thuận khóa PAKE (`p256`) và mã hóa luồng hai chiều AES-256-GCM (`app/internal/crocduplex`) |
 | **Frontend & Kiểm thử UI** | React 19, TypeScript 6, Vite 8, Vitest, Playwright | Giao diện người dùng, quản lý vòng đời phiên (`SessionLifecycle`), vẽ canvas bằng `ImageBitmap` |
 
 ## 4. Điều kiện tiên quyết
@@ -36,7 +52,7 @@ CrocStream mở rộng nền tảng mật mã và relay của `croc` để giả
 - **Để chạy bản đóng gói sẵn (Portable ZIP):** Windows 10/11 x64 và **Microsoft Edge WebView2 Evergreen Runtime**.
 - **Để build và chạy kiểm thử từ mã nguồn:**
   - Windows 10/11 x64, PowerShell 5.1+
-  - Go **1.27.4**, Wails CLI **v3.1.0** (có thể cài tự động vào thư mục tạm qua script trong `app/g0/`)
+  - Go **1.27.4**, Wails CLI **v3.1.0** (có thể cài tự động vào thư mục tạm qua script trong `scripts/toolchain/`)
   - Node.js **24.22.1**, npm **12.2.1**
   - Trình biên dịch `gcc` (MinGW-w64) nếu chạy kiểm thử phát hiện xung đột dữ liệu (`-race`) và trình duyệt Microsoft Edge cho bài test giao diện Playwright.
 
@@ -48,11 +64,11 @@ Từ thư mục gốc `D:\CrocStream`, mở PowerShell:
 
 ```powershell
 # 1. (Chỉ cần lần đầu nếu chưa có Go/Wails portable)
-powershell -NoProfile -File .\app\g0\Install-Toolchain.ps1 -Component Go
-powershell -NoProfile -File .\app\g0\Install-Toolchain.ps1 -Component Wails
+powershell -NoProfile -File .\scripts\toolchain\Install-Toolchain.ps1 -Component Go
+powershell -NoProfile -File .\scripts\toolchain\Install-Toolchain.ps1 -Component Wails
 
 # 2. Nạp môi trường toolchain vào phiên PowerShell hiện tại
-. .\app\g0\Use-Toolchain.ps1
+. .\scripts\toolchain\Use-Toolchain.ps1
 
 # 3. Build ứng dụng desktop Windows
 Push-Location app
@@ -67,11 +83,10 @@ Pop-Location
 ### Cách 2: Tạo gói Portable ZIP hoàn chỉnh (gồm cả ứng dụng và relay demo)
 
 ```powershell
-. .\app\g0\Use-Toolchain.ps1
-Push-Location app
-.\g6\Build-Portable.ps1 -OutputDirectory release/demo-build
-Pop-Location
+.\packaging\Build-Portable.ps1 -OutputDirectory release/demo-build
 ```
+
+*(Để dọn sạch các thư mục build/test tạm sau khi làm việc, chạy `powershell -NoProfile -File .\scripts\clean.ps1`).*
 
 ## 6. Chạy demo và kiểm thử
 
@@ -87,19 +102,19 @@ powershell -NoProfile -File .\scripts\verify.ps1 -Race
 
 1. Khởi chạy relay cục bộ tại `127.0.0.1:9009` (nhập mật khẩu từ 12 ký tự trở lên khi được hỏi):
    ```powershell
-   . .\app\g0\Use-Toolchain.ps1
-   go -C app build -o .\app\bin\crocstream-relay.exe ./cmd/demo-relay
-   .\app\g6\Start-DemoRelay.ps1
+   . .\scripts\toolchain\Use-Toolchain.ps1
+   go -C app build -o .\packaging\crocstream-relay.exe ./cmd/demo-relay
+   .\packaging\Start-DemoRelay.ps1
    ```
    *(Hoặc chạy trực tiếp `.\Start-DemoRelay.ps1` trong thư mục giải nén của gói Portable ZIP).*
 2. Mở cửa sổ **`crocstream.exe` thứ nhất** → chọn **Chia sẻ màn hình** → nhập địa chỉ relay `127.0.0.1:9009` và mật khẩu relay → chọn màn hình → bấm **Bắt đầu chia sẻ** → bấm **Sao chép mã**.
 3. Mở cửa sổ **`crocstream.exe` thứ hai** → chọn **Tham gia bằng mã** → nhập cùng địa chỉ và mật khẩu relay → dán mã mời vào ô **Mã phiên** → bấm **Tham gia phiên**.
-4. Xem hướng dẫn từng bước chi tiết cho cả mạng LAN tại [app/g6/DEMO.md](app/g6/DEMO.md).
+4. Xem hướng dẫn từng bước chi tiết cho cả mạng LAN tại [packaging/DEMO.md](packaging/DEMO.md).
 
 ## 7. Cấu trúc tài liệu trong repository
 
 - **[PROJECT_GUIDE.md](PROJECT_GUIDE.md):** Tài liệu tổng hợp toàn diện bằng tiếng Việt (Tổng quan, Luồng dữ liệu, Kiến trúc, So sánh với `croc` gốc, Giải thích kỹ thuật và Kịch bản bảo vệ đồ án).
 - **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md):** Hướng dẫn làm quen nhanh cho người mới.
-- **[docs/PRD.md](docs/PRD.md) · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/TEST_PLAN.md](docs/TEST_PLAN.md) · [docs/ROADMAP.md](docs/ROADMAP.md):** Đặc tả yêu cầu sản phẩm, hợp đồng kiến trúc/giao thức nhị phân v1, kế hoạch kiểm thử và lộ trình các cổng nghiệm thu G0–G6.
-- **[docs/gates/README.md](docs/gates/README.md) · [docs/gates/notices.md](docs/gates/notices.md):** Chỉ mục báo cáo nghiệm thu thực nghiệm G0–G6 (`docs/gates/reports/`, `docs/gates/evidence/`) và thông báo bản quyền phần mềm bên thứ ba.
+- **[docs/specs/PRD.md](docs/specs/PRD.md) · [docs/specs/ARCHITECTURE.md](docs/specs/ARCHITECTURE.md) · [docs/specs/TEST_PLAN.md](docs/specs/TEST_PLAN.md) · [docs/specs/ROADMAP.md](docs/specs/ROADMAP.md):** Đặc tả yêu cầu sản phẩm, hợp đồng kiến trúc/giao thức nhị phân v1, kế hoạch kiểm thử và lộ trình phát triển.
+- **[docs/archive-gates/README.md](docs/archive-gates/README.md) · [docs/archive-gates/notices.md](docs/archive-gates/notices.md):** Kho lưu trữ báo cáo nghiệm thu thực nghiệm G0–G6 (`reports/`, `evidence/`, `licenses/`) và thông báo bản quyền phần mềm bên thứ ba.
 - **[UPSTREAM.md](UPSTREAM.md) · [croc/LICENSE](croc/LICENSE):** Thông tin xuất xứ và giấy phép MIT của snapshot `schollz/croc` gốc trong thư mục `croc/`.

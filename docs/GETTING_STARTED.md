@@ -6,11 +6,11 @@ Một người chia sẻ màn hình, một người xem. Cả hai mở CrocStrea
 ## Thử trong vài phút
 
 1. Nhận ZIP và mã kiểm tra từ người tổ chức, xác minh rồi giải nén toàn bộ gói.
-   [Kiểm tra ZIP](../app/g6/DEMO.md#kiểm-tra-zip-nhận-được)
+   [Kiểm tra ZIP](../packaging/DEMO.md#kiểm-tra-zip-nhận-được)
 2. Mở `crocstream.exe`, chọn **Xem trước trên máy này**, chọn màn hình và bấm
    **Bắt đầu preview**. Bấm **Dừng preview** khi xong.
 3. Thử Share/Watch bằng hai cửa sổ trên cùng máy hoặc hai máy trong LAN.
-   [Các bước demo](../app/g6/DEMO.md) · [Tạo ZIP cho buổi demo](../app/README.md#g6-windows-portable-and-demo)
+   [Các bước demo](../packaging/DEMO.md) · [Tạo ZIP cho buổi demo](../app/README.md#g6-windows-portable-and-demo)
 
 ## Ba thông tin khi kết nối
 
@@ -28,4 +28,4 @@ Hai ứng dụng xác thực và mã hóa phiên. **KEY** là ảnh đầy đủ
 phần thay đổi. **FPS hiển thị** là số hình vẽ mỗi giây và **RTT** là thời gian
 khứ hồi giữa hai ứng dụng.
 
-[Cẩm nang toàn diện & Bảo vệ đồ án](../PROJECT_GUIDE.md) · [Tìm hiểu giới hạn demo](../app/g6/KNOWN_ISSUES.md) · [Hồ sơ nghiệm thu](gates/README.md) · [Trang chủ](../README.md)
+[Cẩm nang toàn diện & Bảo vệ đồ án](../PROJECT_GUIDE.md) · [Tìm hiểu giới hạn demo](../packaging/KNOWN_ISSUES.md) · [Hồ sơ nghiệm thu](archive-gates/README.md) · [Trang chủ](../README.md)

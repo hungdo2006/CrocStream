@@ -2,8 +2,11 @@
 app/**/*.go text eol=lf
 app/**/go.mod text eol=lf
 app/**/go.sum text eol=lf
+scripts/**/*.go text eol=lf
+scripts/**/go.mod text eol=lf
+scripts/**/go.sum text eol=lf
 
 # Audited snapshots contain exact upstream license bytes and recorded SHA-256.
 # Do not normalize their line endings during add/checkout.
-app/g0/licenses/generated-20261116/** -text
-app/g0/licenses/reviewed-20261116/** -text
+docs/archive-gates/licenses/g0/generated-20261116/** -text
+docs/archive-gates/licenses/g0/reviewed-20261116/** -text

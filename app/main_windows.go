@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	service, err := desktop.New(trustedOrigin())
+	service, err := desktop.New(desktop.TrustedOrigin())
 	if err != nil {
 		os.Exit(1)
 	}
 	app := application.New(application.Options{
 		Name:        "CrocStream",
 		Description: "CrocStream one-to-one screen sharing",
-		Windows:     browserOptions(),
+		Windows:     desktop.BrowserOptions(),
 		Logger:      slog.New(slog.NewTextHandler(io.Discard, nil)),
 		Assets: application.AssetOptions{
 			Handler:        application.BundledAssetFileServer(frontend.Assets),

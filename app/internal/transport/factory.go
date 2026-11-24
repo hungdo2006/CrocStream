@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"crocstream.local/g0/poc/duplex"
+	"crocstream.local/app/internal/crocduplex"
 )
 
 type Options struct {
@@ -27,21 +27,21 @@ func (o Options) Validate() error {
 	return nil
 }
 
-type Listener = duplex.Listener
+type Listener = crocduplex.Listener
 type Factory interface {
 	Host(context.Context, Options, func()) (Listener, error)
 	Join(context.Context, string, Options, func()) (io.ReadWriteCloser, error)
 }
 type Croc struct{}
 
-func options(o Options) duplex.Options {
-	return duplex.Options{RelayAddress: o.Address, RelayPassword: o.Password, IOTimeout: 30 * time.Second}
+func options(o Options) crocduplex.Options {
+	return crocduplex.Options{RelayAddress: o.Address, RelayPassword: o.Password, IOTimeout: 30 * time.Second}
 }
 func (Croc) Host(ctx context.Context, o Options, authenticating func()) (Listener, error) {
 	if err := o.Validate(); err != nil {
 		return nil, err
 	}
-	l, err := duplex.Host(ctx, options(o))
+	l, err := crocduplex.Host(ctx, options(o))
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (Croc) Join(ctx context.Context, code string, o Options, authenticating fun
 	if err := o.Validate(); err != nil {
 		return nil, err
 	}
-	return duplex.JoinWithProgress(ctx, code, options(o), authenticating)
+	return crocduplex.JoinWithProgress(ctx, code, options(o), authenticating)
 }
 
 type listenerProgress struct {

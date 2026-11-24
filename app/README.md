@@ -1,8 +1,27 @@
 # CrocStream application core
 
-Module `crocstream.local/app` chứa ứng dụng Windows, codec và test. Hai module
-G0 trong `g0/poc` và `g0/buildprobe` có bước kiểm tra riêng.
-[Hợp đồng media v1](../docs/ARCHITECTURE.md#media-protocol-v1) · [Hồ sơ G0–G6](../docs/gates/README.md) · [Giấy phép](../docs/gates/notices.md)
+Module `crocstream.local/app` chứa toàn bộ phần mềm CrocStream trên Windows (giao diện `frontend/`, bộ xử lý ngầm `internal/` và tiện ích trạm chuyển tiếp `cmd/demo-relay/`). Module kiểm tra liên kết tối thiểu thời G0 nằm riêng tại [`../scripts/qa-probes/buildprobe`](../scripts/qa-probes/buildprobe).
+[Hợp đồng media v1](../docs/specs/ARCHITECTURE.md#media-protocol-v1) · [Hồ sơ G0–G6](../docs/archive-gates/README.md) · [Giấy phép](../docs/archive-gates/notices.md)
+
+## Giải nghĩa nhanh các thư mục con trong `app/` (Dành cho người mới)
+
+| Thư mục | Ý nghĩa dễ hiểu |
+| --- | --- |
+| `frontend/` | **Giao diện người dùng** viết bằng React + TypeScript (các màn hình Trang chủ, Chia sẻ, Xem phiên, Xem trước và Bảng số đo). |
+| `internal/desktop/` | Cầu nối nhận lệnh bấm nút từ giao diện React chuyển xuống phần xử lý Go bên dưới, kèm cấu hình cửa sổ Wails. |
+| `internal/capture/` | Chụp hình ảnh màn hình thực trên Windows (dùng Win32 GDI). |
+| `internal/frame/` | Chuẩn hóa bảng màu bức ảnh vừa chụp về chuẩn thống nhất (`RGBA`, độ đục 255). |
+| `internal/delta/` | **Thuật toán nén chính:** chia ảnh thành các ô vuông `32×32`, lọc ra những ô có thay đổi và nén không mất dữ liệu bằng LZ4. |
+| `internal/protocol/` | Đóng gói và đọc kiểm tra các gói tin truyền qua mạng (tiêu đề 18 byte, gói cấu hình, ảnh gốc, phần thay đổi, tín hiệu điều khiển). |
+| `internal/crocduplex/` | **Bảo mật & Kết nối:** sinh mã mời `cs1-...`, kết nối trạm relay `croc`, xác thực mật khẩu hai chiều (PAKE) và mã hóa AES-256-GCM. |
+| `internal/transport/` | Lớp trung gian gọn nhẹ nối bộ điều phối phiên với `crocduplex`. |
+| `internal/session/` | Điều phối toàn bộ một phiên **Chia sẻ màn hình** hoặc **Tham gia bằng mã**. |
+| `internal/preview/` | Điều phối chế độ **Xem trước trên máy này** (chỉ chạy nội bộ, không qua mạng). |
+| `internal/bridge/` | Kênh truyền hình ảnh nội bộ (`127.0.0.1` WebSocket) đưa ảnh đã chụp/giải mã từ Go lên khung vẽ `<canvas>` của giao diện. |
+| `internal/latest/` | Hàng đợi chống trễ (chỉ giữ đúng 1 bức ảnh mới nhất khi máy xử lý hoặc mạng chậm hơn tốc độ chụp). |
+| `internal/telemetry/` | Bộ đếm tốc độ khung hình (FPS), băng thông (`KiB/s`), độ trễ (`RTT`) và `%` tiết kiệm băng thông trong 1 giây gần nhất. |
+| `cmd/demo-relay/` | Mã nguồn tạo ra file `crocstream-relay.exe` dùng làm trạm chuyển tiếp khi chạy Demo. |
+| `cmd/qa-probes/` | Các chương trình kiểm thử tự động chuyên sâu (không đóng gói vào bản người dùng cuối). |
 
 ## Run checks
 
@@ -15,7 +34,7 @@ powershell -NoProfile -File .\scripts\verify.ps1 -Race
 Go test riêng và các mục tiêu fuzz có giới hạn thời gian.
 
 ```powershell
-. .\app\g0\Use-Toolchain.ps1
+. .\scripts\toolchain\Use-Toolchain.ps1
 go -C app test -count=1 -timeout=180s ./...
 go -C app vet ./...
 foreach ($target in @('FuzzDecodeHeader', 'FuzzDecodeConfig', 'FuzzDecodePacket', 'FuzzReadStream')) {
@@ -30,7 +49,7 @@ go -C app test ./internal/delta -run '^$' -bench '^BenchmarkCodec$' -benchmem -b
 ```
 
 Benchmark trên ảnh tổng hợp gồm encode, baseline và decode. Phạm vi kiểm tra,
-fixture và phương pháp đo nằm trong [kế hoạch kiểm thử](../docs/TEST_PLAN.md).
+fixture và phương pháp đo nằm trong [kế hoạch kiểm thử](../docs/specs/TEST_PLAN.md).
 
 ## Protocol API and ownership
 
@@ -46,7 +65,7 @@ fixture và phương pháp đo nằm trong [kế hoạch kiểm thử](../docs/T
 
 `FromBroadcaster` chỉ chiều do người phát gửi. CONFIG đứng trước video, với
 END cho phép hủy sớm. Video đầu tiên là KEY1. Chiều ngược mang control.
-[Framing và thứ tự gói](../docs/ARCHITECTURE.md#media-protocol-v1) · [G1 closeout](../docs/gates/reports/G1_CLOSEOUT.md)
+[Framing và thứ tự gói](../docs/specs/ARCHITECTURE.md#media-protocol-v1) · [G1 closeout](../docs/archive-gates/reports/G1_CLOSEOUT.md)
 
 ## G2 frame and codec API
 
@@ -61,7 +80,7 @@ END cho phép hủy sớm. Video đầu tiên là KEY1. Chiều ngược mang co
 4. Encoder/decoder chạy đồng bộ với một chủ sở hữu. `PacketWriter` tiêu thụ
    payload trong lời gọi. Lỗi ghi kết thúc encoder và phiên.
 
-[Định dạng LZ4 và tile](../docs/ARCHITECTURE.md#media-protocol-v1) · [G2 closeout](../docs/gates/reports/G2_CLOSEOUT.md)
+[Định dạng LZ4 và tile](../docs/specs/ARCHITECTURE.md#media-protocol-v1) · [G2 closeout](../docs/archive-gates/reports/G2_CLOSEOUT.md)
 
 ## G2 telemetry API
 
@@ -70,7 +89,7 @@ khi giải mã và `Decoded` khi giải mã thành công. Các loại FPS đo ri
 `Snapshot` dùng cửa sổ `(now-1s, now]`. Tốc độ gồm header của KEY/DELTA.
 Baseline dùng ảnh gốc cùng mẫu. Cờ known và complete quyết định lúc hiển thị
 giá trị. Tiết kiệm có thể âm. RTT và độ trễ hiển thị cần phép đo riêng.
-[Hợp đồng telemetry](../docs/ARCHITECTURE.md#telemetry-contract)
+[Hợp đồng telemetry](../docs/specs/ARCHITECTURE.md#telemetry-contract)
 
 ## G3 desktop preview — build and run
 
@@ -78,7 +97,7 @@ Từ `app/`, nạp toolchain portable và build. Wails cài dependency theo lock
 sinh binding, build frontend và tạo EXE Windows.
 
 ```powershell
-. .\g0\Use-Toolchain.ps1
+. ..\scripts\toolchain\Use-Toolchain.ps1
 $env:WAILS_EXP_USE_WAKE='1'
 wails3 build
 .\bin\crocstream.exe
@@ -92,7 +111,7 @@ Share/Watch. Stop đợi Start đang chờ. Hàng đợi hiển thị giữ JPEG
 giải phóng bitmap sau khi dùng. Bridge bind loopback và kiểm chính xác Host,
 Origin cùng token qua WebSocket subprotocol. Origin production là
 `http://wails.localhost`, dev dùng cổng 9245.
-[Sơ đồ code](../PROJECT_GUIDE.md#c-kiến-trúc-dự-án) · [G3 proof](g3/README.md)
+[Sơ đồ code](../PROJECT_GUIDE.md#c-kiến-trúc-dự-án) · [Preview proof](../scripts/qa-probes/PREVIEW_PROOF.md)
 
 Sau khi sinh binding, chạy `npm run typecheck`, `npm run lint`, `npm run test`,
 `npm run test:ui` hoặc `npm run build` từ `frontend/`. Playwright dùng Edge
@@ -104,35 +123,34 @@ Người phát tạo mã mời sau khi relay sẵn sàng. Hai peer xác thực t
 Stop/Leave đóng capture, bridge và transport của phiên. Nếu hết thời gian chờ,
 UI giữ `Stopping` đến khi dọn xong. Nếu giải phóng capture thất bại, UI báo lỗi
 đã được lọc.
-[Test controller](internal/session/controller_test.go) · [Chạy proof loopback](g4/README.md)
+[Test controller](internal/session/controller_test.go) · [Chạy proof loopback](../scripts/qa-probes/SESSION_PROOF.md)
 
 Bằng chứng hai máy qua EC2 dùng ảnh tổng hợp. Các số đo phiên desktop thật được
-ghi trong bài kiểm thử loopback riêng. [G4 closeout](../docs/gates/reports/G4_CLOSEOUT.md) · [Báo cáo remote](../docs/gates/reports/G4_REMOTE_PROOF.md)
+ghi trong bài kiểm thử loopback riêng. [G4 closeout](../docs/archive-gates/reports/G4_CLOSEOUT.md) · [Báo cáo remote](../docs/archive-gates/reports/G4_REMOTE_PROOF.md)
 
 ## G5 UX and measured dashboard
 
 **Chi tiết luồng** phân biệt capture, gửi, nhận, giải mã và hiển thị. Giữ dấu
 thiếu dữ liệu khi bộ đếm chưa đo được. Nối lại hiển thị cục bộ giữ phiên
-media đang xác thực. [Số đo và stress test](../docs/gates/reports/G5_CLOSEOUT.md) · [Tái lập](../docs/gates/g5/README.md)
+media đang xác thực. [Số đo và stress test](../docs/archive-gates/reports/G5_CLOSEOUT.md) · [Tái lập](../docs/archive-gates/g5/README.md)
 
 ## G6 Windows portable and demo
 
-Từ `app/`, nạp toolchain và đóng ZIP vào thư mục đích mới.
+Từ gốc repo, đóng gói ZIP vào thư mục đích mới:
 
 ```powershell
-. .\g0\Use-Toolchain.ps1
-.\g6\Build-Portable.ps1 -OutputDirectory release/new-build
+.\packaging\Build-Portable.ps1 -OutputDirectory release/new-build
 ```
 
 ZIP Windows x64 chưa ký số cần WebView2 Evergreen Runtime trên máy đích.
 Gói có manifest, checksum và thông báo giấy phép.
-[Demo](g6/DEMO.md) · [Giới hạn](g6/KNOWN_ISSUES.md) · [G6 closeout](../docs/gates/reports/G6_CLOSEOUT.md)
+[Demo](../packaging/DEMO.md) · [Giới hạn](../packaging/KNOWN_ISSUES.md) · [G6 closeout](../docs/archive-gates/reports/G6_CLOSEOUT.md)
 
-Kiểm tra gói đã giải nén từ `app/`. Bài UI production chạy loopback, cần đồng ý
+Kiểm tra gói đã giải nén từ gốc repo. Bài UI production chạy loopback, cần đồng ý
 chụp màn hình thật và clipboard trống.
 
 ```powershell
 $packageDirectory = 'C:\duong-dan\thu-muc-da-giai-nen'
-.\g6\Smoke-Package.ps1 -Directory $packageDirectory
-.\g6\Test-ProductionUI.ps1 -Directory $packageDirectory
+.\packaging\Smoke-Package.ps1 -Directory $packageDirectory
+.\packaging\Test-ProductionUI.ps1 -Directory $packageDirectory
 ```

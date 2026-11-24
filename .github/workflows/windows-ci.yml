@@ -72,14 +72,14 @@ jobs:
           path: |
             ${{ runner.temp }}/crocstream-tools/gomodcache
             ${{ runner.temp }}/crocstream-tools/gocache
-          key: ${{ runner.os }}-${{ runner.arch }}-crocstream-go1.27.4-${{ hashFiles('app/go.sum', 'app/g0/poc/go.sum', 'app/g0/buildprobe/go.sum') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-crocstream-go1.27.4-${{ hashFiles('app/go.sum', 'scripts/qa-probes/buildprobe/go.sum') }}
 
       - name: Set up Go and Wails
         shell: pwsh
         run: |
           $tools = Join-Path $env:RUNNER_TEMP 'crocstream-tools'
-          .\app\g0\Install-Toolchain.ps1 -ToolRoot $tools -Component Go
-          .\app\g0\Install-Toolchain.ps1 -ToolRoot $tools -Component Wails
+          .\scripts\toolchain\Install-Toolchain.ps1 -ToolRoot $tools -Component Go
+          .\scripts\toolchain\Install-Toolchain.ps1 -ToolRoot $tools -Component Wails
           gcc --version
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

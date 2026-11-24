@@ -128,45 +128,42 @@ CrocStream/
 ├── PROJECT_GUIDE.md           # Cẩm nang toàn diện hiểu hệ thống và bảo vệ đồ án (file này)
 ├── UPSTREAM.md                # Hồ sơ ghi nhận nguồn gốc và commit ghim của schollz/croc
 ├── AGENTS.md                  # Quy tắc kiến trúc, bảo mật và tiêu chuẩn chất lượng của dự án
-├── scripts/
-│   └── verify.ps1             # Script kiểm thử tự động toàn diện (Go + Wails + Frontend)
-├── croc/                      # [NGUYÊN BẢN] Mã nguồn schollz/croc gốc (không chỉnh sửa)
-├── docs/                      # Tài liệu đặc tả kỹ thuật chi tiết và hồ sơ nghiệm thu
-│   ├── PRD.md                 # Đặc tả yêu cầu sản phẩm và máy trạng thái giao diện
-│   ├── ARCHITECTURE.md        # Hợp đồng kiến trúc, giao thức nhị phân Media v1 và Telemetry
-│   ├── TEST_PLAN.md           # Kế hoạch kiểm thử đơn vị, fuzzing, chịu tải và giao diện
-│   ├── ROADMAP.md             # Lộ trình phát triển và kết quả qua các cổng G0–G6
-│   ├── GETTING_STARTED.md     # Hướng dẫn khởi động nhanh trong vài phút
-│   └── gates/                 # Hồ sơ nghiệm thu G0–G6 (reports/, evidence/, g5/, notices.md)
-└── app/                       # [PHẦN PHÁT TRIỂN CHÍNH] Ứng dụng CrocStream Desktop
-    ├── main_windows.go        # Điểm vào (Entry point) khởi tạo ứng dụng Wails v3 trên Windows
-    ├── wails.yaml             # Cấu hình build Wails v3.1.0
-    ├── cmd/demo-relay/        # Chương trình crocstream-relay.exe phục vụ chạy demo
-    ├── g0/poc/                # Module adapter truyền vận bảo mật hai chiều (PAKE + AES-GCM)
-    │   ├── duplex/            # Giao diện công khai Host / Accept / Join trả về io.ReadWriteCloser
-    │   └── internal/          # Cài đặt handshake CSH1, bản ghi CSR1 và dẫn xuất upstreampake
-    ├── internal/              # Các gói logic nghiệp vụ cốt lõi của ứng dụng Go
-    │   ├── desktop/           # Wails Service bindings gắn kết Go backend với React frontend
-    │   ├── session/           # Điều phối vòng đời phiên Share/Watch (Controller & Peer)
-    │   ├── preview/           # Điều phối vòng đời chế độ Xem trước cục bộ (Local Preview)
-    │   ├── capture/           # Chụp màn hình thực trên Windows bằng Win32 GDI (DPI-aware)
-    │   ├── frame/             # Chuẩn hóa mảng điểm ảnh BGRA/RGBA, cắt lề stride, ép alpha=255
-    │   ├── protocol/          # Đóng gói & phân tích cú pháp Media Protocol v1 (Header 18B, CONFIG 11B)
-    │   ├── delta/             # Bộ mã hóa/giải mã Tile-Delta 32x32 và nén không mất dữ liệu LZ4
-    │   ├── telemetry/         # Bộ đếm thống kê cửa sổ trượt 1 giây (FPS, KiB/s, Savings %, RTT)
-    │   ├── bridge/            # Máy chủ WebSocket 127.0.0.1 truyền ảnh JPEG cục bộ lên WebView
-    │   ├── transport/         # Lớp bọc kết nối từ session sang module bảo mật g0/poc/duplex
-    │   └── latest/            # Hàng đợi giới hạn 1 phần tử (latest-only queue) chống nghẽn
-    ├── frontend/              # Giao diện người dùng React 19 + TypeScript
-    │   ├── src/main.tsx       # Component gốc (Root) và màn hình trang chủ (Home)
-    │   ├── src/stream.tsx     # Màn hình Chia sẻ (Share) và Xem phiên (Watch)
-    │   ├── src/local-preview.tsx     # Màn hình Xem trước cục bộ (Local Preview)
-    │   ├── src/capture-settings.tsx  # Cụm điều khiển chọn màn hình, độ phân giải và FPS
-    │   ├── src/stream-metrics.tsx    # Bảng hiển thị số đo chính và mục Chi tiết luồng
-    │   ├── src/session-lifecycle.ts  # Bộ điều phối trạng thái phiên, chống xung đột Start/Stop/Poll
-    │   ├── src/latest.ts             # Bộ quản lý giải mã tối đa 1 ImageBitmap + 1 Blob mới nhất
-    │   └── src/hooks/                # Các React Hooks (useSession, useFrameStream, useDisplays)
-    └── g3/, g4/, g6/          # Các script hỗ trợ build/đóng gói Portable ZIP và kiểm chứng
+├── croc/                      # [NGUYÊN BẢN - KHÔNG CHỈNH SỬA] Mã nguồn schollz/croc gốc làm đối chứng
+├── app/                       # [PHẦN MỀM CHÍNH] Ứng dụng CrocStream Desktop
+│   ├── main_windows.go        # Điểm khởi chạy (Entry point) tạo cửa sổ Wails v3 trên Windows
+│   ├── wails.yaml             # Cấu hình build Wails v3.1.0
+│   ├── go.mod / go.sum        # Khai báo thư viện Go của ứng dụng
+│   ├── frontend/              # ---> GIAO DIỆN NGƯỜI DÙNG (React 19 + TypeScript)
+│   │   ├── src/main.tsx       # Component gốc (Root) và màn hình trang chủ (Home)
+│   │   ├── src/stream.tsx     # Màn hình Chia sẻ (Share) và Xem phiên (Watch)
+│   │   ├── src/local-preview.tsx     # Màn hình Xem trước cục bộ (Local Preview)
+│   │   ├── src/capture-settings.tsx  # Cụm điều khiển chọn màn hình, độ phân giải và FPS
+│   │   ├── src/stream-metrics.tsx    # Bảng hiển thị số đo chính và mục Chi tiết luồng
+│   │   ├── src/session-lifecycle.ts  # Bộ điều phối trạng thái phiên, chống xung đột Start/Stop/Poll
+│   │   ├── src/latest.ts             # Bộ quản lý giải mã tối đa 1 ImageBitmap + 1 Blob mới nhất
+│   │   └── src/hooks/                # Các React Hooks (useSession, useFrameStream, useDisplays)
+│   ├── internal/              # ---> BỘ XỬ LÝ NGẦM BÊN DƯỚI - BACKEND (Go)
+│   │   ├── desktop/           # Wails Service bindings gắn kết Go backend với React frontend
+│   │   ├── session/           # Điều phối vòng đời phiên Share/Watch (Controller & Peer)
+│   │   ├── preview/           # Điều phối vòng đời chế độ Xem trước cục bộ (Local Preview)
+│   │   ├── capture/           # Chụp màn hình thực trên Windows bằng Win32 GDI (DPI-aware)
+│   │   ├── frame/             # Chuẩn hóa mảng điểm ảnh BGRA/RGBA, cắt lề stride, ép alpha=255
+│   │   ├── protocol/          # Đóng gói & phân tích cú pháp Media Protocol v1 (Header 18B, CONFIG 11B)
+│   │   ├── delta/             # Bộ mã hóa/giải mã Tile-Delta 32x32 và nén không mất dữ liệu LZ4
+│   │   ├── telemetry/         # Bộ đếm thống kê cửa sổ trượt 1 giây (FPS, KiB/s, Savings %, RTT)
+│   │   ├── bridge/            # Máy chủ WebSocket 127.0.0.1 truyền ảnh JPEG cục bộ lên WebView
+│   │   ├── crocduplex/        # Truyền vận bảo mật hai chiều (mã mời cs1-, PAKE & AES-256-GCM)
+│   │   ├── transport/         # Lớp bọc kết nối từ session sang gói bảo mật crocduplex
+│   │   └── latest/            # Hàng đợi giới hạn 1 phần tử (latest-only queue) chống nghẽn
+│   └── cmd/
+│       ├── demo-relay/        # Chương trình crocstream-relay.exe phục vụ chạy demo
+│       └── qa-probes/         # Các trình thực thi kiểm thử chuyên sâu (transport/session/origin)
+├── packaging/                 # [ĐÓNG GÓI & DEMO] Tạo gói Portable ZIP, bật relay & hướng dẫn Demo
+├── scripts/                   # [CÔNG CỤ TỰ ĐỘNG] verify.ps1, clean.ps1, toolchain/, notices/, qa-probes/
+└── docs/                      # [TÀI LIỆU 3 NGĂN]
+    ├── GETTING_STARTED.md     # 1. Hướng dẫn khởi động nhanh trong vài phút cho người dùng
+    ├── specs/                 # 2. Bản vẽ thiết kế kỹ thuật (PRD, ARCHITECTURE, TEST_PLAN, ROADMAP)
+    └── archive-gates/         # 3. Hồ sơ & bằng chứng nghiệm thu lịch sử G0–G6 (reports/, evidence/, licenses/)
 ```
 
 ### 2. Các thành phần giao tiếp với nhau như thế nào?
@@ -180,7 +177,7 @@ CrocStream/
    - Go chuyển khung hình RGBA hiện tại thành ảnh **JPEG** chất lượng 75 và gửi dưới dạng binary frame qua WebSocket để React vẽ thẳng lên `<canvas>`.
 3. **Kênh truyền thông đa phương tiện giữa hai máy (Go Broadcaster ↔ Relay ↔ Go Viewer):**
    - [`app/internal/session/peer.go`](app/internal/session/peer.go) ghi và đọc các gói tin của **Media Protocol v1** (`SESSION_CONFIG`, `KEYFRAME`, `DELTA`, `REQUEST_KEYFRAME`, `PING`, `PONG`, `END`) qua một giao diện chuẩn `io.ReadWriteCloser`.
-   - Giao diện `io.ReadWriteCloser` này được cung cấp bởi [`app/g0/poc/internal/transport/transport.go`](app/g0/poc/internal/transport/transport.go), nơi mọi byte dữ liệu đều đã được xác thực hai chiều bằng PAKE và mã hóa bằng AES-256-GCM.
+   - Giao diện `io.ReadWriteCloser` này được cung cấp bởi [`app/internal/crocduplex/transport/transport.go`](app/internal/crocduplex/transport/transport.go), nơi mọi byte dữ liệu đều đã được xác thực hai chiều bằng PAKE và mã hóa bằng AES-256-GCM.
 
 ### 3. Bảng tra cứu nhanh: Muốn sửa một chức năng thì tìm ở đâu?
 
@@ -197,7 +194,7 @@ CrocStream/
 | Vòng lặp chụp màn hình Windows bằng Win32 GDI | [`app/internal/capture/capture_windows.go`](app/internal/capture/capture_windows.go) |
 | Điều phối phiên phát/xem, giới hạn thử lại (rate limit) và gửi/nhận gói tin | [`app/internal/session/controller.go`](app/internal/session/controller.go), [`app/internal/session/peer.go`](app/internal/session/peer.go) |
 | Công thức tính băng thông `KiB/s`, baseline LZ4 và `%` tiết kiệm trong cửa sổ 1 giây | [`app/internal/telemetry/meter.go`](app/internal/telemetry/meter.go) |
-| Sinh mã mời `cs1-`, bắt tay PAKE và mã hóa bản ghi AES-256-GCM qua relay `croc` | [`app/g0/poc/internal/transport/transport.go`](app/g0/poc/internal/transport/transport.go), [`app/g0/poc/internal/upstreampake/pake.go`](app/g0/poc/internal/upstreampake/pake.go) |
+| Sinh mã mời `cs1-`, bắt tay PAKE và mã hóa bản ghi AES-256-GCM qua relay `croc` | [`app/internal/crocduplex/transport/transport.go`](app/internal/crocduplex/transport/transport.go), [`app/internal/crocduplex/upstreampake/pake.go`](app/internal/crocduplex/upstreampake/pake.go) |
 
 ---
 
@@ -224,16 +221,16 @@ Dự án được phát triển dựa trên phiên bản gốc **`schollz/croc`*
      - `croc/src/codephrase`: Hàm `GenerateSSH()` và `ParseSSH()` cùng danh sách từ khóa EFF để sinh và tách mã mời 6 từ.
      - `croc/src/tcp`: Hàm `ConnectToTCPServerControlContext()` để kết nối vào phòng chờ trên relay TCP, và `RunWithListener()` để chạy máy chủ relay trong `cmd/demo-relay` và các bộ test.
      - `croc/src/crypt`: Các hàm nguyên thủy `NewAESGCM()`, `EncryptAEADTo()`, `DecryptAEAD()` dùng cho mã hóa xác thực AES-GCM.
-2. **Phần dẫn xuất có chỉnh sửa có kiểm soát (nằm trong [`app/g0/poc/internal/upstreampake/pake.go`](app/g0/poc/internal/upstreampake/pake.go) – 124 dòng code):**
+2. **Phần dẫn xuất có chỉnh sửa có kiểm soát (nằm trong [`app/internal/crocduplex/upstreampake/pake.go`](app/internal/crocduplex/upstreampake/pake.go) – 124 dòng code):**
    - Được dẫn xuất từ `croc/src/pakekey/pakekey.go` (kèm đầy đủ ghi chú nguồn gốc trong `UPSTREAM.md` và `LICENSE` cùng thư mục).
    - Thay đổi duy nhất: Cố định hằng số `Purpose = "peer-crocstream-g0-v1"` và đường cong elliptic `Curve = "p256"`, giữ nguyên công thức đóng gói transcript, dẫn xuất khóa 96-byte bằng `HKDF-SHA256` và thẻ xác nhận hai chiều `HMAC-SHA256`.
-3. **Phần do nhóm phát triển mới hoàn toàn (toàn bộ thư mục [`app/`](app), [`docs/`](docs), [`scripts/`](scripts), [`.github/workflows/`](.github/workflows)):**
-   - Giao thức bắt tay `CSH1` và tầng bản ghi mã hóa hai chiều `CSR1` (`app/g0/poc/internal/transport`).
+3. **Phần do nhóm phát triển mới hoàn toàn (toàn bộ thư mục [`app/`](app), [`packaging/`](packaging), [`docs/`](docs), [`scripts/`](scripts), [`.github/workflows/`](.github/workflows)):**
+   - Giao thức bắt tay `CSH1` và tầng bản ghi mã hóa hai chiều `CSR1` (`app/internal/crocduplex/transport`).
    - Giao thức truyền thông đa phương tiện **Media Protocol v1** (`app/internal/protocol`).
    - Bộ chuẩn hóa khung hình (`app/internal/frame`) và bộ mã hóa/giải mã **Tile-Delta + LZ4** (`app/internal/delta`).
    - Hệ thống đo lường cửa sổ trượt 1 giây (`app/internal/telemetry`).
    - Bộ chụp màn hình Windows bằng Win32 GDI (`app/internal/capture`) và cầu nối WebSocket loopback bảo mật (`app/internal/bridge`).
-   - Bộ điều phối phiên truyền hình ảnh và xem trước (`app/internal/session`, `app/internal/preview`), dịch vụ Wails v3 (`app/internal/desktop`), tiện ích relay demo (`app/cmd/demo-relay`) và toàn bộ giao diện React/TypeScript (`app/frontend`).
+   - Bộ điều phối phiên truyền hình ảnh và xem trước (`app/internal/session`, `app/internal/preview`), dịch vụ Wails v3 (`app/internal/desktop`), tiện ích relay demo (`app/cmd/demo-relay`), bộ đóng gói (`packaging/`) và toàn bộ giao diện React/TypeScript (`app/frontend`).
 
 ---
 
@@ -285,7 +282,7 @@ Nằm trong gói [`app/internal/delta`](app/internal/delta/codec.go):
 #### Câu 4: Module nào chịu trách nhiệm xử lý chính?
 - **Điều phối trung tâm:** [`app/internal/session`](app/internal/session) (`controller.go` quản lý vòng đời phiên/worker/cleanup; `peer.go` quản lý luồng đọc `receive` và luồng ghi duy nhất `Run`).
 - **Xử lý hình ảnh & nén:** [`app/internal/delta`](app/internal/delta) và [`app/internal/protocol`](app/internal/protocol).
-- **Bảo mật & kết nối mạng:** [`app/g0/poc/internal/transport`](app/g0/poc/internal/transport) và [`app/g0/poc/internal/upstreampake`](app/g0/poc/internal/upstreampake).
+- **Bảo mật & kết nối mạng:** [`app/internal/crocduplex/transport`](app/internal/crocduplex/transport) và [`app/internal/crocduplex/upstreampake`](app/internal/crocduplex/upstreampake).
 
 #### Câu 5: Dữ liệu được lưu trữ và truy xuất ra sao?
 - Dự án **không sử dụng cơ sở dữ liệu (Database)** và **không bao giờ lưu ảnh chụp màn hình, mã mời hay mật khẩu xuống ổ đĩa**.
@@ -325,7 +322,7 @@ Dưới đây là kịch bản trình bày và demo thực tế trong khoảng *
 
 ### Bước 2: Giới thiệu giải pháp của nhóm (1 phút)
 Trình bày ngắn gọn 3 trụ cột mà nhóm đã xây dựng trong thư mục `app/` (trong khi vẫn giữ nguyên vẹn mã nguồn `croc/` gốc để đối chiếu):
-1. **Kênh truyền bảo mật hai chiều (`g0/poc/duplex`):** Tách quá trình vào phòng relay và bắt tay PAKE của `croc` thành một luồng `io.ReadWriteCloser` hai chiều liên tục, có khóa AES-256-GCM riêng cho từng chiều và namespace mật mã độc lập (`peer-crocstream-g0-v1`).
+1. **Kênh truyền bảo mật hai chiều (`internal/crocduplex`):** Tách quá trình vào phòng relay và bắt tay PAKE của `croc` thành một luồng `io.ReadWriteCloser` hai chiều liên tục, có khóa AES-256-GCM riêng cho từng chiều và namespace mật mã độc lập (`peer-crocstream-g0-v1`).
 2. **Giao thức Media v1 & Codec Tile-Delta (`internal/protocol`, `internal/delta`):** Thiết kế gói tin nhị phân 18-byte header, chia khung hình thành lưới ô vuông `32×32`, chỉ nén không mất dữ liệu bằng LZ4 những ô có độ lệch màu `RGB MAE > tau`, giữ ảnh tham chiếu chuẩn để không bao giờ bị lệch ảnh, và hỗ trợ tự động phục hồi bằng tín hiệu PLI (`REQUEST_KEYFRAME`).
 3. **Ứng dụng Desktop Windows & Dashboard đo lường (`internal/capture`, `internal/bridge`, `frontend`):** Chụp màn hình bằng Win32 GDI, đẩy ảnh JPEG cục bộ qua WebSocket loopback `127.0.0.1` lên canvas React, và đo lường công bằng tỷ lệ tiết kiệm băng thông trong cửa sổ trượt 1 giây.
 
