@@ -1,7 +1,7 @@
 # PRD — CrocStream Desktop (MVP v1)
 
 > **Cách đọc:** tài liệu này quy định sản phẩm cần làm gì và người dùng sẽ trải
-> nghiệm ra sao. Nếu mới tham gia, đọc [hướng dẫn nhập môn](../GETTING_STARTED.md)
+> nghiệm ra sao. Nếu mới tham gia, đọc [cẩm nang dự án](../../PROJECT_GUIDE.md)
 > trước. MVP tập trung vào chia sẻ màn hình 1:1 trên Windows và số đo thực tế;
 > các mục bên dưới mô tả yêu cầu sản phẩm. Báo cáo nghiệm thu ghi phần đã kiểm chứng.
 

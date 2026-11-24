@@ -2,7 +2,7 @@
 
 > **Cách đọc:** tài liệu này cho biết thứ tự triển khai và điều kiện chuyển bước,
 > áp dụng cho cả thành viên nhóm và coding agent. Người mới nên đọc
-> [GETTING_STARTED](../GETTING_STARTED.md) trước. **G0 PASS** cho khả thi prototype
+> [PROJECT_GUIDE](../../PROJECT_GUIDE.md) trước. **G0 PASS** cho khả thi prototype
 > đã kiểm chứng; xem [closeout](../archive-gates/reports/G0_CLOSEOUT.md). **G1 PASS** cho
 > framing/config; [bằng chứng G1](../archive-gates/reports/G1_CLOSEOUT.md).
 > **G2 PASS** codec/telemetry; [bằng chứng G2](../archive-gates/reports/G2_CLOSEOUT.md).

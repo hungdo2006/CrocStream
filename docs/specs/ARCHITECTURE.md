@@ -3,7 +3,7 @@
 > **Cách đọc:** bắt đầu từ quyết định/blocker, rồi các pipeline để hiểu luồng dữ
 > liệu. Phần media protocol là hợp đồng kỹ thuật chi tiết cho người làm
 > protocol/codec. Thuật ngữ và sơ đồ nhập môn nằm trong
-> [GETTING_STARTED](../GETTING_STARTED.md). Thiết kế ở đây chưa phải bằng chứng chạy
+> [PROJECT_GUIDE](../../PROJECT_GUIDE.md). Thiết kế ở đây chưa phải bằng chứng chạy
 > thực tế; G0–G6 có closeout PASS, gồm remote synthetic G4, local stress G5 và portable Windows G6.
 
 ## Contents
@@ -122,7 +122,6 @@ The [gate evidence index](../archive-gates/README.md) records reports, proof har
 AGENTS.md
 README.md
 PROJECT_GUIDE.md
-docs/GETTING_STARTED.md
 docs/specs/{PRD,ARCHITECTURE,TEST_PLAN,ROADMAP}.md
 docs/archive-gates/{README,notices}.md
 docs/archive-gates/{reports,evidence,licenses,g5}/

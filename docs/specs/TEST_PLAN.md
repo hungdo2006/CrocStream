@@ -1,7 +1,7 @@
 # Verification & Test Plan — CrocStream
 
 > **Cách đọc:** đây là danh sách bằng chứng cần thu thập, không phải báo cáo test
-> đã chạy. Thành viên mới xem [hướng dẫn nhập môn](../GETTING_STARTED.md); khi nhận
+> đã chạy. Thành viên mới xem [cẩm nang dự án](../../PROJECT_GUIDE.md); khi nhận
 > task, dùng bảng coverage để tìm đúng nhóm test. G0 bắt đầu ở mục D; D.5 chỉ áp
 > dụng cho công việc adapter tiếp theo khi được phê duyệt.
 
