@@ -1,6 +1,6 @@
 # Reproducible portable-package recipe. Installs nothing and refuses overwrite.
 [CmdletBinding()]
-param([string]$Version='0.0.1',[string]$OutputDirectory='release')
+param([string]$Version='0.0.2',[string]$OutputDirectory='release',[string]$RelayConfig='')
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 if($Version -notmatch '^\d+\.\d+\.\d+$'){throw 'Version must be numeric x.y.z.'}
@@ -39,6 +39,18 @@ try {
     Copy-Item -LiteralPath $relay -Destination (Join-Path $stage 'crocstream-relay.exe')
     foreach($file in @('Start-DemoRelay.ps1','Verify-Package.ps1','README.md','DEMO.md','KNOWN_ISSUES.md','NOTICE.txt')){
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $stage $file)
+    }
+    if(-not [string]::IsNullOrWhiteSpace($RelayConfig)){
+        $relayConfigPath=if([IO.Path]::IsPathRooted($RelayConfig)){[IO.Path]::GetFullPath($RelayConfig)}else{[IO.Path]::GetFullPath((Join-Path $repo $RelayConfig))}
+        if(-not(Test-Path -LiteralPath $relayConfigPath -PathType Leaf)){throw "Relay config file not found: $relayConfigPath"}
+        $relayInfo=Get-Item -LiteralPath $relayConfigPath
+        if($relayInfo.Length -gt 4096){throw 'Relay config exceeds maximum size.'}
+        $relayObj=Get-Content -LiteralPath $relayConfigPath -Raw | ConvertFrom-Json
+        $relayProps=@($relayObj.PSObject.Properties.Name | Sort-Object)
+        if(@(Compare-Object $relayProps @('address','password')).Count -or [string]::IsNullOrWhiteSpace($relayObj.address) -or [string]::IsNullOrWhiteSpace($relayObj.password)){
+            throw 'Relay config JSON must contain only non-empty address and password fields.'
+        }
+        Copy-Item -LiteralPath $relayConfigPath -Destination (Join-Path $stage 'relay.json')
     }
     Copy-Item -LiteralPath (Join-Path $noticeRoot 'THIRD_PARTY_NOTICES.txt') -Destination (Join-Path $stage 'licenses/THIRD_PARTY_NOTICES.txt')
     Copy-Item -LiteralPath (Join-Path $noticeRoot 'inventory.json') -Destination (Join-Path $stage 'licenses/notice-inventory.json')

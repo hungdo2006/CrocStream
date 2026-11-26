@@ -1,4 +1,4 @@
-# CrocStream 0.0.1 · Windows portable
+# CrocStream 0.0.2 · Windows portable
 
 Bản thử nghiệm này chạy trên Windows x64 với Microsoft Edge WebView2 Evergreen
 Runtime. Giải nén toàn bộ ZIP vào thư mục có quyền ghi, rồi mở `crocstream.exe`.
@@ -9,6 +9,7 @@ Gói chưa ký số. Kiểm tra nguồn và checksum trước khi mở.
 
 - `crocstream.exe` dùng cho Preview và Share/Watch.
 - `crocstream-relay.exe` và `Start-DemoRelay.ps1` dùng cho relay loopback hoặc LAN riêng.
+- `relay.json` *(tùy chọn, nếu đi kèm gói)* tự điền sẵn địa chỉ và mật khẩu relay khi mở ứng dụng.
 - `Verify-Package.ps1` và `manifest.json` kiểm tra nội dung gói.
 - `dependencies.json`, `build-info.txt`, `licenses/` và `NOTICE.txt` ghi thông tin build và giấy phép.
 

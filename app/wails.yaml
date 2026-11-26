@@ -5,7 +5,7 @@ project:
   product_name: CrocStream
   company: CrocStream
   identifier: local.crocstream.desktop
-  version: 0.0.1
+  version: 0.0.2
 frontend:
   directory: frontend
   install: [npm, ci, --ignore-scripts, --no-audit, --no-fund]
