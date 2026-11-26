@@ -1,24 +1,24 @@
 # Cẩm Nang Nhanh Dự Án CrocStream (`PROJECT_GUIDE.md`)
 
-> **Tài liệu cốt lõi dành cho thành viên nhóm & bảo vệ đồ án (đọc trong 3–5 phút).** Chỉ cần đọc file này là bạn nắm trọn bài toán, cách hoạt động, điểm mới so với dự án gốc và câu trả lời khi thuyết trình.
+> **Tài liệu cốt lõi dành cho thành viên nhóm & bảo vệ đồ án (đọc trong 3–5 phút).** Nắm trọn bài toán, kiến trúc, điểm mới so với `schollz/croc` gốc và câu trả lời khi thuyết trình.
 
 ---
 
 ## A. Tổng quan trong 1 phút
 
 ### 1. Dự án giải quyết vấn đề gì?
-* **Hạn chế của `schollz/croc` gốc:** `croc` là công cụ dòng lệnh (CLI) giúp 2 máy tính gửi file cho nhau qua một mã mời ngắn. Tuy nhiên, `croc` **chỉ gửi được file tĩnh hoặc cửa sổ lệnh SSH** (cần biết trước kích thước file, gửi xong là ngắt) và không có giao diện đồ họa để xem màn hình trực tiếp.
-* **Bài toán băng thông màn hình:** Một ảnh màn hình HD (`1280×720`) nặng tới **3,68 MB**. Nếu gửi thô 24 hình/giây sẽ tốn ~88 MB/giây, trong khi màn hình làm việc (gõ code, đọc tài liệu, chiếu slide) phần lớn diện tích đứng yên.
+* **Hạn chế của `schollz/croc` gốc:** `croc` là công cụ dòng lệnh (CLI) gửi file tĩnh hoặc chia sẻ shell SSH (cần biết trước kích thước file, gửi xong là đóng) và không có giao diện đồ họa truyền màn hình thời gian thực.
+* **Bài toán băng thông màn hình:** Một ảnh HD (`1280×720`) dạng RGBA nặng **3,68 MB**. Gửi thô 24 FPS tốn ~88 MB/giây, trong khi màn hình làm việc (code, tài liệu, slide) phần lớn diện tích đứng yên.
 * **Giải pháp của CrocStream:**
-  1. Tách cơ chế kết nối và mật mã của `croc` thành một **đường truyền hai chiều liên tục, có xác thực mật khẩu PAKE và mã hóa đầu cuối AES-256-GCM**.
-  2. Xây dựng thuật toán nén **Tile-Delta**: chia màn hình thành các ô vuông `32×32` pixel, **chỉ nén không mất dữ liệu (LZ4) và gửi đi những ô có màu sắc thay đổi**, giúp tiết kiệm **85% – 95% băng thông** khi làm việc thông thường và hiển thị bảng số đo thực tế ngay trên màn hình.
+  1. Tách cơ chế mật mã và phòng chờ của `croc` thành **kênh truyền hai chiều liên tục (`crocduplex`)** có xác thực **PAKE + mã hóa đầu cuối AES-256-GCM**, hỗ trợ **tự ưu tiên LAN trực tiếp** khi cùng Wi-Fi và **tự động chuyển sang Relay** khi khác mạng.
+  2. Xây dựng bộ nén **Tile-Delta** (`32×32` pixel, LZ4 không mất dữ liệu) chỉ gửi những ô có màu thay đổi, tiết kiệm **85% – 95% băng thông** khi làm việc thông thường.
+  3. Cung cấp giao diện desktop Windows gọn nhẹ cho phép chọn **toàn màn hình hoặc từng cửa sổ ứng dụng** (Chrome, Zalo, VS Code, PowerPoint…) với **xem trước trực tiếp** trước khi phát.
 
-### 2. Ví dụ thực tế dễ hình dung
-**Minh** muốn chia sẻ màn hình code cho **Lan** xem cùng:
-1. Hai máy cùng trỏ vào một trạm chuyển tiếp (**Relay** – bật sẵn trên máy Minh hoặc trong mạng LAN).
-2. Minh mở CrocStream → chọn **Chia sẻ màn hình** → bấm **Bắt đầu chia sẻ** → nhận mã mời dùng một lần (`cs1-...`) và gửi cho Lan.
-3. Lan mở CrocStream → chọn **Tham gia bằng mã** → dán mã mời → bấm **Tham gia phiên**.
-4. Hai máy tự động khớp khóa bảo mật (PAKE) và màn hình của Minh hiện lên cửa sổ của Lan. Khi Minh chỉ gõ vài chữ ở góc màn hình, phần mềm chỉ gửi đúng vài ô vuông `32×32` chứa chữ vừa gõ. Khi Minh bấm **Dừng chia sẻ**, kết nối đóng lại và mã mời cũ bị hủy ngay lập tức.
+### 2. Luồng sử dụng thực tế
+1. Nếu có sẵn file `relay.json` cạnh `crocstream.exe`, cả hai máy tự điền sẵn địa chỉ & mật khẩu Relay (không cần gõ lại).
+2. **Người phát** mở **Chia sẻ màn hình** → chọn tab **Màn hình** hoặc **Cửa sổ** (xem trước trực tiếp ngay trên khung 16:9) → bấm **Bắt đầu chia sẻ** → bấm **Sao chép mã** (`cs1-...`) gửi cho người xem.
+3. **Người xem** mở **Tham gia bằng mã** → dán mã mời → bấm **Tham gia phiên**.
+4. Hai máy tự ưu tiên nối thẳng qua **LAN trực tiếp** nếu cùng mạng, hoặc tự động đi qua **Relay** (LAN/VPS) nếu khác mạng; cả hai tuyến đều bắt tay PAKE và mã hóa AES-256-GCM đầu cuối. Khi bấm **Dừng chia sẻ**, phiên đóng sạch và mã mời lập tức bị hủy.
 
 ---
 
@@ -27,30 +27,33 @@
 ```mermaid
 flowchart LR
     subgraph Broadcaster["1. Máy Người Phát"]
-        CAP["Chụp màn hình<br/>(Win32 GDI)"] --> DELTA["Chia ô 32x32<br/>Chỉ nén LZ4 các ô thay đổi"]
-        CAP -.->|"JPEG qua WebSocket 127.0.0.1"| UI_B["Khung xem trước"]
+        CAP["Chụp Màn hình / Cửa sổ<br/>(Win32 GDI + PrintWindow)"] --> DELTA["Chia ô 32x32<br/>Nén LZ4 các ô thay đổi"]
+        CAP -.->|"JPEG qua WebSocket 127.0.0.1"| UI_B["Xem trước trực tiếp"]
     end
 
-    subgraph Network["2. Đường Truyền Mã Hóa"]
-        DELTA -->|"Gói KEY / DELTA<br/>(PAKE + AES-256-GCM)"| RELAY["Trạm Relay TCP"]
+    subgraph Network["2. Đường Truyền Mã Hóa (PAKE + AES-256-GCM)"]
+        DELTA -->|"Ưu tiên cùng mạng"| LAN["LAN trực tiếp (TCP)"]
+        DELTA -->|"Tự fallback khác mạng"| RELAY["Trạm Relay TCP (LAN/VPS)"]
     end
 
     subgraph Viewer["3. Máy Người Xem"]
-        RELAY --> DEC["Giải nén LZ4 &<br/>Ghép vào ảnh chuẩn"]
+        LAN --> DEC["Giải nén LZ4 &<br/>Ghép ảnh chuẩn"]
+        RELAY --> DEC
         DEC -->|"JPEG qua WebSocket 127.0.0.1"| UI_V["Màn hình người xem"]
     end
 ```
 
 Toàn bộ quá trình diễn ra qua **3 cơ chế chính**:
-1. **Kết nối & Mã hóa đầu cuối (`internal/crocduplex`):**
-   * Hai máy dùng mã mời `cs1-...` gặp nhau tại trạm Relay, chạy thuật toán **PAKE** để chứng minh cả hai có cùng mã mời mà **không bao giờ gửi mã mời dạng rõ qua mạng**, sau đó khóa toàn bộ dữ liệu bằng **AES-256-GCM** (trạm Relay ở giữa chỉ chuyển tiếp chứ không xem trộm được ảnh).
-2. **Truyền ảnh gốc (`KEYFRAME`) và phần thay đổi (`DELTA`) (`internal/delta`):**
-   * Bức ảnh đầu tiên luôn gửi đầy đủ (**`KEYFRAME`**).
-   * Ở các khung hình sau, màn hình được chia thành lưới ô `32×32` (920 ô ở độ phân giải `1280×720`). Ô nào có độ lệch màu trung bình vượt ngưỡng lọc nhiễu (`tau = 4`) mới được đóng gói vào bản tin **`DELTA`** gửi đi.
-   * Nếu diện tích thay đổi quá lớn (**> 65%** màn hình) hoặc sau mỗi chu kỳ **30 khung hình**, máy phát tự động gửi lại một ảnh đầy đủ (`KEYFRAME`).
-3. **Tự phục hồi lỗi (`PLI`) & Hiển thị mượt trên giao diện (`internal/bridge`):**
-   * Nếu máy người xem phát hiện gói tin bị lỗi hoặc mất thứ tự, nó giữ nguyên bức ảnh tốt cuối cùng trên màn hình, báo `Đang phục hồi ảnh` và gửi tín hiệu **`REQUEST_KEYFRAME` (PLI)** yêu cầu máy phát gửi lại ảnh gốc mới.
-   * Để vẽ ảnh từ Go lên giao diện React ở tốc độ 24 FPS mà không bị giật lag, ứng dụng chuyển ảnh chuẩn sang định dạng **JPEG** trong RAM rồi truyền qua cổng **WebSocket nội bộ (`127.0.0.1`)** có mã token bảo vệ.
+1. **Kết nối LAN-first, Fallback Relay & Mã hóa đầu cuối (`internal/crocduplex`, `internal/transport`):**
+   * Khi Host tạo phiên, app vừa đăng ký phòng lên Relay vừa mở cổng TCP tạm kèm bộ phản hồi khám phá UDP LAN (`9019`, giao thức `CSL1` chỉ dùng tag băm SHA-256 16 byte tách miền — tuyệt đối không phát mã mời hay mật khẩu ra LAN).
+   * Khi Viewer tham gia, app quét LAN trong ~400 ms trước; nếu thấy Host cùng mạng sẽ nối thẳng LAN, nếu không thấy (khác mạng hoặc bị tường lửa chặn) sẽ tự động rơi về Relay.
+   * Cả hai tuyến đều chạy cùng một bắt tay **PAKE** (`CSH1`) và dẫn xuất khóa mã hóa **AES-256-GCM** riêng theo chiều gửi/nhận. Mục **Đường truyền** chỉ báo `LAN trực tiếp` hay `Relay` sau khi bắt tay thực sự thành công.
+2. **Chụp màn hình / cửa sổ & Nén Tile-Delta (`internal/capture`, `internal/delta`):**
+   * Hỗ trợ chụp toàn màn hình (`EnumDisplayMonitors` + `StretchBlt`) lẫn cửa sổ ứng dụng đơn lẻ (`EnumWindows` + `PrintWindow(PW_RENDERFULLCONTENT)` + cắt viền bóng DWM).
+   * Khung đầu gửi đầy đủ (**`KEYFRAME`**). Các khung sau chia lưới `32×32` (920 ô ở `1280×720`), chỉ đóng gói **`DELTA`** các ô có độ lệch màu trung bình `MAE > tau` (mặc định `4`). Nếu quá **65%** ô thay đổi hoặc đủ chu kỳ **30 khung**, tự gửi lại `KEYFRAME`.
+3. **Tự phục hồi lỗi (`PLI`) & Hiển thị mượt (`internal/bridge`):**
+   * Nếu máy xem phát hiện khung lỗi/lệch, nó giữ nguyên ảnh hợp lệ cuối, báo `Đang phục hồi ảnh` và gửi **`REQUEST_KEYFRAME` (PLI)** về máy phát.
+   * Ảnh hiển thị được chuyển sang **JPEG** trong RAM và đẩy qua **WebSocket cục bộ (`127.0.0.1`)** có token ngẫu nhiên theo phiên và kiểm tra Origin.
 
 ---
 
@@ -59,70 +62,73 @@ Toàn bộ quá trình diễn ra qua **3 cơ chế chính**:
 ```text
 CrocStream/
 ├── app/                           # [PHẦN MỀM CHÍNH]
-│   ├── main_windows.go            # Điểm khởi chạy tạo cửa sổ ứng dụng Windows (Wails v3)
+│   ├── main_windows.go            # Điểm khởi chạy cửa sổ desktop Windows (Wails v3)
 │   ├── frontend/src/              # ---> GIAO DIỆN NGƯỜI DÙNG (React + TypeScript)
-│   │   ├── main.tsx               #      Màn hình trang chủ (3 nút: Chia sẻ / Xem / Xem trước)
-│   │   ├── stream.tsx             #      Màn hình Chia sẻ & Xem phiên, nhập Relay, Sao chép mã
-│   │   ├── local-preview.tsx      #      Màn hình Xem trước trên máy này (không cần mạng)
-│   │   ├── capture-settings.tsx   #      Chọn màn hình, độ phân giải (720p/360p) và FPS (15/24/30)
-│   │   └── stream-metrics.tsx     #      Bảng số đo FPS, KiB/s, RTT và mục Chi tiết luồng
-│   ├── internal/                  # ---> BỘ XỬ LÝ NGẦM BÊN DƯỚI - BACKEND (Go)
-│   │   ├── capture/               #      Chụp màn hình Windows bằng Win32 GDI
-│   │   ├── frame/                 #      Chuẩn hóa màu sắc ảnh chụp về chuẩn RGBA
-│   │   ├── delta/                 #      Chia ô 32x32, lọc ô thay đổi và nén không mất dữ liệu LZ4
-│   │   ├── protocol/              #      Đóng/mở gói tin mạng (Header 18 byte, CONFIG 11 byte)
-│   │   ├── crocduplex/            #      Sinh mã mời cs1-, xác thực PAKE và mã hóa AES-256-GCM
-│   │   ├── transport/             #      Cầu nối giữa bộ điều phối phiên và crocduplex
-│   │   ├── session/               #      Điều phối vòng đời phiên Chia sẻ / Xem & tự phục hồi
-│   │   ├── preview/               #      Điều phối chế độ Xem trước tại máy
-│   │   ├── bridge/                #      WebSocket 127.0.0.1 đẩy ảnh JPEG lên giao diện React
-│   │   ├── latest/                #      Hàng đợi chỉ giữ 1 ảnh mới nhất (chống trễ hình khi nghẽn)
-│   │   ├── telemetry/             #      Tính FPS, tốc độ KiB/s, % tiết kiệm băng thông trong 1 giây
-│   │   └── desktop/               #      Gắn kết các hàm Go để giao diện React gọi xuống
-│   └── cmd/demo-relay/            # Mã nguồn chương trình trạm chuyển tiếp (crocstream-relay.exe)
-├── packaging/                     # Đóng gói bản Portable ZIP, bật relay (Start-DemoRelay.ps1) & DEMO.md
-├── scripts/                       # Công cụ kiểm thử (verify.ps1), dọn file tạm (clean.ps1), cài môi trường
-├── docs/                          # Hồ sơ thiết kế kỹ thuật (specs/) & lưu trữ nghiệm thu (archive-gates/)
-└── croc/                          # Thư viện schollz/croc gốc giữ nguyên 100% làm đối chứng
+│   │   ├── main.tsx               #      Màn hình trang chủ (Chia sẻ / Xem / Kiểm tra nguồn)
+│   │   ├── stream.tsx             #      Màn hình Chia sẻ & Xem phiên, tự nạp relay.json
+│   │   ├── local-preview.tsx      #      Màn hình Kiểm tra nguồn chụp cục bộ
+│   │   ├── capture-settings.tsx   #      Bộ chọn tab Màn hình / Cửa sổ, độ phân giải & FPS
+│   │   ├── stream-metrics.tsx     #      Thanh chỉ số FPS, KiB/s, RTT, Đường truyền & Chi tiết luồng
+│   │   └── hooks/                 #      useSession, useFrameStream, useSourcePreview, useDisplays
+│   ├── internal/                  # ---> BACKEND (Go)
+│   │   ├── capture/               #      Chụp màn hình (GDI) & cửa sổ ứng dụng (PrintWindow)
+│   │   ├── frame/                 #      Chuẩn hóa ảnh chụp về RGBA8888 cố định
+│   │   ├── delta/                 #      Chia ô 32x32, lọc MAE (tau) và nén LZ4 lossless
+│   │   ├── protocol/              #      Đóng/mở khung gói tin (Header 18 byte, CONFIG 11 byte)
+│   │   ├── crocduplex/            #      Mã mời cs1-, khám phá LAN (CSL1), PAKE & AES-256-GCM
+│   │   ├── transport/             #      Nạp relay.json (config.go), bật LAN-first & đo tuyến (factory.go)
+│   │   ├── session/               #      Điều phối vòng đời phiên Chia sẻ / Xem & phục hồi PLI
+│   │   ├── preview/               #      Điều phối xem trước cục bộ
+│   │   ├── bridge/                #      WebSocket 127.0.0.1 xác thực đẩy JPEG lên WebView
+│   │   ├── latest/                #      Hàng đợi chỉ giữ 1 khung mới nhất chống trễ
+│   │   ├── telemetry/             #      Đo FPS, tốc độ KiB/s, baseline toàn ảnh & % tiết kiệm
+│   │   └── desktop/               #      Các binding Go cho giao diện React gọi xuống
+│   └── cmd/demo-relay/            # Chương trình trạm Relay cục bộ (crocstream-relay.exe)
+├── packaging/                     # Đóng gói Portable ZIP, Start-DemoRelay.ps1 & DEMO.md
+├── scripts/                       # verify.ps1, clean.ps1 & scripts cài toolchain
+├── docs/                          # Đặc tả kỹ thuật (specs/) & hồ sơ nghiệm thu (archive-gates/)
+└── croc/                          # Thư viện schollz/croc gốc giữ nguyên 100%
 ```
 
 ---
 
 ## D. So sánh: Nhóm đã làm thêm gì so với `schollz/croc` gốc?
 
-Mã nguồn `croc/` gốc được giữ nguyên 100% (chỉ tái sử dụng 3 gói cơ bản: tạo từ khóa `codephrase`, phòng chờ `tcp` và hàm mã hóa `crypt`). Toàn bộ phần mềm trong `app/` là do nhóm phát triển mới:
+Mã nguồn `croc/` gốc được giữ nguyên 100% (chỉ tái sử dụng 3 gói cơ bản: tạo từ khóa `codephrase`, phòng chờ `tcp` và nguyên thủy mã hóa `crypt`). Toàn bộ phần mềm trong `app/` là do nhóm phát triển mới:
 
 | Tiêu chí | Bản gốc (`schollz/croc`) | Dự án của nhóm (`CrocStream`) |
 | --- | --- | --- |
-| **Tính năng** | Chỉ truyền file tĩnh hoặc chia sẻ cửa sổ dòng lệnh SSH. | Truyền hình ảnh màn hình trực tiếp 1-1 (`1280×720` / `640×360` @ `15/24/30` FPS) và xem trước tại máy. |
-| **Giao diện** | Gõ lệnh trên màn hình đen (CLI). | Ứng dụng Desktop Windows có giao diện đồ họa trực quan (Wails v3 + React), khung xem 16:9. |
-| **Kênh truyền** | Gắn chặt với kích thước file, gửi hết file là đóng. | Luồng byte hai chiều liên tục (`crocduplex`), tách khóa mã hóa riêng cho chiều gửi/nhận, gửi được tín hiệu điều khiển ngược. |
-| **Thuật toán nén** | Đọc/ghi nguyên khối dữ liệu file từ ổ cứng. | Chia lưới ô vuông `32×32`, chỉ nén LZ4 những ô thay đổi (`Tile-Delta`), tự động gửi lại ảnh gốc khi lỗi (`PLI`). |
-| **Kết nối Relay** | Ngầm dùng máy chủ nước ngoài `croc.schollz.com:9009` với mật khẩu cố định `pass123`. | Chủ động chọn trạm Relay riêng (chạy ngay trên máy hoặc mạng LAN) với mật khẩu tự đặt an toàn. |
-| **Đo lường** | Chỉ có thanh phần trăm tải file. | Bảng đo thời gian thực: FPS, băng thông thực tế so với nén toàn ảnh (`KiB/s`), `%` tiết kiệm và độ trễ `RTT`. |
+| **Tính năng** | Truyền file tĩnh hoặc chia sẻ cửa sổ dòng lệnh SSH. | Truyền toàn màn hình hoặc **cửa sổ ứng dụng** 1-1 (`720p`/`360p` @ `15/24/30` FPS) kèm **xem trước trực tiếp**. |
+| **Giao diện** | Dòng lệnh (CLI). | Ứng dụng Desktop Windows (Wails v3 + React), bảng màu than chì tối giản, khung xem 16:9. |
+| **Kênh truyền** | Gắn chặt kích thước file, truyền xong là đóng. | Luồng byte hai chiều liên tục (`crocduplex`), tách khóa gửi/nhận, hỗ trợ tín hiệu điều khiển ngược (`PLI`, `PING/PONG`). |
+| **Định tuyến** | Tự tìm LAN (gắn với luồng gửi file) + gắn cứng server công cộng `croc.schollz.com` (`pass123`). | **Tự ưu tiên LAN trực tiếp → tự fallback Relay riêng** (LAN hoặc VPS), hỗ trợ nạp mặc định qua `relay.json` không lộ bí mật trên Git, hiển thị đúng tuyến đo được. |
+| **Thuật toán nén** | Truyền nguyên khối dữ liệu file. | Lưới ô `32×32`, chỉ nén LZ4 không mất dữ liệu các ô đổi màu (`Tile-Delta`), tự phục hồi `PLI`. |
+| **Đo lường** | Thanh tiến độ tải file. | Số đo thời gian thực: FPS, tốc độ video vs nén toàn ảnh (`KiB/s`), `%` tiết kiệm, `RTT` và `Đường truyền`. |
 
 ---
 
 ## E. Kịch bản Demo 5 phút & Câu trả lời nhanh khi Bảo vệ
 
-### 1. Các bước bấm Demo trực tiếp trên lớp
-1. **Bật trạm Relay (30 giây):** Mở PowerShell chạy `.\packaging\Start-DemoRelay.ps1` (hoặc trong thư mục giải nén ZIP), đặt một mật khẩu từ 12 ký tự (ví dụ `crocstream-demo-2026`).
-2. **Kết nối 2 cửa sổ `crocstream.exe` (2 phút):**
-   * **Cửa sổ 1 (Người phát):** Chọn **Chia sẻ màn hình** → nhập relay `127.0.0.1:9009` và mật khẩu → bấm **Bắt đầu chia sẻ** → bấm **Sao chép mã**.
-   * **Cửa sổ 2 (Người xem):** Chọn **Tham gia bằng mã** → nhập cùng địa chỉ và mật khẩu relay → dán mã vào **Mã phiên** → bấm **Tham gia phiên**.
-3. **Chỉ điểm ăn tiền trên bảng số đo (1 phút):**
-   * Bấm mở mục **Chi tiết luồng** ở cửa sổ Người phát: Khi màn hình đứng yên hoặc chỉ gõ chữ nhẹ, chỉ cho giảng viên thấy **`Tốc độ video (KiB/s)`** nhỏ hơn rất nhiều so với **`Nén toàn ảnh (KiB/s)`** và **`Tiết kiệm so với toàn ảnh`** đạt **~85% – 95%**.
-   * Khi kéo/cuộn nhanh một cửa sổ lớn, băng thông tự tăng lên trung thực; khi bấm **Dừng chia sẻ**, cả hai bên xóa sạch màn hình và thu hồi mã mời ngay lập tức.
+### 1. Các bước bấm Demo trên lớp
+1. **Chuẩn bị Relay:**
+   * *Phương án chính (2 máy khác mạng — ví dụ Wi-Fi trường + 4G):* Đặt sẵn file `relay.json` (trỏ tới VPS chạy `croc relay`) cạnh `crocstream.exe` ở cả 2 máy → mở app lên tự điền sẵn.
+   * *Phương án dự phòng (1 máy hoặc 2 máy cùng Wi-Fi không cần Internet):* Chạy `.\packaging\Start-DemoRelay.ps1` và điền `127.0.0.1:9009` (hoặc IP LAN).
+2. **Chia sẻ & Chọn cửa sổ (2 phút):**
+   * **Máy phát:** Mở **Chia sẻ màn hình** → chuyển sang tab **Cửa sổ** (chọn Chrome/VS Code/Zalo) để cho thấy khung xem trước sống động ngay trước khi phát → bấm **Bắt đầu chia sẻ** → bấm **Sao chép mã**.
+   * **Máy xem:** Mở **Tham gia bằng mã** → dán mã vào **Mã phiên** → bấm **Tham gia phiên**.
+3. **Chứng minh 2 điểm kỹ thuật nổi bật (2 phút):**
+   * Chỉ vào ô **Đường truyền**: cùng Wi-Fi hiện **`LAN trực tiếp`** (RTT chỉ vài ms); đổi 1 máy sang 4G tự chuyển sang **`Relay`** qua VPS mà không cần chỉnh code.
+   * Mở **Chi tiết luồng**: khi đứng yên hoặc gõ chữ nhẹ, chỉ cho hội đồng thấy **`Tốc độ video (KiB/s)`** nhỏ hơn rất nhiều so với **`Nén toàn ảnh (KiB/s)`** (**tiết kiệm ~85% – 95%**); kéo nhanh cửa sổ thì tốc độ tăng lên trung thực; bấm **Dừng chia sẻ** sẽ xóa sạch hình và hủy mã mời ngay.
 
-### 2. Năm câu hỏi giảng viên hay hỏi nhất (Trả lời ngắn gọn)
+### 2. Năm câu hỏi giảng viên hay hỏi nhất
 
-* **Câu 1: Tại sao truyền qua mạng dùng nén LZ4 mà khi vẽ lên giao diện lại dùng JPEG?**
-  * *Trả lời:* Trên mạng bắt buộc dùng **nén không mất dữ liệu (LZ4)** vì các ô `DELTA` được ghép đè liên tiếp lên ảnh cũ; nếu dùng nén có mất dữ liệu như JPEG trên mạng thì vết nhòe sẽ cộng dồn làm hỏng chữ trên màn hình. Còn ở bước cuối cùng trong máy, chuyển ảnh chuẩn sang **JPEG** để trình duyệt giải mã bằng phần cứng giúp vẽ lên màn hình cực nhanh mà không làm lệch ảnh gốc.
-* **Câu 2: Nếu có lọc nhiễu (`tau = 4`), vùng màn hình đổi màu từ từ có bị lệch giữa hai máy không?**
-  * *Trả lời:* Không bao giờ bị lệch cộng dồn. Vì máy phát luôn so sánh ảnh mới chụp với **bức ảnh chuẩn đã thực sự gửi đi** (chứ không so với ảnh chụp trước đó). Các thay đổi nhỏ sẽ tích lũy dần đến khi vượt ngưỡng `4` thì ô đó sẽ được gửi đi, đảm bảo hai máy luôn khớp nhau từng byte.
-* **Câu 3: Khi mạng bị chậm hơn tốc độ chụp màn hình thì xử lý thế nào để không bị tràn RAM hay vỡ hình?**
-  * *Trả lời:* Hệ thống chỉ bỏ bớt ảnh chụp cũ **trước khi đưa vào bộ nén** (nhờ hàng đợi `latest` chỉ giữ 1 ảnh mới nhất). Một khi ảnh đã được nén thành gói `DELTA` thì luôn được gửi tuần tự, tuyệt đối không bỏ ngang gói `DELTA` ở giữa để tránh ghép sai ảnh phía sau.
-* **Câu 4: Tại sao `croc` gốc không cần nhập Relay mà `CrocStream` lại cần nhập?**
-  * *Trả lời:* `croc` gốc thực ra vẫn dùng Relay nhưng tác giả cài ngầm máy chủ miễn phí ở nước ngoài (`croc.schollz.com:9009`, mật khẩu `pass123`). CrocStream truyền hình ảnh liên tục nên tách ra cho người dùng tự chạy Relay ngay trên máy hoặc trong mạng LAN để tốc độ nhanh, không bị trễ mạng quốc tế và không làm quá tải máy chủ miễn phí của tác giả gốc.
-* **Câu 5: Dự án có lưu lại hình ảnh hay mật khẩu không? Đã kiểm thử độ bền chưa?**
-  * *Trả lời:* Toàn bộ ảnh và mật khẩu chỉ xử lý trong RAM, tuyệt đối không ghi xuống ổ cứng và bị xóa sạch ngay khi bấm Dừng. Dự án có bộ test tự động toàn diện (`verify.ps1 -Race`) và đã vượt qua bài test chạy liên tục **600 giây (10 phút)** ở `1280×720 @ 24 FPS` không rò rỉ bộ nhớ.
+* **Câu 1: Tại sao truyền qua mạng dùng nén LZ4 mà hiển thị lên giao diện lại dùng JPEG?**
+  * *Trả lời:* Trên mạng bắt buộc dùng **nén không mất dữ liệu (LZ4)** vì các ô `DELTA` ghép đè liên tiếp lên ảnh cũ; nếu nén mất dữ liệu trên mạng, sai số sẽ cộng dồn làm nhòe chữ. Còn ở bước cuối trong cùng 1 máy, chuyển ảnh chuẩn sang **JPEG** để WebView giải mã nhanh qua WebSocket `127.0.0.1` mà không ảnh hưởng tới ảnh chuẩn của bộ codec.
+* **Câu 2: Nếu lọc nhiễu (`tau = 4`), vùng màn hình đổi màu từ từ có bị lệch giữa hai máy không?**
+  * *Trả lời:* Không. Máy phát luôn so sánh ảnh mới chụp với **ảnh chuẩn đã thực sự gửi đi** (không so với ảnh chụp trước đó). Thay đổi nhỏ sẽ tích lũy dần tới khi vượt ngưỡng `4` thì ô đó được gửi đi, đảm bảo hai máy luôn khớp từng byte.
+* **Câu 3: Khi mạng chậm hơn tốc độ chụp thì xử lý thế nào để không tràn RAM hay vỡ hình?**
+  * *Trả lời:* Hệ thống chỉ bỏ bớt ảnh chụp cũ **trước bộ nén** (hàng đợi `latest` giữ đúng 1 khung mới nhất). Một khi đã nén thành gói `DELTA` thì luôn gửi đủ và đúng thứ tự, không bao giờ bỏ ngang gói ở giữa.
+* **Câu 4: So với `croc` gốc, CrocStream xử lý LAN và Relay như thế nào?**
+  * *Trả lời:* CrocStream giữ đúng triết lý của `croc` gốc: **tự động ưu tiên nối thẳng LAN trực tiếp** khi cùng Wi-Fi (nhờ khám phá UDP `9019` chỉ mang tag băm, không lộ mã mời) và **tự động fallback sang trạm Relay riêng** (VPS/LAN) khi khác mạng. Thay vì gắn cứng máy chủ công cộng nước ngoài + `pass123` vào mã nguồn, nhóm tách cấu hình ra file `relay.json` đặt cạnh file chạy (không commit lên Git) để vừa tiện 1 click như `croc` gốc vừa an toàn và tự chủ hạ tầng.
+* **Câu 5: Dự án có lưu hình ảnh hay mật khẩu không? Đã kiểm thử độ bền chưa?**
+  * *Trả lời:* Ảnh và mật khẩu phiên chỉ nằm trong RAM, không ghi xuống đĩa và được xóa sạch khi dừng. Toàn bộ dự án có bộ kiểm thử tự động (`verify.ps1 -Race` gồm Go test/fuzz/race, Playwright UI test) và đã vượt qua bài test bền **600 giây** ở `1280×720 @ 24 FPS` không rò rỉ bộ nhớ hay goroutine.

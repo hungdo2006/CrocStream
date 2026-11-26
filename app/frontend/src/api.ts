@@ -4,7 +4,14 @@ import type { Stats as SessionStats } from '../bindings/crocstream.local/app/int
 export type StreamStats = SessionStats
 export interface Relay { address: string; password: string }
 
-export interface Display { id: string; width: number; height: number; primary: boolean }
+export interface Display {
+  id: string
+  kind?: string
+  name?: string
+  width: number
+  height: number
+  primary: boolean
+}
 export interface Options { displayID: string; width: number; height: number; fps: number; tau: number; keyInterval: number }
 export interface Started { endpoint: { url: string; token: string }; generation: number }
 export type State = 'Idle' | 'Preparing' | 'Previewing' | 'Stopping' | 'Error'
@@ -28,6 +35,7 @@ export const streamAPI = {
   stats: (): Promise<StreamStats> => Service.GetSessionStats(),
   stop: (): Promise<void> => Service.StopSession(),
   invitation: () => Service.GetInvitation(),
+  defaultRelay: (): Promise<Relay> => Service.GetDefaultRelay(),
   host: (options: Options, relay: Relay): Promise<Started> => Service.StartBroadcast(options, relay),
   join: (code: string, relay: Relay): Promise<Started> => Service.JoinSession(code, relay),
 }

@@ -7,7 +7,7 @@ const labels = JSON.parse(readFileSync(new URL('../../../packaging/ui-labels.jso
 // JPEGs. No capture, relay traffic, clipboard writes, screenshots or recordings.
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    const idle = generation => ({ state: 'Idle', generation, error: '', retryAfterMs: 0,
+    const idle = generation => ({ state: 'Idle', generation, route: '', error: '', retryAfterMs: 0,
       captured: 0, previewError: '', sentKiB: 0, receivedKiB: 0, baselineKiB: 0,
       meanKeyKiB: 0, meanDeltaKiB: 0, keyMeanKnown: false, deltaMeanKnown: false,
       savingsKnown: false, baselineKnown: false, measurementOverflow: false,
@@ -15,13 +15,25 @@ test.beforeEach(async ({ page }) => {
       counters: { emitted: 0, received: 0, decoded: 0, keys: 0, deltas: 0, rttKnown: false, lastKind: '' },
       measurementsComplete: true, samplesComplete: true })
     const fake = window.__desktopTest = {
-      session: idle(0), preview: idle(0), starts: 0, stops: 0, delay: 0, stopDelay: 0,
+      session: idle(0), preview: idle(0), defaultRelay: { address: '', password: '' },
+      starts: 0, stops: 0, previewStarts: 0, previewStops: 0, previewActive: false,
+      delay: 0, stopDelay: 0,
       pendingInvitations: [], holdInvitation: false, captureCleanupFails: false,
       sockets: [], pendingDecodes: [], holdDecode: false, decodeFails: false, closedBitmaps: 0,
       published: 0, drawCalls: 0, decodeCalls: 0,
-      async start(preview, role, options) {
-        fake.starts++
-        fake.captureOptions = options
+      async start(preview, role, options, relay) {
+        if (!preview && fake.previewActive) {
+          throw new Error('preview still active during StartBroadcast')
+        }
+        if (preview) {
+          fake.previewStarts++
+          fake.previewOptions = options
+          fake.previewActive = true
+        } else {
+          fake.starts++
+          fake.captureOptions = options
+          fake.relay = relay
+        }
         await new Promise(resolve => setTimeout(resolve, fake.delay))
         const key = preview ? 'preview' : 'session'
         const generation = fake[key].generation + 1
@@ -31,10 +43,15 @@ test.beforeEach(async ({ page }) => {
         return { generation, endpoint: { url: `ws://127.0.0.1:1/${preview ? 'preview' : 'viewer'}`, token: 'synthetic-only' } }
       },
       async stop(preview) {
-        fake.stops++
+        if (preview) {
+          fake.previewStops++
+        } else {
+          fake.stops++
+        }
         await new Promise(resolve => setTimeout(resolve, fake.stopDelay))
         const key = preview ? 'preview' : 'session'
         fake[key] = idle(fake[key].generation)
+        if (preview) fake.previewActive = false
         if (!preview && fake.captureCleanupFails) {
           fake.session = { ...fake.session, state: 'Error', error: 'Không giải phóng được tài nguyên chụp màn hình.' }
           throw new Error(fake.session.error)
@@ -83,14 +100,18 @@ test.beforeEach(async ({ page }) => {
     contentType: 'text/javascript',
     body: `
       const t = window.__desktopTest;
-      export const ListDisplays = async () => [{id:'synthetic',width:1920,height:1080,primary:true}];
+      export const ListDisplays = async () => [
+        {id:'synthetic',kind:'display',name:'Màn hình 1',width:1920,height:1080,primary:true},
+        {id:'window:42',kind:'window',name:'Google Chrome',width:1280,height:800,primary:false},
+      ];
       export const GetStats = async () => structuredClone(t.preview);
       export const GetSessionStats = async () => structuredClone(t.session);
       export const GetInvitation = () => t.invitation();
+      export const GetDefaultRelay = async () => structuredClone(t.defaultRelay);
       export const StartPreview = options => t.start(true, 'local', options);
       export const StopPreview = () => t.stop(true);
-      export const StartBroadcast = options => t.start(false, 'share', options);
-      export const JoinSession = () => t.start(false,'watch');
+      export const StartBroadcast = (options, relay) => t.start(false, 'share', options, relay);
+      export const JoinSession = (_code, relay) => t.start(false, 'watch', undefined, relay);
       export const StopSession = () => t.stop(false);
     `,
   }))
@@ -146,9 +167,10 @@ test('Start/Stop/Home are ordered even when bindings resolve late', async ({ pag
   await stop.click(); await stop.click()
   await page.getByRole('button', { name: '← Dừng phiên và về Home', exact: true }).click()
   await expect(page.getByTestId('home-share')).toBeVisible()
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.previewActive)).toBe(false)
   expect(await page.evaluate(() => ({ starts: window.__desktopTest.starts, stops: window.__desktopTest.stops,
-    state: window.__desktopTest.session.state, sockets: window.__desktopTest.sockets.length })))
-    .toEqual({ starts: 1, stops: 1, state: 'Idle', sockets: 0 })
+    state: window.__desktopTest.session.state, openSockets: window.__desktopTest.sockets.filter(s => !s.closed).length })))
+    .toEqual({ starts: 1, stops: 1, state: 'Idle', openSockets: 0 })
 })
 
 test('bounded display decode, failure/retry and disconnect preserve media state', async ({ page }) => {
@@ -186,14 +208,14 @@ test('bounded display decode, failure/retry and disconnect preserve media state'
 
 test('local preview uses the same cleanup and preserves existing controls', async ({ page }) => {
   await page.getByTestId('home-local').click()
-  await expect(page.locator('#display')).toHaveValue('synthetic')
+  await expect(page.locator('[data-source-id="synthetic"]')).toHaveAttribute('aria-selected', 'true')
   await page.locator('#resolution').selectOption('640x360')
   await page.locator('#fps').selectOption('15')
   await page.getByRole('button', { name: 'Bắt đầu preview', exact: true }).click()
   await expect(page.locator('.status')).toHaveText('Đang xem trước cục bộ')
   await expect.poll(() => page.evaluate(() => window.__desktopTest.drawCalls)).toBeGreaterThan(0)
   await expect(page.locator('#resolution')).toBeDisabled()
-  expect(await page.evaluate(() => window.__desktopTest.captureOptions)).toEqual({
+  expect(await page.evaluate(() => window.__desktopTest.previewOptions)).toEqual({
     displayID: 'synthetic', width: 640, height: 360, fps: 15, tau: 4, keyInterval: 30,
   })
   await page.getByRole('button', { name: 'Dừng preview', exact: true }).click()
@@ -206,7 +228,7 @@ test('local preview uses the same cleanup and preserves existing controls', asyn
 
 test('Share sends the selected capture and compression settings', async ({ page }) => {
   await page.getByTestId('home-share').click()
-  await expect(page.locator('#stream-display')).toHaveValue('synthetic')
+  await expect(page.locator('[data-source-id="synthetic"]')).toHaveAttribute('aria-selected', 'true')
   await page.locator('#relay').fill('127.0.0.1:9009')
   await page.locator('#relay-password').fill('synthetic-password')
   await page.locator('#stream-resolution').selectOption('640x360')
@@ -236,10 +258,12 @@ test('waiting and incomplete telemetry keep unmeasured video rates hidden', asyn
   await page.evaluate(() => {
     const stats = window.__desktopTest.session
     stats.state = 'Live'
+    stats.route = 'lan'
     stats.counters.emitted = 1
     stats.sentKiB = 12.5
   })
   await expect(rate.getByText('12.5', { exact: true })).toBeVisible()
+  await expect(page.getByLabel(/^Đường truyền/).getByText('LAN trực tiếp', { exact: true })).toBeVisible()
 
   await page.evaluate(() => {
     const stats = window.__desktopTest.session
@@ -250,4 +274,49 @@ test('waiting and incomplete telemetry keep unmeasured video rates hidden', asyn
   await expect(capture.getByText('—', { exact: true })).toBeVisible()
   await expect(uptime.getByText('1', { exact: true })).toBeVisible()
   await expect(page.getByText(/Cửa sổ đo chưa đầy đủ/)).toBeVisible()
+})
+
+test('default relay from relay.json pre-fills fields and survives stop', async ({ page }) => {
+  await page.evaluate(() => {
+    window.__desktopTest.defaultRelay = { address: '198.51.100.10:9009', password: 'synthetic-default-pass' }
+  })
+  await page.getByTestId('home-share').click()
+  await expect(page.locator('#relay')).toHaveValue('198.51.100.10:9009')
+  await expect(page.locator('#relay-password')).toHaveValue('synthetic-default-pass')
+  await expect(page.getByText(/Đã tự điền từ relay\.json/)).toBeVisible()
+
+  const startBtn = page.getByRole('button', { name: labels.start, exact: true })
+  await expect(startBtn).toBeEnabled()
+  await startBtn.click()
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  expect(await page.evaluate(() => window.__desktopTest.relay)).toEqual({
+    address: '198.51.100.10:9009',
+    password: 'synthetic-default-pass',
+  })
+
+  await page.getByRole('button', { name: labels.stop, exact: true }).click()
+  await expect(page.locator('#relay')).toHaveValue('198.51.100.10:9009')
+  await expect(page.locator('#relay-password')).toHaveValue('synthetic-default-pass')
+  await expect(startBtn).toBeEnabled()
+})
+
+test('Share previews selected monitor and app window live before broadcasting', async ({ page }) => {
+  await page.evaluate(() => {
+    window.__desktopTest.defaultRelay = { address: '198.51.100.10:9009', password: 'synthetic-default-pass' }
+  })
+  await page.getByTestId('home-share').click()
+  await expect(page.getByText('Xem trước · Chưa phát', { exact: true })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.previewOptions?.displayID)).toBe('synthetic')
+
+  await page.getByRole('tab', { name: /Cửa sổ/ }).click()
+  await page.locator('[data-source-id="window:42"]').click()
+  await expect(page.locator('[data-source-id="window:42"]')).toHaveAttribute('aria-selected', 'true')
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.previewOptions?.displayID)).toBe('window:42')
+
+  await page.getByRole('button', { name: labels.start, exact: true }).click()
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  expect(await page.evaluate(() => ({
+    previewActive: window.__desktopTest.previewActive,
+    displayID: window.__desktopTest.captureOptions?.displayID,
+  }))).toEqual({ previewActive: false, displayID: 'window:42' })
 })

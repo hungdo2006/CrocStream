@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+relay.json
 *.pem
 *.key
 

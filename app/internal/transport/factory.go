@@ -35,7 +35,21 @@ type Factory interface {
 type Croc struct{}
 
 func options(o Options) crocduplex.Options {
-	return crocduplex.Options{RelayAddress: o.Address, RelayPassword: o.Password, IOTimeout: 30 * time.Second}
+	return crocduplex.Options{
+		RelayAddress:  o.Address,
+		RelayPassword: o.Password,
+		EnableLAN:     true,
+		IOTimeout:     30 * time.Second,
+	}
+}
+
+// RouteOf returns the measured transport route ("lan" or "relay") if the stream
+// reports one, or "" when unknown.
+func RouteOf(conn io.ReadWriteCloser) string {
+	if r, ok := conn.(interface{ Route() string }); ok {
+		return r.Route()
+	}
+	return ""
 }
 func (Croc) Host(ctx context.Context, o Options, authenticating func()) (Listener, error) {
 	if err := o.Validate(); err != nil {

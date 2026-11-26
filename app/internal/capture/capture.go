@@ -14,8 +14,15 @@ var (
 	ErrCapture = errors.New("Không thể chụp màn hình Windows. Kiểm tra phiên desktop và quyền truy cập.")
 )
 
+const (
+	KindDisplay = "display"
+	KindWindow  = "window"
+)
+
 type Display struct {
 	ID      string `json:"id"`
+	Kind    string `json:"kind"`
+	Name    string `json:"name"`
 	Width   int    `json:"width"`
 	Height  int    `json:"height"`
 	Primary bool   `json:"primary"`

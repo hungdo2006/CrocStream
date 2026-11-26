@@ -31,6 +31,9 @@ const (
 	maxRecords   = 1 << 20
 	dataKind     = 1
 	closeKind    = 2
+
+	RouteRelay = "relay"
+	RouteLAN   = "lan"
 )
 
 var ErrProtocol = errors.New("invalid G0 transport message")
@@ -38,10 +41,35 @@ var ErrProtocol = errors.New("invalid G0 transport message")
 type Options struct {
 	RelayAddress  string
 	RelayPassword string
+	// EnableLAN enables croc-style automatic LAN discovery with relay fallback.
+	EnableLAN bool
+	// LANDiscoveryPort overrides DefaultLANDiscoveryPort (9019) when > 0.
+	LANDiscoveryPort int
+	// LANDiscoverTimeout overrides the LAN discovery probe window when > 0.
+	LANDiscoverTimeout time.Duration
 	// Zero uses the defaults. Overrides are for bounded tests/operators.
 	HandshakeTimeout time.Duration
 	WaitTimeout      time.Duration
 	IOTimeout        time.Duration
+
+	// Test-only overrides to keep LAN unit tests deterministic and isolated.
+	lanListenAddr   string
+	lanUDPAddr      string
+	lanProbeTargets []*net.UDPAddr
+}
+
+func (o Options) lanDiscoveryPort() int {
+	if o.LANDiscoveryPort > 0 {
+		return o.LANDiscoveryPort
+	}
+	return DefaultLANDiscoveryPort
+}
+
+func (o Options) lanUDPListenAddr() string {
+	if o.lanUDPAddr != "" {
+		return o.lanUDPAddr
+	}
+	return fmt.Sprintf(":%d", o.lanDiscoveryPort())
 }
 
 func (o Options) validate() (Options, error) {
@@ -113,7 +141,10 @@ func dial(ctx context.Context, o Options, room string) (*owner, context.Context,
 
 type Listener struct {
 	own                    *owner
+	lan                    *lanAcceptor
 	ctx                    context.Context
+	cancel                 context.CancelFunc
+	relayCtx               context.Context
 	opts                   Options
 	mu                     sync.Mutex
 	invite, password, room string
@@ -121,6 +152,9 @@ type Listener struct {
 }
 
 func Host(ctx context.Context, opts Options) (*Listener, error) {
+	if ctx == nil {
+		return nil, errors.New("context required")
+	}
 	opts, err := opts.validate()
 	if err != nil {
 		return nil, err
@@ -134,14 +168,30 @@ func Host(ctx context.Context, opts Options) (*Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	own, life, err := dial(ctx, opts, room)
+	hostCtx, hostCancel := context.WithCancel(ctx)
+	own, relayLife, err := dial(hostCtx, opts, room)
 	if err != nil {
+		hostCancel()
 		return nil, err
+	}
+	var lan *lanAcceptor
+	if opts.EnableLAN {
+		lan = startLANAcceptor(room, opts)
 	}
 	// Relay admission is complete. Only handshake/record timeouts are needed
 	// afterward; do not retain the relay password in the one-shot listener.
 	opts.RelayPassword = ""
-	return &Listener{own: own, ctx: life, opts: opts, invite: invite, password: password, room: room}, nil
+	return &Listener{
+		own:      own,
+		lan:      lan,
+		ctx:      hostCtx,
+		cancel:   hostCancel,
+		relayCtx: relayLife,
+		opts:     opts,
+		invite:   invite,
+		password: password,
+		room:     room,
+	}, nil
 }
 
 func (l *Listener) Invitation() string {
@@ -157,8 +207,8 @@ func (l *Listener) Accept(ctx context.Context) (*Session, error) {
 	return l.AcceptWithProgress(ctx, nil)
 }
 
-// AcceptWithProgress preserves Accept semantics and reports only after an
-// relay-admitted peer has supplied a structurally valid CrocStream PAKE INIT.
+// AcceptWithProgress preserves Accept semantics and reports only after a
+// relay-admitted or LAN-admitted peer has supplied a structurally valid CrocStream PAKE INIT.
 func (l *Listener) AcceptWithProgress(ctx context.Context, authenticating func()) (*Session, error) {
 	if ctx == nil {
 		return nil, errors.New("context required")
@@ -172,27 +222,178 @@ func (l *Listener) AcceptWithProgress(ctx context.Context, authenticating func()
 	password, room := l.password, l.room
 	l.password = ""
 	l.mu.Unlock()
-	stop := context.AfterFunc(ctx, func() { l.own.cancel() })
+
+	if l.lan == nil {
+		stop := context.AfterFunc(ctx, func() { l.own.cancel() })
+		if ctx.Err() != nil {
+			stop()
+			l.own.abort()
+			return nil, ctx.Err()
+		}
+		s, err := handshake(l.relayCtx, l.own, l.opts, password, room, 1, authenticating)
+		if err != nil {
+			stop()
+			l.Close()
+			return nil, err
+		}
+		s.route = RouteRelay
+		s.stopAccept = stop
+		return s, nil
+	}
+
+	return l.acceptRace(ctx, password, room, authenticating)
+}
+
+func (l *Listener) acceptRace(ctx context.Context, password, room string, authenticating func()) (*Session, error) {
+	raceCtx, cancelRace := context.WithCancel(l.ctx)
+	stopParent := context.AfterFunc(ctx, cancelRace)
 	if ctx.Err() != nil {
-		stop()
-		l.own.abort()
+		stopParent()
+		cancelRace()
+		l.Close()
 		return nil, ctx.Err()
 	}
-	s, err := handshake(l.ctx, l.own, l.opts, password, room, 1, authenticating)
-	if err != nil {
-		stop()
-		l.Close()
-		return nil, err
+
+	var authOnce sync.Once
+	notifyAuth := func() {
+		if authenticating != nil {
+			authOnce.Do(authenticating)
+		}
 	}
-	s.stopAccept = stop
-	return s, nil
+
+	type outcome struct {
+		route string
+		s     *Session
+		err   error
+	}
+	results := make(chan outcome, 2)
+
+	// Path 1: Relay handshake (cancels l.own only if relay loses or race cancels).
+	relayCtx, cancelRelay := context.WithCancel(raceCtx)
+	stopRelay := context.AfterFunc(relayCtx, func() { l.own.abort() })
+	go func() {
+		s, err := handshake(l.relayCtx, l.own, l.opts, password, room, 1, notifyAuth)
+		if err == nil {
+			s.route = RouteRelay
+		}
+		results <- outcome{route: RouteRelay, s: s, err: err}
+	}()
+
+	// Path 2: Local LAN direct TCP accept + identical PAKE/AEAD handshake.
+	lanCtx, cancelLAN := context.WithCancel(raceCtx)
+	go func() {
+		raw, err := l.lan.acceptAdmitted(lanCtx)
+		if err != nil {
+			results <- outcome{route: RouteLAN, err: err}
+			return
+		}
+		// Tie the LAN connection lifetime to l.ctx (independent of l.relayCtx)
+		// so aborting the losing relay does not tear down the winning LAN session.
+		lanLife, lanCancel := context.WithCancel(l.ctx)
+		lanOwn := &owner{conn: raw, cancel: lanCancel}
+		lanOwn.stop = context.AfterFunc(lanLife, func() { lanOwn.closed.Store(true); _ = raw.Close() })
+		stopLANCancel := context.AfterFunc(lanCtx, func() { lanOwn.abort() })
+		s, err := handshake(lanLife, lanOwn, l.opts, password, room, 1, notifyAuth)
+		stopLANCancel()
+		if err != nil {
+			lanOwn.abort()
+			results <- outcome{route: RouteLAN, err: err}
+			return
+		}
+		s.route = RouteLAN
+		results <- outcome{route: RouteLAN, s: s}
+	}()
+
+	first := <-results
+	if first.err == nil {
+		// Winner succeeded; immediately cancel and drain the losing path.
+		stopParent()
+		if first.route == RouteLAN {
+			cancelRelay()
+			second := <-results
+			if second.s != nil {
+				second.s.Close()
+			}
+			stopRelay()
+			l.lan.close()
+			cancelLAN()
+			cancelRace()
+			first.s.stopAccept = context.AfterFunc(ctx, func() { first.s.own.abort() })
+			if ctx.Err() != nil {
+				first.s.Close()
+				return nil, ctx.Err()
+			}
+			return first.s, nil
+		}
+		// Relay won: detach relay from cancelRelay before closing raceCtx/LAN.
+		stopRelay()
+		cancelLAN()
+		l.lan.close()
+		second := <-results
+		if second.s != nil {
+			second.s.Close()
+		}
+		cancelRelay()
+		cancelRace()
+		first.s.stopAccept = context.AfterFunc(ctx, func() { first.s.own.abort() })
+		if ctx.Err() != nil {
+			first.s.Close()
+			return nil, ctx.Err()
+		}
+		return first.s, nil
+	}
+
+	// First path failed. If LAN merely stopped due to local error (before peer
+	// authentication) and raceCtx is still active, keep waiting on Relay.
+	// If Relay failed or a peer failed PAKE confirmation, abort both paths.
+	if first.route == RouteLAN && raceCtx.Err() == nil && !errors.Is(first.err, ErrProtocol) &&
+		first.err.Error() != "peer confirmation failed" && first.err.Error() != "PAKE update failed" {
+		second := <-results
+		stopParent()
+		stopRelay()
+		cancelLAN()
+		l.lan.close()
+		cancelRelay()
+		cancelRace()
+		if second.err == nil {
+			second.s.stopAccept = context.AfterFunc(ctx, func() { second.s.own.abort() })
+			if ctx.Err() != nil {
+				second.s.Close()
+				return nil, ctx.Err()
+			}
+			return second.s, nil
+		}
+		l.Close()
+		return nil, second.err
+	}
+
+	// Abort remaining path and wait for clean exit.
+	cancelRelay()
+	cancelLAN()
+	l.lan.close()
+	second := <-results
+	if second.s != nil {
+		second.s.Close()
+	}
+	stopParent()
+	stopRelay()
+	cancelRace()
+	l.Close()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+	return nil, first.err
 }
 
 func (l *Listener) Close() error {
 	l.mu.Lock()
 	l.invite, l.password, l.room = "", "", ""
 	l.mu.Unlock()
+	l.lan.close()
 	l.own.abort()
+	if l.cancel != nil {
+		l.cancel()
+	}
 	return nil
 }
 
@@ -200,7 +401,8 @@ func Join(ctx context.Context, invite string, opts Options) (*Session, error) {
 	return JoinWithProgress(ctx, invite, opts, nil)
 }
 
-// JoinWithProgress reports after relay admission, immediately before peer PAKE.
+// JoinWithProgress prefers an authenticated LAN peer when EnableLAN is true,
+// falling back automatically to the configured relay.
 func JoinWithProgress(ctx context.Context, invite string, opts Options, authenticating func()) (*Session, error) {
 	opts, err := opts.validate()
 	if err != nil {
@@ -210,6 +412,27 @@ func JoinWithProgress(ctx context.Context, invite string, opts Options, authenti
 	if err != nil {
 		return nil, err
 	}
+	if opts.EnableLAN {
+		tag := deriveLANTag(room)
+		if addr, ok := discoverLAN(ctx, tag, opts); ok {
+			if lanOwn, lanLife, dialErr := dialLAN(ctx, addr, tag); dialErr == nil {
+				lanOpts := opts
+				lanOpts.RelayPassword = ""
+				s, hsErr := handshake(lanLife, lanOwn, lanOpts, password, room, 0, authenticating)
+				if hsErr == nil {
+					s.route = RouteLAN
+					return s, nil
+				}
+				lanOwn.abort()
+				// LAN reached the exact room tag but PAKE failed (e.g. wrong code or cancel);
+				// do not retry the same bad credentials on the relay.
+				return nil, hsErr
+			}
+		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+	}
 	own, life, err := dial(ctx, opts, room)
 	if err != nil {
 		return nil, err
@@ -218,8 +441,10 @@ func JoinWithProgress(ctx context.Context, invite string, opts Options, authenti
 	s, err := handshake(life, own, opts, password, room, 0, authenticating)
 	if err != nil {
 		own.abort()
+		return nil, err
 	}
-	return s, err
+	s.route = RouteRelay
+	return s, nil
 }
 
 func parseInvite(invite string) (string, string, error) {
@@ -446,6 +671,7 @@ type Session struct {
 	own             *owner
 	send, recv      cipher.AEAD
 	direction       byte
+	route           string
 	readMu, writeMu sync.Mutex
 	tx, rx          uint64
 	pending         []byte
@@ -453,6 +679,9 @@ type Session struct {
 	timeout         time.Duration
 	stopAccept      func() bool
 }
+
+// Route returns the actually established transport route ("lan" or "relay").
+func (s *Session) Route() string { return s.route }
 
 func newSession(own *owner, key []byte, dir byte, timeout time.Duration) (*Session, error) {
 	send, err := directional(key, dir)

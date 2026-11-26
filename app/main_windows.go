@@ -32,7 +32,7 @@ func main() {
 		Height:           760,
 		MinWidth:         960,
 		MinHeight:        640,
-		BackgroundColour: application.NewRGB(2, 6, 23),
+		BackgroundColour: application.NewRGB(17, 18, 21),
 	})
 	if err := app.Run(); err != nil {
 		os.Exit(1)

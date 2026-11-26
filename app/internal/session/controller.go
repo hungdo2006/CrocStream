@@ -27,6 +27,7 @@ type Started struct {
 type Stats struct {
 	State                State    `json:"state"`
 	Role                 string   `json:"role"`
+	Route                string   `json:"route"`
 	Error                string   `json:"error"`
 	PreviewError         string   `json:"previewError"`
 	Generation           uint64   `json:"generation"`
@@ -296,12 +297,14 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	if failure != nil {
 		return
 	}
+	route := transport.RouteOf(conn)
 	hooks := Hooks{State: func(state State) { c.setState(s, state) }}
 	if !host {
 		hooks.Image = func(f capture.Frame) { latest.Offer(images, f) }
 	}
 	peer := NewPeerWithTau(conn, host, s.metrics, hooks, o.Tau)
 	c.mu.Lock()
+	s.stats.Route = route
 	s.peer = peer
 	c.mu.Unlock()
 	if host {

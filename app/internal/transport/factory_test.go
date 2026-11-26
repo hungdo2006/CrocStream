@@ -75,3 +75,23 @@ func TestListenerProgressForwardsCallback(t *testing.T) {
 		t.Fatalf("expected AcceptWithProgress to invoke progress callback")
 	}
 }
+
+type fakeRoutedConn struct{ route string }
+
+func (fakeRoutedConn) Read([]byte) (int, error)  { return 0, io.EOF }
+func (fakeRoutedConn) Write([]byte) (int, error) { return 0, io.EOF }
+func (fakeRoutedConn) Close() error              { return nil }
+func (c fakeRoutedConn) Route() string           { return c.route }
+
+func TestOptionsEnableLANAndRouteOf(t *testing.T) {
+	got := options(Options{Address: "198.51.100.10:9009", Password: "example-relay-pass"})
+	if !got.EnableLAN {
+		t.Fatal("expected Croc transport options to enable LAN-first discovery")
+	}
+	if r := RouteOf(fakeRoutedConn{route: "lan"}); r != "lan" {
+		t.Fatalf("expected lan route, got %q", r)
+	}
+	if r := RouteOf(nil); r != "" {
+		t.Fatalf("expected empty route for nil conn, got %q", r)
+	}
+}

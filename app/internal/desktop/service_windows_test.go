@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -121,5 +123,32 @@ func TestServiceGetDiagnostics(t *testing.T) {
 	}
 	if d.WorkingSetBytes == 0 || d.Handles == 0 {
 		t.Fatalf("expected nonzero working set and handles: %+v", d)
+	}
+}
+
+func TestServiceGetDefaultRelay(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "relay.json")
+	svc := newTestService(t)
+	defer svc.ServiceShutdown()
+	svc.relayConfigPath = func() (string, error) { return path, nil }
+
+	if got := svc.GetDefaultRelay(); got != (transport.Options{}) {
+		t.Fatalf("expected empty default relay when file is absent, got %+v", got)
+	}
+
+	if err := os.WriteFile(path, []byte(`{"address":"198.51.100.10:9009","password":"example-relay-pass"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := svc.GetDefaultRelay()
+	if got.Address != "198.51.100.10:9009" || got.Password != "example-relay-pass" {
+		t.Fatalf("unexpected default relay: %+v", got)
+	}
+
+	if err := os.WriteFile(path, []byte(`{"address":"bad"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := svc.GetDefaultRelay(); got != (transport.Options{}) {
+		t.Fatalf("expected empty default relay on malformed file, got %+v", got)
 	}
 }

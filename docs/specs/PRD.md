@@ -90,7 +90,7 @@ Croc's persistent duplex stream viability, relay usage/capacity, security handsh
 ## UI and interaction
 
 ### Design and screens
-Desktop-first dark layout: default ~1150×760, minimum ~960×640, scrolling at smaller sizes. G6 owner requested a restrained desktop-tool UI: neutral dark surfaces, compact borders/radii, system font, a muted indigo primary action, green connected, amber waiting/recovering and rose error/stop. No promotional slogan, gradient hero or oversized metric tiles. Monospaced/tabular numbers for metrics/code. Preserve 16:9 letterboxing, never stretch. This presentation refinement changes no state, wire or telemetry meaning.
+Desktop-first dark layout: default ~1150×760, minimum ~960×640, scrolling at smaller sizes. G6+ owner refinements (2026-11-26): restrained studio graphite palette (`#111215` / `#17191d`), compact 48px topbar app shell, crisp hairline borders, Windows system font, emerald primary action, green connected, amber waiting/recovering and rose error/stop. No promotional slogan, gradient hero or oversized metric tiles. Monospaced/tabular numbers for metrics/code. Preserve 16:9 letterboxing, never stretch.
 
 High-contrast focus rings, keyboard navigation, accessible labels and status
 announcements are MVP requirements (C-05, owner-confirmed for G3).
@@ -103,9 +103,9 @@ measured capture/JPEG/render metrics. Broadcaster/viewer pairing belongs to G4.
 
 | Screen | Layout and controls |
 | --- | --- |
-| Home | Clear `Chia sẻ màn hình` / `Tham gia bằng mã` actions; local preview is secondary. Short relay prerequisite/demo guidance. No connected indicator before connection. |
-| Broadcaster | Left: labeled local preview and three main measurements (render FPS, video KiB/s, RTT). Right: source/resolution/FPS, advanced settings, invitation + Copy after preparation, Start/Stop and honest status. `Chi tiết luồng` reveals baseline/savings, emitted FPS, key/delta sizes/counts, dropped captures and uptime. |
-| Viewer | Code/relay input, explicit connection progress, placeholder until KEY, large canvas and Leave. Main render/rate/RTT plus expandable decoded/received FPS, last accepted frame kind, optional local decode→render (N/A if unmeasured). |
+| Home | Clear `Chia sẻ màn hình` / `Tham gia bằng mã` actions; local preview is secondary. No connected indicator before connection. |
+| Broadcaster | Left: live source preview (pre-share preview once user enters Share, transitioning cleanly to live broadcast on Start) and four main measurements (render FPS, video KiB/s, RTT, measured route `LAN trực tiếp`/`Relay`). Right: tabbed Monitor/Application Window source picker, resolution/FPS, relay settings (with optional `relay.json` pre-fill), advanced settings, invitation + Reveal/Copy after preparation, Start/Stop and honest status. `Chi tiết luồng` reveals baseline/savings, emitted FPS, key/delta sizes/counts, dropped captures and uptime. |
+| Viewer | Code/relay input (with optional `relay.json` pre-fill), explicit connection progress, placeholder until KEY, large canvas and Leave. Main render/rate/RTT/measured route plus expandable decoded/received FPS, last accepted frame kind, optional local decode→render (N/A if unmeasured). |
 
 ### State machine
 ```text

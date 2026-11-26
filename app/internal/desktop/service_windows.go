@@ -2,6 +2,8 @@ package desktop
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -13,9 +15,18 @@ import (
 )
 
 type Service struct {
-	mu         sync.Mutex
-	controller *preview.Controller
-	stream     *session.Controller
+	mu              sync.Mutex
+	controller      *preview.Controller
+	stream          *session.Controller
+	relayConfigPath func() (string, error)
+}
+
+func defaultRelayConfigPath() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(filepath.Dir(exe), "relay.json"), nil
 }
 
 func New(origin string) (*Service, error) {
@@ -23,7 +34,11 @@ func New(origin string) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Service{controller: c, stream: session.NewController(capture.Windows{}, transport.Croc{}, origin)}, nil
+	return &Service{
+		controller:      c,
+		stream:          session.NewController(capture.Windows{}, transport.Croc{}, origin),
+		relayConfigPath: defaultRelayConfigPath,
+	}, nil
 }
 func (s *Service) ServiceStartup(ctx context.Context, _ application.ServiceOptions) error { return nil }
 func (s *Service) ServiceShutdown() error {
@@ -79,3 +94,21 @@ func (s *Service) StopSession() error {
 }
 func (s *Service) GetSessionStats() session.Stats { return s.stream.Stats() }
 func (s *Service) GetInvitation() string          { return s.stream.Invitation() }
+
+// GetDefaultRelay returns optional relay defaults from relay.json beside the executable.
+// Missing or invalid files return empty options so manual entry remains available.
+func (s *Service) GetDefaultRelay() transport.Options {
+	resolve := s.relayConfigPath
+	if resolve == nil {
+		resolve = defaultRelayConfigPath
+	}
+	path, err := resolve()
+	if err != nil {
+		return transport.Options{}
+	}
+	opts, err := transport.LoadRelayFile(path)
+	if err != nil {
+		return transport.Options{}
+	}
+	return opts
+}

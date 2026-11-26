@@ -17,9 +17,14 @@ export function StreamMetrics({ role, generation, sessionActive, stats, renderFP
   // Capture and uptime can be measured while the broadcaster waits for a viewer.
   const hasVideoSample = completeStats && (sharing ? completeStats.counters.emitted : completeStats.counters.received) > 0
   const videoStats = hasVideoSample ? completeStats : undefined
+  const routeLabel = currentStats?.route === 'lan'
+    ? 'LAN trực tiếp'
+    : currentStats?.route === 'relay'
+      ? 'Relay'
+      : '—'
 
   return <>
-    <div className="metrics">
+    <div className="metrics metrics-4">
       <Metric label="FPS hiển thị" value={generation !== undefined ? String(renderFPS) : '—'} />
       <Metric
         label="Tốc độ video (KiB/s)"
@@ -30,6 +35,11 @@ export function StreamMetrics({ role, generation, sessionActive, stats, renderFP
         label="RTT khứ hồi (ms)"
         help="Ping/Pong gần nhất; không phải độ trễ một chiều hay end-to-end."
         value={videoStats?.counters.rttKnown ? videoStats.counters.rttMs.toFixed(1) : 'N/A'}
+      />
+      <Metric
+        label="Đường truyền"
+        help="Tuyến thực tế đã bắt tay PAKE thành công (LAN trực tiếp hoặc Relay); không đoán trước khi kết nối."
+        value={routeLabel}
       />
     </div>
     <details className="stream-details">
@@ -73,7 +83,7 @@ export function StreamMetrics({ role, generation, sessionActive, stats, renderFP
           value="N/A"
         />
       </div>
-      <p className="caption">Tốc độ tính trong 1 giây gần nhất; cập nhật mỗi 500 ms. KEY/DELTA và mẫu bỏ là số cộng dồn. Mức tiết kiệm so sánh với nén toàn ảnh cùng mẫu, có thể âm. Byte gồm header, không gồm control hoặc overhead mạng. RTT là khứ hồi; JPEG chỉ dùng để hiển thị.</p>
+      <p className="caption">Tốc độ tính trong 1 giây gần nhất; cập nhật mỗi 500 ms. KEY/DELTA và mẫu bỏ là số cộng dồn. Mức tiết kiệm so sánh với nén toàn ảnh cùng mẫu, có thể âm.</p>
     </details>
     {stats?.measurementOverflow && <p role="status" className="error">Cửa sổ đo chưa đầy đủ; tạm ẩn tốc độ và savings.</p>}
   </>
