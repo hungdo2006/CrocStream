@@ -45,11 +45,11 @@ var (
 	deleteDC         = gdi32.NewProc("DeleteDC")
 	createDIB        = gdi32.NewProc("CreateDIBSection")
 	selectObject     = gdi32.NewProc("SelectObject")
-	deleteObject     = gdi32.NewProc("DeleteObject")
-	stretchBlt       = gdi32.NewProc("StretchBlt")
-	stretchMode      = gdi32.NewProc("SetStretchBltMode")
-	setBrushOrgEx    = gdi32.NewProc("SetBrushOrgEx")
-	flush            = gdi32.NewProc("GdiFlush")
+	deleteObject       = gdi32.NewProc("DeleteObject")
+	bitBlt             = gdi32.NewProc("BitBlt")
+	stretchBlt         = gdi32.NewProc("StretchBlt")
+	stretchMode        = gdi32.NewProc("SetStretchBltMode")
+	flush              = gdi32.NewProc("GdiFlush")
 )
 
 const (
@@ -62,7 +62,8 @@ const (
 	dwmwaCloaked             = 14
 	pwRenderFullContent      = 0x00000002
 	swShowNoActivate         = 4
-	halftoneStretchMode      = 4
+	colorOnColorStretchMode  = 3
+	monitorRecheckInterval   = 500 * time.Millisecond
 	maxWindowCaptureDim      = 4096
 	maxEnumeratedWindows     = 64
 	minWindowWidth           = 120
@@ -465,11 +466,10 @@ func newSurfaceWithBounds(screenDC uintptr, w, h, maxW, maxH int) (*surface, err
 		return nil, ErrCapture
 	}
 	s.pixels = unsafe.Slice((*byte)(pixels), w*h*4)
-	if ok, _, _ := stretchMode.Call(s.dc, halftoneStretchMode); ok == 0 {
+	if ok, _, _ := stretchMode.Call(s.dc, colorOnColorStretchMode); ok == 0 {
 		s.close()
 		return nil, ErrCapture
 	}
-	_, _, _ = setBrushOrgEx.Call(s.dc, 0, 0, 0)
 	return s, nil
 }
 
@@ -555,6 +555,20 @@ func runMonitorCapture(ctx context.Context, o Options, cfg protocol.Config, deli
 	}
 	defer func() { err = errors.Join(err, s.close()) }()
 	x, y, w, h := Fit(chosen.display.Width, chosen.display.Height, int(o.Width), int(o.Height))
+	directCopy := w == chosen.display.Width && h == chosen.display.Height
+	lastEnum := time.Now()
+	verifyMonitor := func() error {
+		current, listErr := enumerate()
+		if listErr != nil {
+			return listErr
+		}
+		for _, display := range current {
+			if display.display.ID == chosen.display.ID && display.bounds == chosen.bounds {
+				return nil
+			}
+		}
+		return ErrSource
+	}
 	ticker := time.NewTicker(time.Second / time.Duration(o.FPS))
 	defer ticker.Stop()
 	for {
@@ -564,26 +578,30 @@ func runMonitorCapture(ctx context.Context, o Options, cfg protocol.Config, deli
 		case <-ticker.C:
 		}
 		start := time.Now()
-		current, listErr := enumerate()
-		if listErr != nil {
-			return listErr
-		}
-		found := false
-		for _, display := range current {
-			if display.display.ID == chosen.display.ID && display.bounds == chosen.bounds {
-				found = true
-				break
+		if start.Sub(lastEnum) >= monitorRecheckInterval {
+			if verifyErr := verifyMonitor(); verifyErr != nil {
+				return verifyErr
 			}
+			lastEnum = start
 		}
-		if !found {
-			return ErrSource
+		if x != 0 || y != 0 || w != int(o.Width) || h != int(o.Height) {
+			clear(s.pixels) // Opaque black letterboxing after Normalize.
 		}
-		clear(s.pixels) // Opaque black letterboxing after Normalize.
-		if ok, _, _ := stretchBlt.Call(s.dc, uintptr(x), uintptr(y), uintptr(w), uintptr(h), dc,
-			uintptr(chosen.bounds.Left), uintptr(chosen.bounds.Top), uintptr(chosen.display.Width), uintptr(chosen.display.Height),
-			0x00CC0020|0x40000000); ok == 0 {
-			return ErrCapture
+		var bltOK uintptr
+		if directCopy {
+			bltOK, _, _ = bitBlt.Call(s.dc, uintptr(x), uintptr(y), uintptr(w), uintptr(h), dc,
+				uintptr(chosen.bounds.Left), uintptr(chosen.bounds.Top), 0x00CC0020|0x40000000)
+		} else {
+			bltOK, _, _ = stretchBlt.Call(s.dc, uintptr(x), uintptr(y), uintptr(w), uintptr(h), dc,
+				uintptr(chosen.bounds.Left), uintptr(chosen.bounds.Top), uintptr(chosen.display.Width), uintptr(chosen.display.Height),
+				0x00CC0020|0x40000000)
 		} // SRCCOPY | CAPTUREBLT.
+		if bltOK == 0 {
+			if verifyErr := verifyMonitor(); verifyErr != nil {
+				return verifyErr
+			}
+			return ErrCapture
+		}
 		if ok, _, _ := flush.Call(); ok == 0 {
 			return ErrCapture
 		}
@@ -682,11 +700,20 @@ func runWindowCapture(ctx context.Context, o Options, cfg protocol.Config, hwnd 
 			cropH = max(1, winH-cropY)
 		}
 		dx, dy, dw, dh := Fit(cropW, cropH, int(o.Width), int(o.Height))
-		clear(dst.pixels)
-		if ok, _, _ := stretchBlt.Call(dst.dc, uintptr(dx), uintptr(dy), uintptr(dw), uintptr(dh), src.dc,
-			uintptr(cropX), uintptr(cropY), uintptr(cropW), uintptr(cropH), 0x00CC0020); ok == 0 {
-			return ErrCapture
+		if dx != 0 || dy != 0 || dw != int(o.Width) || dh != int(o.Height) {
+			clear(dst.pixels)
+		}
+		var bltOK uintptr
+		if dw == cropW && dh == cropH {
+			bltOK, _, _ = bitBlt.Call(dst.dc, uintptr(dx), uintptr(dy), uintptr(dw), uintptr(dh), src.dc,
+				uintptr(cropX), uintptr(cropY), 0x00CC0020)
+		} else {
+			bltOK, _, _ = stretchBlt.Call(dst.dc, uintptr(dx), uintptr(dy), uintptr(dw), uintptr(dh), src.dc,
+				uintptr(cropX), uintptr(cropY), uintptr(cropW), uintptr(cropH), 0x00CC0020)
 		} // SRCCOPY.
+		if bltOK == 0 {
+			return ErrCapture
+		}
 		if ok, _, _ := flush.Call(); ok == 0 {
 			return ErrCapture
 		}

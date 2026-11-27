@@ -240,6 +240,7 @@ test('Share sends the selected capture and compression settings', async ({ page 
   await page.locator('#stream-resolution').selectOption('640x360')
   await page.locator('#stream-fps').selectOption('30')
   await page.getByText('Nén ảnh nâng cao', { exact: true }).click()
+  await expect(page.locator('#stream-keyinterval')).toHaveValue('120')
   await page.locator('#stream-tau').fill('6')
   await page.locator('#stream-keyinterval').fill('60')
   await page.getByRole('button', { name: labels.start, exact: true }).click()

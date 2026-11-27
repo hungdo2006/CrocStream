@@ -1,7 +1,9 @@
 package bridge
 
 import (
+	"bytes"
 	"context"
+	"image/jpeg"
 	"net"
 	"net/http"
 	"strings"
@@ -287,5 +289,40 @@ func TestSlowClientWriteDeadline(t *testing.T) {
 				return
 			}
 		}
+	}
+}
+
+func TestEncodePreviewJPEGDownscalesHD(t *testing.T) {
+	hd := make([]byte, 1280*720*4)
+	for i := 0; i < len(hd); i += 4 {
+		hd[i], hd[i+1], hd[i+2], hd[i+3] = 40, 120, 200, 255
+	}
+	fullBytes, err := EncodeJPEG(hd, 1280, 720)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fullImg, err := jpeg.Decode(bytes.NewReader(fullBytes))
+	if err != nil || fullImg.Bounds().Dx() != 1280 || fullImg.Bounds().Dy() != 720 {
+		t.Fatalf("unexpected full JPEG: %v %v", err, fullImg)
+	}
+	previewBytes, err := EncodePreviewJPEG(hd, 1280, 720)
+	if err != nil {
+		t.Fatal(err)
+	}
+	previewImg, err := jpeg.Decode(bytes.NewReader(previewBytes))
+	if err != nil || previewImg.Bounds().Dx() != 640 || previewImg.Bounds().Dy() != 360 {
+		t.Fatalf("expected 640x360 self-preview JPEG, got %v %v", err, previewImg)
+	}
+	small := make([]byte, 640*360*4)
+	for i := 3; i < len(small); i += 4 {
+		small[i] = 255
+	}
+	smallBytes, err := EncodePreviewJPEG(small, 640, 360)
+	if err != nil {
+		t.Fatal(err)
+	}
+	smallImg, err := jpeg.Decode(bytes.NewReader(smallBytes))
+	if err != nil || smallImg.Bounds().Dx() != 640 || smallImg.Bounds().Dy() != 360 {
+		t.Fatalf("unexpected small preview JPEG: %v %v", err, smallImg)
 	}
 }

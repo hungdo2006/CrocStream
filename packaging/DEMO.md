@@ -42,7 +42,7 @@ Trong thư mục chứa `crocstream.exe`, mở PowerShell và chạy:
 ## 3. Kiểm tra ZIP nhận được
 
 ```powershell
-Get-FileHash .\CrocStream-0.0.3-windows-amd64.zip -Algorithm SHA256
+Get-FileHash .\CrocStream-0.0.4-windows-amd64.zip -Algorithm SHA256
 ```
 
 Sau khi giải nén vào thư mục có quyền ghi, kiểm tra tính toàn vẹn gói (theo `manifest.json` của bản phát hành):

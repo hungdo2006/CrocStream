@@ -1,4 +1,4 @@
-# CrocStream 0.0.3 · Windows portable
+# CrocStream 0.0.4 · Windows portable
 
 Bản thử nghiệm này chạy trên Windows x64 với Microsoft Edge WebView2 Evergreen
 Runtime. Giải nén toàn bộ ZIP vào thư mục có quyền ghi, rồi mở `crocstream.exe`.

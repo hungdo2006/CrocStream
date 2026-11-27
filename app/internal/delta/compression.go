@@ -25,12 +25,18 @@ func (b *boundedBuffer) Write(p []byte) (int, error) {
 // Every invocation emits a fresh standard LZ4 frame, deterministic settings,
 // independent 64-KiB blocks, content size, block and content checksums.
 func compress(ctx context.Context, raw []byte) ([]byte, error) {
-	if len(raw) > protocol.MaxRaw+2+2*920 {
-		return nil, ErrCompressed
-	}
 	var out boundedBuffer
 	w := lz4.NewWriter(&out)
 	defer w.Reset(io.Discard) // Release library buffers on success or failure.
+	return compressInto(ctx, w, &out, raw)
+}
+
+func compressInto(ctx context.Context, w *lz4.Writer, out *boundedBuffer, raw []byte) ([]byte, error) {
+	if len(raw) > protocol.MaxRaw+2+2*920 {
+		return nil, ErrCompressed
+	}
+	out.Reset()
+	w.Reset(out)
 	if err := w.Apply(lz4.ConcurrencyOption(1), lz4.BlockSizeOption(lz4.Block64Kb),
 		lz4.CompressionLevelOption(lz4.Fast), lz4.SizeOption(uint64(len(raw))),
 		lz4.ChecksumOption(true), lz4.BlockChecksumOption(true)); err != nil {
@@ -116,27 +122,37 @@ func singleFrame(ctx context.Context, b []byte, limit int) error {
 // fixed library block buffers are <=4 MiB, with concurrency=1 and no worker
 // goroutines. EOF is required so checksums and declared size are always checked.
 func decompress(ctx context.Context, payload []byte, limit int) ([]byte, error) {
+	r := lz4.NewReader(nil)
+	defer r.Reset(nil)
+	return decompressInto(ctx, r, nil, payload, limit)
+}
+
+func decompressInto(ctx context.Context, r *lz4.Reader, dst []byte, payload []byte, limit int) ([]byte, error) {
 	if err := singleFrame(ctx, payload, limit); err != nil {
 		return nil, err
 	}
-	r := lz4.NewReader(bytes.NewReader(payload))
+	r.Reset(bytes.NewReader(payload))
 	if err := r.Apply(lz4.ConcurrencyOption(1)); err != nil {
 		return nil, err
 	}
-	defer r.Reset(nil)
-	out := make([]byte, limit+1)
+	need := limit + 1
+	if cap(dst) < need {
+		dst = make([]byte, need)
+	} else {
+		dst = dst[:need]
+	}
 	used := 0
-	for used < len(out) {
+	for used < len(dst) {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		n, err := r.Read(out[used:min(used+64*1024, len(out))])
+		n, err := r.Read(dst[used:min(used+64*1024, len(dst))])
 		used += n
 		if used > limit {
 			return nil, ErrCompressed
 		}
 		if err == io.EOF {
-			return out[:used], nil
+			return dst[:used], nil
 		}
 		if err != nil || n == 0 {
 			return nil, ErrCompressed

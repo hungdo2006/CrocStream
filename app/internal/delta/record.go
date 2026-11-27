@@ -1,6 +1,7 @@
 package delta
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
@@ -22,8 +23,15 @@ func tile(c protocol.Config, index int) geometry {
 }
 
 func opaque(b []byte) bool {
-	for i := 3; i < len(b); i += 4 {
-		if b[i] != 255 {
+	n := len(b)
+	i := 0
+	for ; i+15 < n; i += 16 {
+		if b[i+3]&b[i+7]&b[i+11]&b[i+15] != 255 {
+			return false
+		}
+	}
+	for ; i+3 < n; i += 4 {
+		if b[i+3] != 255 {
 			return false
 		}
 	}
@@ -97,49 +105,94 @@ func copyTile(dst, src []byte, c protocol.Config, index int, pack bool) {
 }
 
 func dirtyTiles(ctx context.Context, c protocol.Config, current, reference []byte, count int, tau uint8) ([]int, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	dirty := make([]int, 0, count)
+	width := int(c.Width)
+	height := int(c.Height)
+	stride := width * 4
+	cols := (width + protocol.TileSize - 1) / protocol.TileSize
+	tauInt := int(tau)
+
 	for index := 0; index < count; index++ {
-		if err := ctx.Err(); err != nil {
-			return nil, err
-		}
-		g := tile(c, index)
-		sum := 0
-		for y := g.y; y < g.y+g.h; y++ {
-			for x := g.x; x < g.x+g.w; x++ {
-				p := (y*int(c.Width) + x) * 4
-				for ch := 0; ch < 3; ch++ {
-					diff := int(current[p+ch]) - int(reference[p+ch])
-					if diff < 0 {
-						diff = -diff
-					}
-					sum += diff
-				}
+		if index&31 == 0 {
+			if err := ctx.Err(); err != nil {
+				return nil, err
 			}
 		}
-		// Exact integer comparison: MAE > tau, not >= or truncated division.
-		if sum > int(tau)*3*g.w*g.h {
+		gx := (index % cols) * protocol.TileSize
+		gy := (index / cols) * protocol.TileSize
+		gw := min(protocol.TileSize, width-gx)
+		gh := min(protocol.TileSize, height-gy)
+		rowBytes := gw * 4
+		threshold := tauInt * 3 * gw * gh
+		sum := 0
+		isDirty := false
+
+		for y := gy; y < gy+gh; y++ {
+			off := y*stride + gx*4
+			curRow := current[off : off+rowBytes]
+			refRow := reference[off : off+rowBytes]
+			if bytes.Equal(curRow, refRow) {
+				continue
+			}
+			_ = refRow[rowBytes-1]
+			for x := 0; x < rowBytes; x += 4 {
+				d0 := int(curRow[x]) - int(refRow[x])
+				if d0 < 0 {
+					d0 = -d0
+				}
+				d1 := int(curRow[x+1]) - int(refRow[x+1])
+				if d1 < 0 {
+					d1 = -d1
+				}
+				d2 := int(curRow[x+2]) - int(refRow[x+2])
+				if d2 < 0 {
+					d2 = -d2
+				}
+				sum += d0 + d1 + d2
+			}
+			// Exact integer comparison: MAE > tau, monotonic per row so early exit is bit-exact.
+			if sum > threshold {
+				isDirty = true
+				break
+			}
+		}
+		if isDirty {
 			dirty = append(dirty, index)
 		}
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	return dirty, nil
 }
 
 func encodeRecord(c protocol.Config, current []byte, indices []int) []byte {
+	return encodeRecordInto(nil, c, current, indices)
+}
+
+func encodeRecordInto(buf []byte, c protocol.Config, current []byte, indices []int) []byte {
 	size := 2 + 2*len(indices)
 	for _, index := range indices {
 		g := tile(c, index)
 		size += g.w * g.h * 4
 	}
-	raw := make([]byte, size)
-	binary.BigEndian.PutUint16(raw, uint16(len(indices)))
+	if cap(buf) < size {
+		buf = make([]byte, size)
+	} else {
+		buf = buf[:size]
+	}
+	binary.BigEndian.PutUint16(buf, uint16(len(indices)))
 	pos := 2
 	for _, index := range indices {
-		binary.BigEndian.PutUint16(raw[pos:pos+2], uint16(index))
+		binary.BigEndian.PutUint16(buf[pos:pos+2], uint16(index))
 		pos += 2
 		g := tile(c, index)
 		n := g.w * g.h * 4
-		copyTile(raw[pos:pos+n], current, c, index, true)
+		copyTile(buf[pos:pos+n], current, c, index, true)
 		pos += n
 	}
-	return raw
+	return buf
 }

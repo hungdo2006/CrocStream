@@ -30,7 +30,7 @@ export function Stream({ role, onHome }: { role: 'share' | 'watch'; onHome: () =
   const settings = useCaptureSettings(sharing, session.setError, 'Không đọc được danh sách nguồn chụp.', sharing && !locked)
 
   const [tau, setTau] = useState(4)
-  const [keyInterval, setKeyInterval] = useState(30)
+  const [keyInterval, setKeyInterval] = useState(120)
   const [defaultRelay, setDefaultRelay] = useState<Relay>({ address: '', password: '' })
   const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')

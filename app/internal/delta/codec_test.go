@@ -608,4 +608,55 @@ func TestRecordFixturesAndEdges(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// Verify unrolled opaque checks handle tail lengths (1..5 pixels) accurately.
+	for pixels := 1; pixels <= 5; pixels++ {
+		buf := make([]byte, pixels*4)
+		for i := 3; i < len(buf); i += 4 {
+			buf[i] = 255
+		}
+		if !opaque(buf) {
+			t.Fatalf("expected opaque for %d pixels", pixels)
+		}
+		for bad := 0; bad < pixels; bad++ {
+			buf[bad*4+3] = 254
+			if opaque(buf) {
+				t.Fatalf("accepted non-opaque pixel %d/%d", bad, pixels)
+			}
+			buf[bad*4+3] = 255
+		}
+	}
+}
+
+func BenchmarkEmitAndDecode720pDelta(b *testing.B) {
+	c := configuration(false)
+	c.KeyInterval = 120
+	e := encoder(b, c, DefaultTau)
+	d := decoder(b, c)
+	base := pattern(c, 5)
+	next := pattern(c, 6)
+	var pkt protocol.Packet
+	write := packetWriterFunc(func(p protocol.Packet) error {
+		pkt = p
+		return nil
+	})
+	if _, err := e.Emit(bg, write, base, 1); err != nil {
+		b.Fatal(err)
+	}
+	if _, err := d.Decode(bg, pkt); err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		src := next
+		if i%2 == 1 {
+			src = base
+		}
+		if _, err := e.Emit(bg, write, src, int64(i+2)); err != nil {
+			b.Fatal(err)
+		}
+		if _, err := d.Decode(bg, pkt); err != nil {
+			b.Fatal(err)
+		}
+	}
 }

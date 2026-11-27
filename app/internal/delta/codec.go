@@ -8,9 +8,11 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"time"
 
 	"crocstream.local/app/internal/protocol"
+	"github.com/pierrec/lz4/v4"
 )
 
 const DefaultTau uint8 = 4
@@ -43,13 +45,18 @@ type Measurement struct {
 }
 
 type Encoder struct {
-	config    protocol.Config
-	limits    protocol.Limits
-	tau       uint8
-	reference []byte
-	last      uint32
-	forceKey  bool
-	failed    bool
+	config     protocol.Config
+	limits     protocol.Limits
+	tau        uint8
+	reference  []byte
+	scratchRef []byte
+	rawBuf     []byte
+	baseBuf    boundedBuffer
+	deltaBuf   boundedBuffer
+	lz4w       *lz4.Writer
+	last       uint32
+	forceKey   bool
+	failed     bool
 }
 
 func NewEncoder(c protocol.Config, tau uint8) (*Encoder, error) {
@@ -57,7 +64,7 @@ func NewEncoder(c protocol.Config, tau uint8) (*Encoder, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Encoder{config: c, limits: limits, tau: tau}, nil
+	return &Encoder{config: c, limits: limits, tau: tau, lz4w: lz4.NewWriter(io.Discard)}, nil
 }
 
 // RequestKeyframe marks the next emitted sample as KEY. Rate limiting is owned
@@ -86,18 +93,19 @@ func (e *Encoder) Emit(ctx context.Context, w PacketWriter, rgba []byte, timesta
 	if err != nil {
 		return Measurement{}, err
 	}
-	current := bytes.Clone(rgba)
 	baselineStart := time.Now()
-	baseline, err := compress(ctx, current)
+	baseline, err := compressInto(ctx, e.lz4w, &e.baseBuf, rgba)
 	if err != nil {
 		return Measurement{}, err
 	}
-	m := Measurement{Kind: protocol.Keyframe, FrameID: id, RawBytes: len(current),
+	m := Measurement{Kind: protocol.Keyframe, FrameID: id, RawBytes: len(rgba),
 		BaselineBytes: protocol.HeaderSize + len(baseline), BaselineTime: time.Since(baselineStart)}
-	payload, next := baseline, current
+	payload := baseline
+	var indices []int
+	var raw []byte
 	key := id == 1 || (id-1)%uint32(e.config.KeyInterval) == 0 || e.forceKey
 	if !key {
-		indices, err := dirtyTiles(ctx, e.config, current, e.reference, e.limits.TileCount, e.tau)
+		indices, err = dirtyTiles(ctx, e.config, rgba, e.reference, e.limits.TileCount, e.tau)
 		if err != nil {
 			return Measurement{}, err
 		}
@@ -105,21 +113,13 @@ func (e *Encoder) Emit(ctx context.Context, w PacketWriter, rgba []byte, timesta
 		m.DirtyTilesKnown = true
 		// Strictly >65%; integer comparison avoids floating-point boundary drift.
 		if len(indices)*100 <= e.limits.TileCount*65 {
-			raw := encodeRecord(e.config, current, indices)
-			payload, err = compress(ctx, raw)
+			e.rawBuf = encodeRecordInto(e.rawBuf, e.config, rgba, indices)
+			raw = e.rawBuf
+			payload, err = compressInto(ctx, e.lz4w, &e.deltaBuf, raw)
 			if err != nil {
 				return Measurement{}, err
 			}
 			m.Kind, m.RawBytes = protocol.Delta, len(raw)
-			next = bytes.Clone(e.reference)
-			pos := 2
-			for _, index := range indices {
-				g := tile(e.config, index)
-				n := g.w * g.h * 4
-				pos += 2
-				copyTile(next, raw[pos:pos+n], e.config, index, false)
-				pos += n
-			}
 		}
 	}
 	if err := ctx.Err(); err != nil {
@@ -132,7 +132,24 @@ func (e *Encoder) Emit(ctx context.Context, w PacketWriter, rgba []byte, timesta
 		e.failed = true
 		return Measurement{}, err
 	}
-	e.reference, e.last, e.forceKey = next, id, false
+	// Commit canonical state only after the writer accepted the packet.
+	if m.Kind == protocol.Keyframe {
+		if len(e.scratchRef) != e.limits.RawBytes {
+			e.scratchRef = make([]byte, e.limits.RawBytes)
+		}
+		copy(e.scratchRef, rgba)
+		e.reference, e.scratchRef = e.scratchRef, e.reference
+	} else {
+		pos := 2
+		for _, index := range indices {
+			g := tile(e.config, index)
+			n := g.w * g.h * 4
+			pos += 2
+			copyTile(e.reference, raw[pos:pos+n], e.config, index, false)
+			pos += n
+		}
+	}
+	e.last, e.forceKey = id, false
 	return m, nil
 }
 
@@ -147,6 +164,8 @@ type Decoder struct {
 	config    protocol.Config
 	limits    protocol.Limits
 	reference []byte
+	decompBuf []byte
+	lz4r      *lz4.Reader
 	last      uint32
 	seen      uint32
 	valid     bool
@@ -157,7 +176,7 @@ func NewDecoder(c protocol.Config) (*Decoder, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Decoder{config: c, limits: limits}, nil
+	return &Decoder{config: c, limits: limits, lz4r: lz4.NewReader(nil)}, nil
 }
 
 // Snapshot returns an owned copy of the last good image, its ID and whether it
@@ -207,31 +226,37 @@ func (d *Decoder) Decode(ctx context.Context, p protocol.Packet) (DecodeMeasurem
 	if h.Type == protocol.Delta {
 		capacity = d.limits.DeltaBytes
 	}
-	raw, err := decompress(ctx, p.Payload, capacity)
+	raw, err := decompressInto(ctx, d.lz4r, d.decompBuf, p.Payload, capacity)
 	if err != nil {
 		return fail(err)
 	}
-	next := raw
+	if cap(raw) > cap(d.decompBuf) {
+		d.decompBuf = raw[:cap(raw)]
+	}
 	if h.Type == protocol.Keyframe {
 		if len(raw) != d.limits.RawBytes || !opaque(raw) {
 			return fail(ErrPixels)
 		}
+		if err := ctx.Err(); err != nil {
+			return fail(err)
+		}
+		if len(d.reference) != d.limits.RawBytes {
+			d.reference = make([]byte, d.limits.RawBytes)
+		}
+		copy(d.reference, raw)
 	} else {
 		tiles, err := DecodeDelta(ctx, d.config, raw)
 		if err != nil {
 			return fail(err)
 		}
-		next = bytes.Clone(d.reference)
+		if err := ctx.Err(); err != nil {
+			return fail(err)
+		}
+		// All tiles validated; apply atomically in-place without cloning 3.68 MiB.
 		for _, t := range tiles {
-			if err := ctx.Err(); err != nil {
-				return fail(err)
-			}
-			copyTile(next, t.Pixels, d.config, int(t.Index), false)
+			copyTile(d.reference, t.Pixels, d.config, int(t.Index), false)
 		}
 	}
-	if err := ctx.Err(); err != nil {
-		return fail(err)
-	}
-	d.reference, d.last, d.valid = next, h.FrameID, true
+	d.last, d.valid = h.FrameID, true
 	return DecodeMeasurement{h.Type, h.FrameID, protocol.HeaderSize + len(p.Payload), time.Since(start)}, nil
 }

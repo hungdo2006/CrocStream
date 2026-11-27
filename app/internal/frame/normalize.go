@@ -38,17 +38,42 @@ func Normalize(ctx context.Context, c protocol.Config, src []byte, stride int, o
 		return nil, err
 	}
 	dst := make([]byte, limits.RawBytes)
-	for y := 0; y < h; y++ {
-		if err := ctx.Err(); err != nil {
-			return nil, err
-		}
-		for x := 0; x < row; x += 4 {
-			s, d := y*stride+x, y*row+x
-			dst[d], dst[d+1], dst[d+2], dst[d+3] = src[s], src[s+1], src[s+2], 255
-			if order == BGRA {
-				dst[d], dst[d+2] = dst[d+2], dst[d]
+	if order == BGRA {
+		for y := 0; y < h; y++ {
+			if y&31 == 0 {
+				if err := ctx.Err(); err != nil {
+					return nil, err
+				}
+			}
+			sRow := src[y*stride : y*stride+row]
+			dRow := dst[y*row : y*row+row]
+			_ = sRow[row-1]
+			_ = dRow[row-1]
+			for x := 0; x < row; x += 4 {
+				dRow[x] = sRow[x+2]
+				dRow[x+1] = sRow[x+1]
+				dRow[x+2] = sRow[x]
+				dRow[x+3] = 255
 			}
 		}
+	} else {
+		for y := 0; y < h; y++ {
+			if y&31 == 0 {
+				if err := ctx.Err(); err != nil {
+					return nil, err
+				}
+			}
+			sRow := src[y*stride : y*stride+row]
+			dRow := dst[y*row : y*row+row]
+			copy(dRow, sRow)
+			_ = dRow[row-1]
+			for x := 3; x < row; x += 4 {
+				dRow[x] = 255
+			}
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	return dst, nil
 }

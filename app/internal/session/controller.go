@@ -245,7 +245,7 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 	workers.Add(1)
 	go func() {
 		defer workers.Done()
-		c.publishPreviewFrames(s, images)
+		c.publishPreviewFrames(s, host, images)
 	}()
 	if host {
 		listener, failure = c.factory.Host(network, relay, func() { c.setState(s, Authenticating) })
@@ -316,7 +316,9 @@ func (c *Controller) run(s *activeSession, host bool, o capture.Options, relay t
 }
 
 // publishPreviewFrames encodes replaceable snapshots for the local canvas.
-func (c *Controller) publishPreviewFrames(s *activeSession, images <-chan capture.Frame) {
+// Broadcaster self-preview uses lightweight half-res JPEG to preserve CPU for
+// network encoding; the viewer always encodes full resolution.
+func (c *Controller) publishPreviewFrames(s *activeSession, host bool, images <-chan capture.Frame) {
 	ctx := s.ctx
 	for {
 		select {
@@ -324,7 +326,13 @@ func (c *Controller) publishPreviewFrames(s *activeSession, images <-chan captur
 			return
 		case f := <-images:
 			begin := time.Now()
-			encoded, err := bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
+			var encoded []byte
+			var err error
+			if host {
+				encoded, err = bridge.EncodePreviewJPEG(f.RGBA, f.Width, f.Height)
+			} else {
+				encoded, err = bridge.EncodeJPEG(f.RGBA, f.Width, f.Height)
+			}
 			elapsed := time.Since(begin)
 			if err == nil && ctx.Err() == nil {
 				err = s.bridge.Publish(encoded)
