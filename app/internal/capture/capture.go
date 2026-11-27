@@ -20,12 +20,13 @@ const (
 )
 
 type Display struct {
-	ID      string `json:"id"`
-	Kind    string `json:"kind"`
-	Name    string `json:"name"`
-	Width   int    `json:"width"`
-	Height  int    `json:"height"`
-	Primary bool   `json:"primary"`
+	ID        string `json:"id"`
+	Kind      string `json:"kind"`
+	Name      string `json:"name"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Primary   bool   `json:"primary"`
+	Minimized bool   `json:"minimized"`
 }
 
 type Options struct {

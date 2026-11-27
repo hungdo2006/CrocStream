@@ -16,6 +16,12 @@ test.beforeEach(async ({ page }) => {
       measurementsComplete: true, samplesComplete: true })
     const fake = window.__desktopTest = {
       session: idle(0), preview: idle(0), defaultRelay: { address: '', password: '' },
+      displays: [
+        { id: 'synthetic', kind: 'display', name: 'Màn hình 1', width: 1920, height: 1080, primary: true, minimized: false },
+        { id: 'window:42', kind: 'window', name: 'Google Chrome', width: 1280, height: 800, primary: false, minimized: false },
+        { id: 'window:99', kind: 'window', name: 'Zalo', width: 1040, height: 720, primary: false, minimized: true },
+      ],
+      listDisplaysCalls: 0,
       starts: 0, stops: 0, previewStarts: 0, previewStops: 0, previewActive: false,
       delay: 0, stopDelay: 0,
       pendingInvitations: [], holdInvitation: false, captureCleanupFails: false,
@@ -100,10 +106,10 @@ test.beforeEach(async ({ page }) => {
     contentType: 'text/javascript',
     body: `
       const t = window.__desktopTest;
-      export const ListDisplays = async () => [
-        {id:'synthetic',kind:'display',name:'Màn hình 1',width:1920,height:1080,primary:true},
-        {id:'window:42',kind:'window',name:'Google Chrome',width:1280,height:800,primary:false},
-      ];
+      export const ListDisplays = async () => {
+        t.listDisplaysCalls++;
+        return structuredClone(t.displays);
+      };
       export const GetStats = async () => structuredClone(t.preview);
       export const GetSessionStats = async () => structuredClone(t.session);
       export const GetInvitation = () => t.invitation();
@@ -319,4 +325,51 @@ test('Share previews selected monitor and app window live before broadcasting', 
     previewActive: window.__desktopTest.previewActive,
     displayID: window.__desktopTest.captureOptions?.displayID,
   }))).toEqual({ previewActive: false, displayID: 'window:42' })
+})
+
+test('minimized windows are listed with badge and source list auto-refreshes on tab and focus', async ({ page }) => {
+  await page.evaluate(() => {
+    window.__desktopTest.defaultRelay = { address: '198.51.100.10:9009', password: 'synthetic-default-pass' }
+  })
+  await page.getByTestId('home-share').click()
+  await expect(page.locator('[data-source-id="synthetic"]')).toHaveAttribute('aria-selected', 'true')
+  const callsAfterMount = await page.evaluate(() => window.__desktopTest.listDisplaysCalls)
+
+  // Add a new minimized window before switching to the Windows tab.
+  await page.evaluate(() => {
+    window.__desktopTest.displays.push({
+      id: 'window:105', kind: 'window', name: 'PowerPoint', width: 1440, height: 900, primary: false, minimized: true,
+    })
+  })
+  await page.getByRole('tab', { name: /Cửa sổ/ }).click()
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.listDisplaysCalls)).toBeGreaterThan(callsAfterMount)
+  const zaloOption = page.locator('[data-source-id="window:99"]')
+  await expect(zaloOption).toContainText('Zalo')
+  await expect(zaloOption).toContainText('Đang thu nhỏ')
+  await expect(page.locator('[data-source-id="window:105"]')).toContainText('PowerPoint')
+
+  await zaloOption.click()
+  await expect(zaloOption).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByText(/Cửa sổ đang thu nhỏ dưới thanh tác vụ sẽ tự mở lên/)).toBeVisible()
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.previewOptions?.displayID)).toBe('window:99')
+
+  // Focus event refreshes the window list automatically when idle.
+  const callsBeforeFocus = await page.evaluate(() => window.__desktopTest.listDisplaysCalls)
+  await page.evaluate(() => {
+    window.__desktopTest.displays.push({
+      id: 'window:108', kind: 'window', name: 'Notepad', width: 800, height: 600, primary: false, minimized: false,
+    })
+    window.dispatchEvent(new window.Event('focus'))
+  })
+  await expect.poll(() => page.evaluate(() => window.__desktopTest.listDisplaysCalls)).toBeGreaterThan(callsBeforeFocus)
+  await expect(page.locator('[data-source-id="window:108"]')).toContainText('Notepad')
+
+  // Broadcasting a minimized window succeeds and disables focus auto-refresh while locked.
+  await page.getByRole('button', { name: labels.start, exact: true }).click()
+  await expect(page.locator('#invitation')).toHaveValue('synthetic-invitation')
+  expect(await page.evaluate(() => window.__desktopTest.captureOptions?.displayID)).toBe('window:99')
+  const callsWhileLocked = await page.evaluate(() => window.__desktopTest.listDisplaysCalls)
+  await page.evaluate(() => window.dispatchEvent(new window.Event('focus')))
+  await page.waitForTimeout(200)
+  expect(await page.evaluate(() => window.__desktopTest.listDisplaysCalls)).toBe(callsWhileLocked)
 })

@@ -9,8 +9,13 @@ const resolutions = {
 type Resolution = keyof typeof resolutions
 type SourceTab = 'display' | 'window'
 
-export function useCaptureSettings(enabled: boolean, setError: (message: string) => void, errorMessage: string) {
-  const source = useDisplays(enabled, setError, errorMessage)
+export function useCaptureSettings(
+  enabled: boolean,
+  setError: (message: string) => void,
+  errorMessage: string,
+  autoRefresh = enabled,
+) {
+  const source = useDisplays(enabled, setError, errorMessage, autoRefresh)
   const [resolution, setResolution] = useState<Resolution>('1280x720')
   const [fps, setFPS] = useState(24)
 
@@ -37,12 +42,17 @@ export function CaptureSettings({ settings, mode, locked }: {
 }) {
   const local = mode === 'local'
   const prefix = local ? '' : 'stream-'
-  const { displays, display, setDisplay, refresh, resolution, setResolution, fps, setFPS } = settings
+  const { displays, display, setDisplay, refresh, selectedSource, resolution, setResolution, fps, setFPS } = settings
 
   const monitors = displays.filter(item => item.kind !== 'window')
   const windows = displays.filter(item => item.kind === 'window')
   const [tab, setTab] = useState<SourceTab>('display')
   const items = tab === 'window' ? windows : monitors
+
+  const selectTab = (next: SourceTab) => {
+    setTab(next)
+    if (!locked) void refresh()
+  }
 
   return (
     <div className="capture-settings">
@@ -60,7 +70,7 @@ export function CaptureSettings({ settings, mode, locked }: {
           aria-selected={tab === 'display'}
           className={tab === 'display' ? 'seg-btn active' : 'seg-btn'}
           disabled={locked}
-          onClick={() => setTab('display')}
+          onClick={() => selectTab('display')}
         >
           Màn hình <span className="count">{monitors.length}</span>
         </button>
@@ -70,7 +80,7 @@ export function CaptureSettings({ settings, mode, locked }: {
           aria-selected={tab === 'window'}
           className={tab === 'window' ? 'seg-btn active' : 'seg-btn'}
           disabled={locked}
-          onClick={() => setTab('window')}
+          onClick={() => selectTab('window')}
         >
           Cửa sổ <span className="count">{windows.length}</span>
         </button>
@@ -85,7 +95,7 @@ export function CaptureSettings({ settings, mode, locked }: {
         {items.length === 0 ? (
           <p className="source-empty">
             {tab === 'window'
-              ? 'Không thấy cửa sổ đang mở. Mở ứng dụng (không thu nhỏ) rồi bấm Làm mới.'
+              ? 'Không thấy cửa sổ ứng dụng. Hãy mở ứng dụng (nếu đang ẩn xuống khay hệ thống) để hiển thị tại đây.'
               : 'Chưa tìm thấy màn hình.'}
           </p>
         ) : (
@@ -105,8 +115,9 @@ export function CaptureSettings({ settings, mode, locked }: {
                 title={label}
               >
                 <span className="source-name">
-                  {label}
+                  <span className="source-label">{label}</span>
                   {item.kind !== 'window' && item.primary && <span className="tag-pill">Chính</span>}
+                  {item.kind === 'window' && item.minimized && <span className="tag-pill warn">Đang thu nhỏ</span>}
                 </span>
                 <span className="source-dims">{item.width}×{item.height}</span>
               </button>
@@ -114,6 +125,12 @@ export function CaptureSettings({ settings, mode, locked }: {
           })
         )}
       </div>
+
+      {tab === 'window' && selectedSource?.kind === 'window' && selectedSource.minimized && (
+        <p className="field-help">
+          Cửa sổ đang thu nhỏ dưới thanh tác vụ sẽ tự mở lên khi xem trước hoặc chia sẻ.
+        </p>
+      )}
 
       <div className="inline-fields">
         <div>

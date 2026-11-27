@@ -33,9 +33,11 @@ var (
 	isIconic         = user32.NewProc("IsIconic")
 	getWindowTextLen = user32.NewProc("GetWindowTextLengthW")
 	getWindowText    = user32.NewProc("GetWindowTextW")
-	getWindowLongPtr = user32.NewProc("GetWindowLongPtrW")
-	getWindowRect    = user32.NewProc("GetWindowRect")
-	getWindowPID     = user32.NewProc("GetWindowThreadProcessId")
+	getWindowLongPtr   = user32.NewProc("GetWindowLongPtrW")
+	getWindowRect      = user32.NewProc("GetWindowRect")
+	getWindowPlacement = user32.NewProc("GetWindowPlacement")
+	showWindowAsync    = user32.NewProc("ShowWindowAsync")
+	getWindowPID       = user32.NewProc("GetWindowThreadProcessId")
 	getShellWindow   = user32.NewProc("GetShellWindow")
 	printWindow      = user32.NewProc("PrintWindow")
 	dwmGetWindowAttr = dwmapi.NewProc("DwmGetWindowAttribute")
@@ -59,14 +61,26 @@ const (
 	dwmwaExtendedFrameBounds = 9
 	dwmwaCloaked             = 14
 	pwRenderFullContent      = 0x00000002
+	swShowNoActivate         = 4
 	halftoneStretchMode      = 4
 	maxWindowCaptureDim      = 4096
 	maxEnumeratedWindows     = 64
 	minWindowWidth           = 120
 	minWindowHeight          = 80
+	windowRestoreTimeout     = 600 * time.Millisecond
+	windowRestorePoll        = 25 * time.Millisecond
 )
 
+type point struct{ X, Y int32 }
 type rect struct{ Left, Top, Right, Bottom int32 }
+type windowPlacement struct {
+	Length         uint32
+	Flags          uint32
+	ShowCmd        uint32
+	MinPosition    point
+	MaxPosition    point
+	NormalPosition rect
+}
 type monitor struct {
 	Size         uint32
 	Bounds, Work rect
@@ -153,9 +167,8 @@ var enumWindowsCallback = windows.NewCallback(func(hwnd, param uintptr) uintptr 
 	if vis, _, _ := isWindowVisible.Call(hwnd); vis == 0 {
 		return 1
 	}
-	if iconic, _, _ := isIconic.Call(hwnd); iconic != 0 {
-		return 1
-	}
+	iconic, _, _ := isIconic.Call(hwnd)
+	minimized := iconic != 0
 	var pid uint32
 	getWindowPID.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
 	if pid == 0 || pid == state.selfPID {
@@ -172,21 +185,28 @@ var enumWindowsCallback = windows.NewCallback(func(hwnd, param uintptr) uintptr 
 	if title == "" {
 		return 1
 	}
-	_, extRect, ok := windowBounds(hwnd)
-	if !ok {
+	var bounds rect
+	var boundsOK bool
+	if minimized {
+		bounds, boundsOK = minimizedWindowBounds(hwnd)
+	} else {
+		_, bounds, boundsOK = windowBounds(hwnd)
+	}
+	if !boundsOK {
 		return 1
 	}
-	w := int(extRect.Right - extRect.Left)
-	h := int(extRect.Bottom - extRect.Top)
+	w := int(bounds.Right - bounds.Left)
+	h := int(bounds.Bottom - bounds.Top)
 	if w < minWindowWidth || h < minWindowHeight || w > 32768 || h > 32768 {
 		return 1
 	}
 	state.windows = append(state.windows, Display{
-		ID:     formatWindowID(hwnd),
-		Kind:   KindWindow,
-		Name:   truncateTitle(title, 90),
-		Width:  w,
-		Height: h,
+		ID:        formatWindowID(hwnd),
+		Kind:      KindWindow,
+		Name:      truncateTitle(title, 90),
+		Width:     w,
+		Height:    h,
+		Minimized: minimized,
 	})
 	return 1
 })
@@ -270,6 +290,68 @@ func windowBounds(hwnd uintptr) (winRect, extRect rect, ok bool) {
 	return winRect, extRect, true
 }
 
+func minimizedWindowBounds(hwnd uintptr) (rect, bool) {
+	if hwnd == 0 {
+		return rect{}, false
+	}
+	wp := windowPlacement{Length: uint32(unsafe.Sizeof(windowPlacement{}))}
+	if ok, _, _ := getWindowPlacement.Call(hwnd, uintptr(unsafe.Pointer(&wp))); ok == 0 {
+		return rect{}, false
+	}
+	w := int(wp.NormalPosition.Right - wp.NormalPosition.Left)
+	h := int(wp.NormalPosition.Bottom - wp.NormalPosition.Top)
+	if w <= 0 || h <= 0 || w > 32768 || h > 32768 {
+		return rect{}, false
+	}
+	return wp.NormalPosition, true
+}
+
+func orderWindows(list []Display) []Display {
+	if len(list) <= 1 {
+		return list
+	}
+	ordered := make([]Display, 0, len(list))
+	for _, item := range list {
+		if !item.Minimized {
+			ordered = append(ordered, item)
+		}
+	}
+	for _, item := range list {
+		if item.Minimized {
+			ordered = append(ordered, item)
+		}
+	}
+	return ordered
+}
+
+// restoreMinimizedWindow restores a taskbar-minimized window once without
+// stealing foreground focus so PrintWindow can capture its rendered surface.
+func restoreMinimizedWindow(ctx context.Context, hwnd uintptr) {
+	if hwnd == 0 || ctx.Err() != nil {
+		return
+	}
+	if iconic, _, _ := isIconic.Call(hwnd); iconic == 0 {
+		return
+	}
+	_, _, _ = showWindowAsync.Call(hwnd, swShowNoActivate)
+	timer := time.NewTimer(windowRestoreTimeout)
+	defer timer.Stop()
+	poll := time.NewTicker(windowRestorePoll)
+	defer poll.Stop()
+	for {
+		if iconic, _, _ := isIconic.Call(hwnd); iconic == 0 {
+			return
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+			return
+		case <-poll.C:
+		}
+	}
+}
+
 func computeWindowCrop(winRect, extRect rect) (x, y, w, h int) {
 	ww := int(winRect.Right - winRect.Left)
 	wh := int(winRect.Bottom - winRect.Top)
@@ -308,7 +390,7 @@ func enumerateWindows() []Display {
 	winEnumStates.Store(id, &state)
 	_, _, _ = enumWindows.Call(enumWindowsCallback, id)
 	winEnumStates.Delete(id)
-	return state.windows
+	return orderWindows(state.windows)
 }
 
 func enterDPI() (func(), error) {
@@ -519,6 +601,13 @@ func runMonitorCapture(ctx context.Context, o Options, cfg protocol.Config, deli
 func runWindowCapture(ctx context.Context, o Options, cfg protocol.Config, hwnd uintptr, deliver func(Frame)) (err error) {
 	if valid, _, _ := isWindow.Call(hwnd); valid == 0 {
 		return ErrSource
+	}
+	if vis, _, _ := isWindowVisible.Call(hwnd); vis == 0 {
+		return ErrSource
+	}
+	restoreMinimizedWindow(ctx, hwnd)
+	if err = ctx.Err(); err != nil {
+		return err
 	}
 	dc, _, _ := getDC.Call(0)
 	if dc == 0 {

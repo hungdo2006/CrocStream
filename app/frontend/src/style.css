@@ -490,12 +490,16 @@ summary:hover { color: var(--text) }
 
 .source-name {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.source-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .source-dims {
@@ -531,6 +535,12 @@ summary:hover { color: var(--text) }
   color: #4ade80;
   background: var(--accent-soft);
   border-color: var(--accent-border);
+}
+
+.tag-pill.warn {
+  color: #facc15;
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.34);
 }
 
 .inline-fields {

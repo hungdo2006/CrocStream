@@ -11,6 +11,7 @@ export interface Display {
   width: number
   height: number
   primary: boolean
+  minimized?: boolean
 }
 export interface Options { displayID: string; width: number; height: number; fps: number; tau: number; keyInterval: number }
 export interface Started { endpoint: { url: string; token: string }; generation: number }

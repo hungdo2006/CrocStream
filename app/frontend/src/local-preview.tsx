@@ -14,12 +14,12 @@ const names: Record<State, string> = {
 export function LocalPreview({ onHome }: { onHome: () => void }) {
   const controller = usePreviewSession()
   const { state, error, started: session, stats } = controller
-  const settings = useCaptureSettings(true, controller.setError, 'Không đọc được danh sách nguồn chụp. Hãy thử làm mới.')
+  const locked = state === 'Preparing' || state === 'Previewing' || state === 'Stopping'
+  const settings = useCaptureSettings(true, controller.setError, 'Không đọc được danh sách nguồn chụp. Hãy thử làm mới.', !locked)
   const { canvas, error: previewError, hasImage, renderFPS } = useFrameStream(session, 'preview')
   const start = () => controller.start(settings.options())
   const stop = controller.stop
   const { leaving, home } = useLeaveSession(stop, onHome)
-  const locked = state === 'Preparing' || state === 'Previewing' || state === 'Stopping'
   const measured = stats && session && stats.generation === session.generation && stats.captured > 0
 
   return (

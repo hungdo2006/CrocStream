@@ -1,4 +1,4 @@
-CrocStream 0.0.2, Windows x64 technical prototype.
+CrocStream 0.0.3, Windows x64 technical prototype.
 
 No blanket license for original CrocStream application code is granted by
 this notice. The repository owner has not selected a project-wide license.

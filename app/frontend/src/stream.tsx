@@ -26,7 +26,8 @@ export function Stream({ role, onHome }: { role: 'share' | 'watch'; onHome: () =
   const sharing = role === 'share'
   const session = useStreamSession(role)
   const { state, error, started, stats, invitation, copyStatus } = session
-  const settings = useCaptureSettings(sharing, session.setError, 'Không đọc được danh sách nguồn chụp.')
+  const locked = !inactive(state)
+  const settings = useCaptureSettings(sharing, session.setError, 'Không đọc được danh sách nguồn chụp.', sharing && !locked)
 
   const [tau, setTau] = useState(4)
   const [keyInterval, setKeyInterval] = useState(30)
@@ -55,7 +56,6 @@ export function Stream({ role, onHome }: { role: 'share' | 'watch'; onHome: () =
     return () => { cancelled = true }
   }, [])
 
-  const locked = !inactive(state)
   const { width: capW, height: capH } = settings.options(tau, keyInterval)
   const sourcePreview = useSourcePreview(
     sharing && previewEnabled && !locked,

@@ -32,7 +32,7 @@ Trong thư mục chứa `crocstream.exe`, mở PowerShell và chạy:
 
 ## 2. Chia sẻ, tham gia và dừng
 
-1. **Người phát:** Mở `crocstream.exe` → chọn **Chia sẻ màn hình** → chọn tab **Màn hình** hoặc **Cửa sổ** (khung 16:9 tự hiển thị xem trước nguồn đang chọn; lưu ý cửa sổ đang thu nhỏ sẽ không hiện trong danh sách) → bấm **Bắt đầu chia sẻ**. Khi thấy **Đang chờ người xem**, bấm **Sao chép mã** gửi cho người xem.
+1. **Người phát:** Mở `crocstream.exe` → chọn **Chia sẻ màn hình** → chọn tab **Màn hình** hoặc **Cửa sổ** (khung 16:9 tự hiển thị xem trước nguồn đang chọn; danh sách cửa sổ tự làm mới khi chuyển tab hoặc quay lại ứng dụng và hỗ trợ cửa sổ đang thu nhỏ dưới thanh tác vụ) → bấm **Bắt đầu chia sẻ**. Khi thấy **Đang chờ người xem**, bấm **Sao chép mã** gửi cho người xem.
 2. **Người xem:** Mở `crocstream.exe` → chọn **Tham gia bằng mã** → kiểm tra Relay (hoặc để tự điền từ `relay.json`) → dán mã vào **Mã phiên** → bấm **Tham gia phiên**.
 3. **Quan sát số đo:** Thanh chỉ số bên dưới hiển thị trực tiếp **FPS hiển thị**, **Tốc độ video (KiB/s)**, **RTT khứ hồi (ms)** và **Đường truyền** (`LAN trực tiếp` hoặc `Relay`); bấm **Chi tiết luồng** để xem thêm `% tiết kiệm so với toàn ảnh`.
 4. **Kết thúc:** Bấm **Dừng chia sẻ** hoặc **Rời phiên** để xóa khung hình và thu hồi mã mời ngay lập tức.
@@ -42,7 +42,7 @@ Trong thư mục chứa `crocstream.exe`, mở PowerShell và chạy:
 ## 3. Kiểm tra ZIP nhận được
 
 ```powershell
-Get-FileHash .\CrocStream-0.0.2-windows-amd64.zip -Algorithm SHA256
+Get-FileHash .\CrocStream-0.0.3-windows-amd64.zip -Algorithm SHA256
 ```
 
 Sau khi giải nén vào thư mục có quyền ghi, kiểm tra tính toàn vẹn gói (theo `manifest.json` của bản phát hành):

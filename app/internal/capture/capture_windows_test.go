@@ -13,7 +13,7 @@ import (
 )
 
 func TestNativeSurfaceABIAndCleanup(t *testing.T) {
-	if unsafe.Sizeof(bitmapHeader{}) != 40 || unsafe.Sizeof(monitor{}) != 104 {
+	if unsafe.Sizeof(bitmapHeader{}) != 40 || unsafe.Sizeof(monitor{}) != 104 || unsafe.Sizeof(windowPlacement{}) != 44 {
 		t.Fatal("Win32 ABI mismatch")
 	}
 	runtime.LockOSThread()
@@ -77,6 +77,24 @@ func TestWindowIDCropTitleAndInvalidWindowReject(t *testing.T) {
 	if !errors.Is(err, ErrSource) {
 		t.Fatalf("expected ErrSource for invalid window ID, got %v", err)
 	}
+	if _, ok := minimizedWindowBounds(0); ok {
+		t.Fatal("expected minimizedWindowBounds(0) to fail")
+	}
+	ordered := orderWindows([]Display{
+		{ID: "window:1", Name: "Zalo", Minimized: true},
+		{ID: "window:2", Name: "Chrome", Minimized: false},
+		{ID: "window:3", Name: "Word", Minimized: true},
+		{ID: "window:4", Name: "VS Code", Minimized: false},
+	})
+	wantOrder := []string{"window:2", "window:4", "window:1", "window:3"}
+	for i, want := range wantOrder {
+		if ordered[i].ID != want {
+			t.Fatalf("unexpected window order at %d: got %s, want %s", i, ordered[i].ID, want)
+		}
+	}
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	restoreMinimizedWindow(cancelled, 0)
 }
 
 func TestActualCapture100Lifecycles(t *testing.T) {
