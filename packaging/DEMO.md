@@ -6,7 +6,7 @@ Dùng bản Portable ZIP (hoặc `app\bin\crocstream.exe`), Windows 10/11 x64 v�
 ## 1. Chuẩn bị Relay (chọn 1 trong 2 cách)
 
 ### Cách A — Dùng sẵn file `relay.json` (nhanh nhất, tiện cho VPS hoặc LAN cố định)
-Tạo file `relay.json` đặt **cùng thư mục với `crocstream.exe`** ở cả hai máy:
+Nếu bản Portable ZIP tải từ [GitHub Releases](https://github.com/hungdo2006/CrocStream/releases) đã có sẵn `relay.json` cạnh `crocstream.exe`, bạn chỉ cần mở `crocstream.exe` là dùng ngay. Khi muốn đổi sang trạm Relay khác, tạo hoặc sửa file `relay.json` đặt **cùng thư mục với `crocstream.exe`** ở cả hai máy:
 
 ```json
 {

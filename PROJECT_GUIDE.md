@@ -49,8 +49,8 @@ Toàn bộ quá trình diễn ra qua **3 cơ chế chính**:
    * Khi Viewer tham gia, app quét LAN trong ~400 ms trước; nếu thấy Host cùng mạng sẽ nối thẳng LAN, nếu không thấy (khác mạng hoặc bị tường lửa chặn) sẽ tự động rơi về Relay.
    * Cả hai tuyến đều chạy cùng một bắt tay **PAKE** (`CSH1`) và dẫn xuất khóa mã hóa **AES-256-GCM** riêng theo chiều gửi/nhận. Mục **Đường truyền** chỉ báo `LAN trực tiếp` hay `Relay` sau khi bắt tay thực sự thành công.
 2. **Chụp màn hình / cửa sổ & Nén Tile-Delta (`internal/capture`, `internal/delta`):**
-   * Hỗ trợ chụp toàn màn hình (`EnumDisplayMonitors` + `StretchBlt`) lẫn cửa sổ ứng dụng đơn lẻ (`EnumWindows` + `PrintWindow(PW_RENDERFULLCONTENT)` + cắt viền bóng DWM).
-   * Khung đầu gửi đầy đủ (**`KEYFRAME`**). Các khung sau chia lưới `32×32` (920 ô ở `1280×720`), chỉ đóng gói **`DELTA`** các ô có độ lệch màu trung bình `MAE > tau` (mặc định `4`). Nếu quá **65%** ô thay đổi hoặc đủ chu kỳ **30 khung**, tự gửi lại `KEYFRAME`.
+   * Hỗ trợ chụp toàn màn hình (`EnumDisplayMonitors` + `BitBlt`/`StretchBlt`) lẫn cửa sổ ứng dụng đơn lẻ (`EnumWindows` + `PrintWindow(PW_RENDERFULLCONTENT)` + cắt viền bóng DWM), nhận diện cả cửa sổ đang thu nhỏ dưới thanh tác vụ và tự động làm mới danh sách cửa sổ.
+   * Khung đầu gửi đầy đủ (**`KEYFRAME`**). Các khung sau chia lưới `32×32` (920 ô ở `1280×720`), chỉ đóng gói **`DELTA`** các ô có độ lệch màu trung bình `MAE > tau` (mặc định `4`). Nếu quá **65%** ô thay đổi hoặc đủ chu kỳ `KeyInterval` (mặc định UI **120 khung**, tùy chỉnh `1–120`), tự gửi lại `KEYFRAME`.
 3. **Tự phục hồi lỗi (`PLI`) & Hiển thị mượt (`internal/bridge`):**
    * Nếu máy xem phát hiện khung lỗi/lệch, nó giữ nguyên ảnh hợp lệ cuối, báo `Đang phục hồi ảnh` và gửi **`REQUEST_KEYFRAME` (PLI)** về máy phát.
    * Ảnh hiển thị được chuyển sang **JPEG** trong RAM và đẩy qua **WebSocket cục bộ (`127.0.0.1`)** có token ngẫu nhiên theo phiên và kiểm tra Origin.
@@ -110,9 +110,9 @@ Mã nguồn `croc/` gốc được giữ nguyên 100% (chỉ tái sử dụng 3 
 ## E. Kịch bản Demo 5 phút & Câu trả lời nhanh khi Bảo vệ
 
 ### 1. Các bước bấm Demo trên lớp
-1. **Chuẩn bị Relay:**
-   * *Phương án chính (2 máy khác mạng — ví dụ Wi-Fi trường + 4G):* Đặt sẵn file `relay.json` (trỏ tới VPS chạy `croc relay`) cạnh `crocstream.exe` ở cả 2 máy → mở app lên tự điền sẵn.
-   * *Phương án dự phòng (1 máy hoặc 2 máy cùng Wi-Fi không cần Internet):* Chạy `.\packaging\Start-DemoRelay.ps1` và điền `127.0.0.1:9009` (hoặc IP LAN).
+1. **Chuẩn bị gói chạy & Relay:**
+   * *Cách nhanh nhất (2 máy khác mạng — ví dụ Wi-Fi trường + 4G):* Tải bản **Portable ZIP** mới nhất tại [GitHub Releases](https://github.com/hungdo2006/CrocStream/releases), giải nén và mở `crocstream.exe` (nếu đã có sẵn `relay.json` cạnh file chạy, hai máy sẽ tự điền sẵn cấu hình Relay).
+   * *Phương án dự phòng (1 máy hoặc 2 máy cùng Wi-Fi không cần Internet):* Chạy `.\Start-DemoRelay.ps1` trong thư mục giải nén và điền `127.0.0.1:9009` (hoặc IP LAN).
 2. **Chia sẻ & Chọn cửa sổ (2 phút):**
    * **Máy phát:** Mở **Chia sẻ màn hình** → chuyển sang tab **Cửa sổ** (chọn Chrome/VS Code/Zalo) để cho thấy khung xem trước sống động ngay trước khi phát → bấm **Bắt đầu chia sẻ** → bấm **Sao chép mã**.
    * **Máy xem:** Mở **Tham gia bằng mã** → dán mã vào **Mã phiên** → bấm **Tham gia phiên**.

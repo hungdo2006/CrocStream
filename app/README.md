@@ -9,7 +9,7 @@ Module `crocstream.local/app` chứa toàn bộ phần mềm CrocStream trên Wi
 | --- | --- |
 | `frontend/` | **Giao diện người dùng** viết bằng React + TypeScript (các màn hình Trang chủ, Chia sẻ, Xem phiên, Xem trước và Bảng số đo). |
 | `internal/desktop/` | Cầu nối nhận lệnh bấm nút từ giao diện React chuyển xuống phần xử lý Go bên dưới, kèm cấu hình cửa sổ Wails. |
-| `internal/capture/` | Chụp hình ảnh màn hình thực trên Windows (dùng Win32 GDI). |
+| `internal/capture/` | Chụp toàn màn hình và từng cửa sổ ứng dụng trên Windows (dùng Win32 GDI + `PrintWindow`, hỗ trợ cửa sổ đang thu nhỏ dưới taskbar). |
 | `internal/frame/` | Chuẩn hóa bảng màu bức ảnh vừa chụp về chuẩn thống nhất (`RGBA`, độ đục 255). |
 | `internal/delta/` | **Thuật toán nén chính:** chia ảnh thành các ô vuông `32×32`, lọc ra những ô có thay đổi và nén không mất dữ liệu bằng LZ4. |
 | `internal/protocol/` | Đóng gói và đọc kiểm tra các gói tin truyền qua mạng (tiêu đề 18 byte, gói cấu hình, ảnh gốc, phần thay đổi, tín hiệu điều khiển). |
@@ -45,7 +45,7 @@ foreach ($target in @('FuzzDecodeDelta', 'FuzzCompressedFrame', 'FuzzDecoderAtom
     go -C app test ./internal/delta -run '^$' -fuzz "^${target}$" -fuzztime=30s -fuzzminimizetime=1s -parallel=2
     if ($LASTEXITCODE -ne 0) { throw "Fuzz failed: $target" }
 }
-go -C app test ./internal/delta -run '^$' -bench '^BenchmarkCodec$' -benchmem -benchtime=2s -count=1
+go -C app test ./internal/delta -run '^$' -bench '^Benchmark' -benchmem -benchtime=2s -count=1
 ```
 
 Benchmark trên ảnh tổng hợp gồm encode, baseline và decode. Phạm vi kiểm tra,
@@ -111,7 +111,7 @@ Share/Watch. Stop đợi Start đang chờ. Hàng đợi hiển thị giữ JPEG
 giải phóng bitmap sau khi dùng. Bridge bind loopback và kiểm chính xác Host,
 Origin cùng token qua WebSocket subprotocol. Origin production là
 `http://wails.localhost`, dev dùng cổng 9245.
-[Sơ đồ code](../PROJECT_GUIDE.md#c-kiến-trúc-dự-án) · [Preview proof](../scripts/qa-probes/PREVIEW_PROOF.md)
+[Sơ đồ code](../PROJECT_GUIDE.md#c-sơ-đồ-thư-mục--bảng-tra-cứu-nhanh-trong-app) · [Preview proof](../scripts/qa-probes/PREVIEW_PROOF.md)
 
 Sau khi sinh binding, chạy `npm run typecheck`, `npm run lint`, `npm run test`,
 `npm run test:ui` hoặc `npm run build` từ `frontend/`. Playwright dùng Edge
